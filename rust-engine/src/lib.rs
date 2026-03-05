@@ -1,4 +1,4 @@
-//! voxguard_audio
+//! scam_shield_audio
 //! -----------------
 //! Rust WebAssembly audio preprocessing engine for Scam Shield.
 //!
