@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 80">
+  <defs><style>@keyframes dot{0%,100%{opacity:.4}50%{opacity:1}}.bg{fill:#020408}.m{font-family:'Courier New',monospace}</style></defs>
+  <rect width="600" height="80" class="bg" rx="3"/><rect x=".5" y=".5" width="599" height="79" rx="3" fill="none" stroke="#00d4ff" stroke-width="1" opacity=".2"/>
+  <path d="M0,40 Q25,20 50,40 Q75,55 100,40 Q125,25 150,40 Q175,50 200,40 Q225,30 250,40 Q275,48 300,40 Q325,32 350,40 Q375,52 400,40 Q425,28 450,40 Q475,50 500,40 Q525,30 550,40 Q575,48 600,40" fill="none" stroke="#00d4ff" stroke-width="2" opacity=".6">
+    <animate attributeName="d" values="M0,40 Q25,20 50,40 Q75,55 100,40 Q125,25 150,40 Q175,50 200,40 Q225,30 250,40 Q275,48 300,40 Q325,32 350,40 Q375,52 400,40 Q425,28 450,40 Q475,50 500,40 Q525,30 550,40 Q575,48 600,40;M0,40 Q25,55 50,40 Q75,25 100,40 Q125,52 150,40 Q175,28 200,40 Q225,50 250,40 Q275,30 300,40 Q325,48 350,40 Q375,25 400,40 Q425,55 450,40 Q475,28 500,40 Q525,52 550,40 Q575,30 600,40;M0,40 Q25,20 50,40 Q75,55 100,40 Q125,25 150,40 Q175,50 200,40 Q225,30 250,40 Q275,48 300,40 Q325,32 350,40 Q375,52 400,40 Q425,28 450,40 Q475,50 500,40 Q525,30 550,40 Q575,48 600,40" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <circle cx="20" cy="15" r="3" fill="#ff2d55" style="animation:dot 1s step-end infinite"/>
+  <text x="30" y="18" class="m" font-size="8" fill="#ff2d55" letter-spacing="1">LIVE</text>
+  <text x="75" y="18" class="m" font-size="7" fill="rgba(255,255,255,.35)">16kHz Mono PCM · 250ms frames · Wiener NR · Rust WASM</text>
+  <text x="520" y="18" class="m" font-size="8" fill="#30d158" letter-spacing="1" font-weight="bold">&lt;80ms</text>
+  <text x="565" y="18" class="m" font-size="7" fill="rgba(255,255,255,.3)">E2E</text>
+</svg>

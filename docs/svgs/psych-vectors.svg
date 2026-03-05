@@ -1,42 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280">
-  <rect width="280" height="280" fill="#020408"/>
-  <rect x="1" y="1" width="278" height="278" fill="none" stroke="rgba(255,149,0,0.3)" stroke-width="1"/>
-
-  <text x="140" y="22" text-anchor="middle" font-family="'Courier New',monospace" font-size="8" fill="#ff9500" letter-spacing="2">PSYCH VECTORS</text>
-
-  <!-- Hex grid rings -->
-  <g fill="none" stroke="rgba(255,149,0,0.1)" stroke-width="1">
-    <polygon points="140,80 184,105 184,155 140,180 96,155 96,105"/>
-    <polygon points="140,60 196,92 196,158 140,190 84,158 84,92"/>
-    <polygon points="140,45 205,82 205,163 140,200 75,163 75,82"/>
-  </g>
-  <!-- Axis lines -->
-  <g stroke="rgba(255,149,0,0.15)" stroke-width="1">
-    <line x1="140" y1="45" x2="140" y2="200"/>
-    <line x1="75" y1="82" x2="205" y2="163"/>
-    <line x1="75" y1="163" x2="205" y2="82"/>
-  </g>
-
-  <!-- Animated threat polygon -->
-  <polygon fill="rgba(255,149,0,0.15)" stroke="#ff9500" stroke-width="1.5">
-    <animate attributeName="points"
-      values="140,95 172,112 172,148 140,165 108,148 108,112;
-              140,68 188,94 188,166 140,192 92,166 92,94;
-              140,80 178,104 180,156 140,178 100,156 102,104;
-              140,95 172,112 172,148 140,165 108,148 108,112"
-      dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1"/>
-  </polygon>
-
-  <!-- Labels -->
-  <text x="140" y="40" text-anchor="middle" font-family="'Courier New',monospace" font-size="7" fill="#ff9500">SCARCITY</text>
-  <text x="218" y="88" font-family="'Courier New',monospace" font-size="7" fill="#ffd60a">AUTHORITY</text>
-  <text x="213" y="172" font-family="'Courier New',monospace" font-size="7" fill="#ff2d55">FEAR</text>
-  <text x="126" y="208" font-family="'Courier New',monospace" font-size="7" fill="#30d158">RECIPROCITY</text>
-  <text x="36" y="172" font-family="'Courier New',monospace" font-size="7" fill="#7b61ff">ISOLATION</text>
-  <text x="38" y="88" font-family="'Courier New',monospace" font-size="7" fill="#00d4ff">COMMIT</text>
-
-  <!-- Center -->
-  <circle cx="140" cy="130" r="3" fill="#ff9500"><animate attributeName="r" values="3;6;3" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
-
-  <text x="140" y="262" text-anchor="middle" font-family="'Courier New',monospace" font-size="7" fill="rgba(255,149,0,0.4)">Cialdini's 6 Influence Principles</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300">
+  <defs><style>@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}.bg{fill:#020408}.m{font-family:'Courier New',monospace}</style></defs>
+  <rect width="260" height="300" class="bg" rx="4"/><rect x="1" y="1" width="258" height="298" rx="4" fill="none" stroke="#ff9500" stroke-width="1" opacity=".2"/>
+  <text x="130" y="26" text-anchor="middle" class="m" font-size="9" fill="#ff9500" letter-spacing="3" font-weight="bold">PSYCH VECTORS</text>
+  <line x1="30" y1="36" x2="230" y2="36" stroke="#ff9500" stroke-width=".5" opacity=".2"/>
+  <circle cx="22" cy="23" r="3" fill="#ff9500" style="animation:blink 1.5s step-end infinite"/>
+  <g transform="translate(20,52)"><text x="0" y="10" class="m" font-size="8" fill="#ff2d55" letter-spacing="1">SCARCITY</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ff2d5512"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ff2d55" opacity=".85"><animate attributeName="width" from="0" to="119" dur=".8s" begin=".2s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ff2d55" font-weight="bold">85%</text></g>
+  <g transform="translate(20,92)"><text x="0" y="10" class="m" font-size="8" fill="#ff9500" letter-spacing="1">AUTHORITY</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ff950012"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ff9500" opacity=".85"><animate attributeName="width" from="0" to="133" dur=".8s" begin=".35s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ff9500" font-weight="bold">95%</text></g>
+  <g transform="translate(20,132)"><text x="0" y="10" class="m" font-size="8" fill="#ff2d55" letter-spacing="1">FEAR</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ff2d5512"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ff2d55" opacity=".85"><animate attributeName="width" from="0" to="126" dur=".8s" begin=".5s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ff2d55" font-weight="bold">90%</text></g>
+  <g transform="translate(20,172)"><text x="0" y="10" class="m" font-size="8" fill="#ffd60a" letter-spacing="1">RECIPROCITY</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ffd60a12"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ffd60a" opacity=".85"><animate attributeName="width" from="0" to="56" dur=".8s" begin=".65s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ffd60a" font-weight="bold">40%</text></g>
+  <g transform="translate(20,212)"><text x="0" y="10" class="m" font-size="8" fill="#bf5af2" letter-spacing="1">ISOLATION</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#bf5af212"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#bf5af2" opacity=".85"><animate attributeName="width" from="0" to="98" dur=".8s" begin=".8s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#bf5af2" font-weight="bold">70%</text></g>
+  <g transform="translate(20,252)"><text x="0" y="10" class="m" font-size="8" fill="#30d158" letter-spacing="1">COMMITMENT</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#30d15812"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#30d158" opacity=".85"><animate attributeName="width" from="0" to="42" dur=".8s" begin=".95s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#30d158" font-weight="bold">30%</text></g>
+  <text x="130" y="290" text-anchor="middle" class="m" font-size="6" fill="rgba(255,255,255,.2)" letter-spacing="2">CIALDINI MODEL · REAL-TIME</text>
 </svg>

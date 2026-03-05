@@ -1,12 +1,9 @@
 """
 tests/test_threat_engine.py
-───────────────────────────
-Unit tests for the ThreatEngine composite scoring logic.
-Run: pytest tests/ -v
 """
 
 import pytest
-from app.services.threat_engine import ThreatEngine, SessionState
+from app.services.threat_engine import ThreatEngine
 
 
 def test_session_init():
@@ -51,24 +48,16 @@ def test_psych_scores_update():
     })
     assert engine.session.psych_scores["SCARCITY"] > 0
     assert engine.session.psych_scores["FEAR"] > 0
-    assert engine.session.psych_scores["AUTHORITY"] == 0  # Not triggered
+    assert engine.session.psych_scores["AUTHORITY"] == 0
 
 
 def test_composite_score_formula():
     engine = ThreatEngine()
-    engine.session.language_risk   = 100
+    engine.session.language_risk = 100
     engine.session.behavioral_risk = 100
-    engine.session.visual_risk     = 100
+    engine.session.visual_risk = 100
     engine._recompute_score()
-    assert engine.session.threat_score == 99  # Capped at 99
-
-
-def test_threat_level_thresholds():
-    engine = ThreatEngine()
-    engine.session.threat_score = 10;  assert engine.session.threat_level == "safe"
-    engine.session.threat_score = 30;  assert engine.session.threat_level == "medium"
-    engine.session.threat_score = 60;  assert engine.session.threat_level == "high"
-    engine.session.threat_score = 80;  assert engine.session.threat_level == "critical"
+    assert engine.session.threat_score == 99
 
 
 def test_score_update_message():

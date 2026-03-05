@@ -1,60 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="700" height="90" viewBox="0 0 700 90">
-  <rect width="700" height="90" fill="#020408"/>
-  <rect x="0" y="0" width="700" height="90" fill="none" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
-  
-  <!-- Scanline animation -->
-  <rect x="0" y="0" width="700" height="2" fill="rgba(0,212,255,0.06)" opacity="0.5">
-    <animateTransform attributeName="transform" type="translate" from="0,0" to="0,90" dur="3s" repeatCount="indefinite"/>
-  </rect>
-
-  <!-- Feature 1: Audio -->
-  <rect x="10" y="15" width="90" height="60" rx="2" fill="none" stroke="#ff9500" stroke-width="1" opacity="0.7"/>
-  <text x="55" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🎙️</text>
-  <text x="55" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#ff9500">LIVE AUDIO</text>
-  <text x="55" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">&lt;80ms</text>
-  <circle cx="95" cy="21" r="3" fill="#ff9500"><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/></circle>
-
-  <!-- Feature 2: Vision -->
-  <rect x="110" y="15" width="90" height="60" rx="2" fill="none" stroke="#7b61ff" stroke-width="1" opacity="0.7"/>
-  <text x="155" y="38" text-anchor="middle" font-family="Courier New" font-size="18">👁️</text>
-  <text x="155" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#7b61ff">SCREEN VISION</text>
-  <text x="155" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">Multimodal</text>
-
-  <!-- Feature 3: Patterns -->
-  <rect x="210" y="15" width="90" height="60" rx="2" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.7"/>
-  <text x="255" y="38" text-anchor="middle" font-family="Courier New" font-size="18">◎</text>
-  <text x="255" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#00d4ff">50+ PATTERNS</text>
-  <text x="255" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">FTC·FBI·GASA</text>
-
-  <!-- Feature 4: Psych -->
-  <rect x="310" y="15" width="90" height="60" rx="2" fill="none" stroke="#ff2d55" stroke-width="1" opacity="0.7"/>
-  <text x="355" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🧠</text>
-  <text x="355" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#ff2d55">PSYCH SCORING</text>
-  <text x="355" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">6 Vectors</text>
-
-  <!-- Feature 5: Report -->
-  <rect x="410" y="15" width="90" height="60" rx="2" fill="none" stroke="#30d158" stroke-width="1" opacity="0.7"/>
-  <text x="455" y="38" text-anchor="middle" font-family="Courier New" font-size="18">📊</text>
-  <text x="455" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#30d158">FORENSIC RPT</text>
-  <text x="455" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">PDF · HTML</text>
-
-  <!-- Feature 6: Rust -->
-  <rect x="510" y="15" width="90" height="60" rx="2" fill="none" stroke="#ffd60a" stroke-width="1" opacity="0.7"/>
-  <text x="555" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🦀</text>
-  <text x="555" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#ffd60a">RUST WASM</text>
-  <text x="555" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">Zero-copy</text>
-
-  <!-- Feature 7: Multi-lang -->
-  <rect x="610" y="15" width="80" height="60" rx="2" fill="none" stroke="#4285F4" stroke-width="1" opacity="0.7"/>
-  <text x="650" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🌐</text>
-  <text x="650" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#4285F4">MULTI-LANG</text>
-  <text x="650" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">40+ langs</text>
-
-  <!-- Highlight cycling -->
-  <rect x="10" y="15" width="90" height="60" rx="2" fill="#ff9500" fill-opacity="0">
-    <animate attributeName="fill-opacity" values="0;0.05;0;0;0;0;0;0" dur="5.6s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="110" y="15" width="90" height="60" rx="2" fill="#7b61ff" fill-opacity="0">
-    <animate attributeName="fill-opacity" values="0;0;0.05;0;0;0;0;0" dur="5.6s" repeatCount="indefinite"/>
-  </rect>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 100">
+  <defs>
+    <style>
+      @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+      .bg{fill:#020408}.lbl{font-family:'Courier New',monospace;font-size:8px;letter-spacing:1.5px;font-weight:bold}.val{font-family:'Courier New',monospace;font-size:7px;letter-spacing:1px}
+    </style>
+    <linearGradient id="sg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00d4ff" stop-opacity="0"/><stop offset="50%" stop-color="#00d4ff" stop-opacity="1"/><stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="800" height="100" class="bg"/>
+  <rect x=".5" y=".5" width="799" height="99" fill="none" stroke="#00d4ff" stroke-width="1" opacity=".2"/>
+  <rect y="0" width="20" height="100" fill="url(#sg)" opacity=".08"><animate attributeName="x" from="-20" to="800" dur="4s" repeatCount="indefinite"/></rect>
+  <text x="400" y="20" text-anchor="middle" class="lbl" fill="#00d4ff" style="font-size:10px;letter-spacing:3px">VOXGUARD CAPABILITIES</text>
+  <g transform="translate(20,34)"><rect width="145" height="55" rx="2" fill="#ff2d5510" stroke="#ff2d55" stroke-width="1"/><circle cx="12" cy="14" r="3" fill="#ff2d55" style="animation:blink 1.5s step-end infinite"/><text x="20" y="17" class="lbl" fill="#ff2d55">LIVE AUDIO</text><text x="10" y="33" class="val" fill="rgba(255,255,255,.5)">Gemini Live API</text><text x="10" y="45" class="val" fill="rgba(255,255,255,.35)">Real-time stream</text></g>
+  <g transform="translate(180,34)"><rect width="145" height="55" rx="2" fill="#ff950010" stroke="#ff9500" stroke-width="1"/><circle cx="12" cy="14" r="3" fill="#ff9500" style="animation:blink 1.5s step-end .3s infinite"/><text x="20" y="17" class="lbl" fill="#ff9500">RUST WASM</text><text x="10" y="33" class="val" fill="rgba(255,255,255,.5)">Zero-copy audio</text><text x="10" y="45" class="val" fill="rgba(255,255,255,.35)">&lt;80ms latency</text></g>
+  <g transform="translate(340,34)"><rect width="145" height="55" rx="2" fill="#7b61ff10" stroke="#7b61ff" stroke-width="1"/><circle cx="12" cy="14" r="3" fill="#7b61ff" style="animation:blink 1.5s step-end .6s infinite"/><text x="20" y="17" class="lbl" fill="#7b61ff">PSYCH SCORING</text><text x="10" y="33" class="val" fill="rgba(255,255,255,.5)">6 Cialdini vectors</text><text x="10" y="45" class="val" fill="rgba(255,255,255,.35)">World first</text></g>
+  <g transform="translate(500,34)"><rect width="145" height="55" rx="2" fill="#30d15810" stroke="#30d158" stroke-width="1"/><circle cx="12" cy="14" r="3" fill="#30d158" style="animation:blink 1.5s step-end .9s infinite"/><text x="20" y="17" class="lbl" fill="#30d158">50+ PATTERNS</text><text x="10" y="33" class="val" fill="rgba(255,255,255,.5)">FTC/FBI grounded</text><text x="10" y="45" class="val" fill="rgba(255,255,255,.35)">Zero hallucination</text></g>
+  <g transform="translate(660,34)"><rect width="120" height="55" rx="2" fill="#00d4ff10" stroke="#00d4ff" stroke-width="1"/><circle cx="12" cy="14" r="3" fill="#00d4ff" style="animation:blink 1.5s step-end 1.2s infinite"/><text x="20" y="17" class="lbl" fill="#00d4ff">VISION</text><text x="10" y="33" class="val" fill="rgba(255,255,255,.5)">Screen analysis</text><text x="10" y="45" class="val" fill="rgba(255,255,255,.35)">Phishing detect</text></g>
 </svg>
