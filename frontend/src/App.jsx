@@ -90,7 +90,6 @@ export default function App() {
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const tColor=threatLevel==='critical'?'#ff2d55':threatLevel==='high'?'#ff9500':'#30d158'
 
-  // ── Custom skull cursor using PixelLogo colors ──
   const cursorSVG = `<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><rect x='4' y='1' width='12' height='14' rx='1' fill='%2300d4ff' opacity='0.9'/><rect x='6' y='4' width='3' height='3' fill='%23020408'/><rect x='11' y='4' width='3' height='3' fill='%23020408'/><rect x='6' y='12' width='2' height='3' fill='%23020408'/><rect x='12' y='12' width='2' height='3' fill='%23020408'/><rect x='8' y='12' width='4' height='2' fill='%2300d4ff' opacity='0.5'/></svg>`
   const cursorURL = `url("data:image/svg+xml,${cursorSVG}") 10 10, crosshair`
 
@@ -109,10 +108,11 @@ export default function App() {
         @keyframes rotateHue{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
         @keyframes dataGlow {0%,100%{opacity:0.35}50%{opacity:0.9}}
         @keyframes counterUp{from{opacity:0;transform:scale(0.8) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
-        /* Tab buttons — readable at rest */
-        .tab-btn{color:rgba(255,255,255,0.55)!important;transition:all 0.15s ease}
-        .tab-btn:hover{color:rgba(255,255,255,0.85)!important;text-shadow:0 0 8px rgba(255,255,255,0.3)!important}
-        .tab-btn.active-tab{color:#00d4ff!important;text-shadow:0 0 16px #00d4ff,0 0 32px rgba(0,212,255,0.4)!important}
+        @keyframes colorCycle{0%{color:#00ffff;text-shadow:0 0 8px #00ffff}25%{color:#a78bfa;text-shadow:0 0 8px #a78bfa}50%{color:#4ade80;text-shadow:0 0 8px #4ade80}75%{color:#ffaa00;text-shadow:0 0 8px #ffaa00}100%{color:#00ffff;text-shadow:0 0 8px #00ffff}}
+        @keyframes borderGlow{0%{border-color:#00ffff44}33%{border-color:#a78bfa44}66%{border-color:#ff4d8d44}100%{border-color:#00ffff44}}
+        .tab-btn{color:rgba(255,255,255,0.6)!important;transition:all 0.15s ease;position:relative}
+        .tab-btn:hover{color:rgba(255,255,255,0.95)!important;text-shadow:0 0 12px rgba(255,255,255,0.4)!important;background:rgba(255,255,255,0.04)!important}
+        .tab-btn.active-tab{color:#00ffff!important;text-shadow:0 0 16px #00ffff,0 0 32px rgba(0,255,255,0.4)!important}
       `}</style>
 
       <div style={{ minHeight:'100vh',background:'#020408',color:'#e0e0e0',fontFamily:MF,position:'relative',overflow:'hidden',filter:glitch?'hue-rotate(18deg) saturate(2.2)':'none',transition:'filter 0.08s' }}>
@@ -125,48 +125,51 @@ export default function App() {
 
         <div style={{ position:'relative',zIndex:2,display:'flex',flexDirection:'column',minHeight:'100vh' }}>
 
-          {/* HEADER */}
-          <header style={{ background:'rgba(2,4,8,0.98)',borderBottom:'1px solid rgba(0,212,255,0.1)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(24px)' }}>
-            <div style={{ height:2,background:monitoring?`linear-gradient(90deg,transparent,${tColor}cc,${tColor}88,transparent)`:'linear-gradient(90deg,transparent,rgba(0,212,255,0.5),rgba(123,97,255,0.3),transparent)',transition:'background 0.6s ease' }} />
-            <div style={{ display:'flex',alignItems:'center',gap:0,height:80,padding:'0 28px' }}>
+          {/* HEADER - more spacing, brighter */}
+          <header style={{ background:'rgba(2,4,8,0.98)',borderBottom:'1px solid rgba(0,255,255,0.12)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(24px)' }}>
+            <div style={{ height:2,background:monitoring?`linear-gradient(90deg,transparent,${tColor}cc,${tColor}88,transparent)`:'linear-gradient(90deg,transparent,rgba(0,255,255,0.6),rgba(167,139,250,0.4),transparent)',transition:'background 0.6s ease' }} />
+            <div style={{ display:'flex',alignItems:'center',gap:0,height:90,padding:'0 32px' }}>
               <PixelLogo />
-              <div style={{ width:1,height:36,background:'rgba(0,212,255,0.15)',margin:'0 18px',flexShrink:0 }} />
+              <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
+              {/* MARQUEE - much brighter */}
               <div style={{ flex:1,overflow:'hidden',height:20,display:'flex',alignItems:'center',minWidth:0 }}>
-                <div style={{ fontFamily:MF,fontSize:9,color:'rgba(0,212,255,0.45)',whiteSpace:'nowrap',animation:'marquee 32s linear infinite',letterSpacing:1.5 }}>
-                  ◄ VOXGUARD — REAL-TIME MULTIMODAL AI PROTECTION — GEMINI LIVE API + RUST WASM ENGINE — &lt;80ms LATENCY — GROUNDED: FTC · FBI IC3 · GASA · MAS · ACCC — #GeminiLiveAgentChallenge — BY WIQI LEE ►
+                <div style={{ fontFamily:MF,fontSize:10,whiteSpace:'nowrap',animation:'marquee 28s linear infinite,colorCycle 8s ease infinite',letterSpacing:2 }}>
+                  ◄ VOXGUARD - REAL-TIME MULTIMODAL AI PROTECTION - GEMINI LIVE API + RUST WASM ENGINE - &lt;80ms LATENCY - GROUNDED: FTC - FBI IC3 - GASA - MAS - ACCC - #GeminiLiveAgentChallenge - BY WIQI LEE ►
                 </div>
               </div>
-              <div style={{ width:1,height:36,background:'rgba(0,212,255,0.15)',margin:'0 18px',flexShrink:0 }} />
+              <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
+              {/* Language - brighter */}
               <LanguageSelector value={language} onChange={setLanguage} />
-              <div style={{ width:1,height:36,background:'rgba(0,212,255,0.15)',margin:'0 12px 0 12px',flexShrink:0 }} />
-              <div style={{ display:'flex',alignItems:'center',gap:10,padding:'8px 16px',border:`1px solid ${monitoring?tColor+'44':'rgba(255,255,255,0.1)'}`,background:monitoring?`linear-gradient(135deg,${tColor}0e,${tColor}04)`:'rgba(255,255,255,0.025)',boxShadow:monitoring?`0 0 20px ${tColor}20`:'none',transition:'all 0.5s ease',minWidth:140,flexShrink:0 }}>
-                <div style={{ position:'relative',width:10,height:10,flexShrink:0 }}>
+              <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 14px',flexShrink:0 }} />
+              {/* Status indicator - brighter */}
+              <div style={{ display:'flex',alignItems:'center',gap:12,padding:'10px 20px',border:`1px solid ${monitoring?tColor+'66':'rgba(255,255,255,0.15)'}`,background:monitoring?`linear-gradient(135deg,${tColor}14,${tColor}08)`:'rgba(255,255,255,0.04)',boxShadow:monitoring?`0 0 24px ${tColor}28`:'0 0 12px rgba(0,255,255,0.05)',transition:'all 0.5s ease',minWidth:150,flexShrink:0,animation:monitoring?'':'borderGlow 4s ease infinite' }}>
+                <div style={{ position:'relative',width:12,height:12,flexShrink:0 }}>
                   {monitoring&&<div style={{ position:'absolute',inset:-4,borderRadius:'50%',border:`1px solid ${tColor}88`,animation:'ppulse 1.6s ease-in-out infinite' }} />}
-                  <div style={{ width:10,height:10,background:monitoring?tColor:'rgba(255,255,255,0.25)',boxShadow:monitoring?`0 0 12px ${tColor},0 0 24px ${tColor}66`:'none',animation:monitoring?'blink 0.9s step-end infinite':'none',transition:'all 0.4s' }} />
+                  <div style={{ width:12,height:12,background:monitoring?tColor:'rgba(0,255,255,0.5)',boxShadow:monitoring?`0 0 12px ${tColor},0 0 24px ${tColor}66`:'0 0 8px rgba(0,255,255,0.3)',animation:monitoring?'blink 0.9s step-end infinite':'none',transition:'all 0.4s' }} />
                 </div>
                 <div>
-                  <div style={{ fontFamily:PF,fontSize:6,color:monitoring?tColor:'rgba(255,255,255,0.55)',letterSpacing:2,lineHeight:1,transition:'color 0.4s' }}>{monitoring?'LIVE':'STANDBY'}</div>
-                  {monitoring&&<div style={{ fontFamily:MF,fontSize:9,color:tColor+'99',marginTop:2 }}>{fmt(sessionTime)}</div>}
+                  <div style={{ fontFamily:PF,fontSize:7,color:monitoring?tColor:'rgba(0,255,255,0.8)',letterSpacing:2,lineHeight:1,transition:'color 0.4s',textShadow:monitoring?`0 0 8px ${tColor}`:'0 0 6px rgba(0,255,255,0.4)' }}>{monitoring?'LIVE':'STANDBY'}</div>
+                  {monitoring&&<div style={{ fontFamily:MF,fontSize:10,color:tColor+'cc',marginTop:3 }}>{fmt(sessionTime)}</div>}
                 </div>
-                {DEMO&&<div style={{ marginLeft:'auto',fontFamily:PF,fontSize:5,padding:'3px 7px',border:'1px solid rgba(255,214,10,0.4)',color:'#ffd60a',background:'rgba(255,214,10,0.07)',display:'flex',alignItems:'center',gap:4 }}><div style={{ width:4,height:4,background:'#ffd60a',animation:'blink 1s step-end infinite' }}/>DEMO</div>}
+                {DEMO&&<div style={{ marginLeft:'auto',fontFamily:PF,fontSize:6,padding:'4px 8px',border:'1px solid rgba(255,214,10,0.5)',color:'#ffd60a',background:'rgba(255,214,10,0.1)',display:'flex',alignItems:'center',gap:4,textShadow:'0 0 6px #ffd60a' }}><div style={{ width:5,height:5,background:'#ffd60a',animation:'blink 1s step-end infinite',boxShadow:'0 0 4px #ffd60a' }}/>DEMO</div>}
               </div>
             </div>
           </header>
 
-          {/* TABS */}
-          <nav style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,212,255,0.08)',background:'rgba(2,4,8,0.95)',padding:'0 28px',position:'sticky',top:74,zIndex:99 }}>
+          {/* TABS - more padding, better spacing from header */}
+          <nav style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.95)',padding:'0 32px',position:'sticky',top:92,zIndex:99 }}>
             {TABS.map(t=>(
               <button key={t} onClick={()=>setTab(t)}
                 className={`tab-btn${tab===t?' active-tab':''}`}
-                style={{ fontFamily:PF,fontSize:6,padding:'14px 18px',border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',cursor:'pointer',textTransform:'uppercase',letterSpacing:1.5,position:'relative' }}>
-                {tab===t&&<span style={{ position:'absolute',bottom:0,left:'50%',transform:'translateX(-50%)',width:4,height:4,background:'#00d4ff',boxShadow:'0 0 8px #00d4ff' }} />}
+                style={{ fontFamily:PF,fontSize:7,padding:'16px 22px',border:'none',borderBottom:tab===t?'2px solid #00ffff':'2px solid transparent',background:'transparent',cursor:'pointer',textTransform:'uppercase',letterSpacing:2,position:'relative' }}>
+                {tab===t&&<span style={{ position:'absolute',bottom:0,left:'50%',transform:'translateX(-50%)',width:6,height:6,background:'#00ffff',boxShadow:'0 0 10px #00ffff,0 0 20px #00ffff55' }} />}
                 {t}
               </button>
             ))}
           </nav>
 
-          {/* CONTENT */}
-          <main style={{ flex:1,padding:'28px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
+          {/* CONTENT - more top padding for breathing room */}
+          <main style={{ flex:1,padding:'32px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
             {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} />}
             {tab==='psych'    && <PsychTab   psychScores={psychScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
@@ -175,25 +178,22 @@ export default function App() {
           </main>
 
           {/* FOOTER */}
-          <footer style={{ background:'rgba(2,4,8,0.98)',borderTop:'1px solid rgba(0,212,255,0.1)' }}>
-            <div style={{ height:1,background:'linear-gradient(90deg,transparent,rgba(0,212,255,0.35),rgba(123,97,255,0.25),rgba(48,209,88,0.15),transparent)' }} />
-            <div style={{ padding:'12px 28px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10 }}>
-              {/* Left — readable but soft */}
+          <footer style={{ background:'rgba(2,4,8,0.98)',borderTop:'1px solid rgba(0,255,255,0.12)' }}>
+            <div style={{ height:1,background:'linear-gradient(90deg,transparent,rgba(0,255,255,0.4),rgba(167,139,250,0.3),rgba(74,222,128,0.2),transparent)' }} />
+            <div style={{ padding:'14px 32px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10 }}>
               <div style={{ fontFamily:PF,fontSize:6,letterSpacing:1.5,lineHeight:2 }}>
-                <span style={{ color:'rgba(0,212,255,0.8)' }}>VOXGUARD © 2026</span><br/>
-                <span style={{ color:'rgba(255,255,255,0.45)',fontSize:5 }}>WIQI LEE · MIT LICENSE</span>
+                <span style={{ color:'rgba(0,255,255,0.85)',textShadow:'0 0 6px rgba(0,255,255,0.4)' }}>VOXGUARD &copy; 2026</span><br/>
+                <span style={{ color:'rgba(255,255,255,0.5)',fontSize:5 }}>WIQI LEE - MIT LICENSE</span>
               </div>
-              {/* Center social */}
               <div style={{ display:'flex',gap:6,alignItems:'center',flexWrap:'wrap' }}>
-                <SocialLink href="https://x.com/wiqi_lee" icon={<XIcon size={11} color="currentColor"/>} label="@wiqi_lee" c="rgba(255,255,255,0.65)" bc="rgba(255,255,255,0.14)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
-                <SocialLink href="https://discord.com/users/209385020912173066" icon={<DiscordIcon size={12} color="#7b8cde"/>} label="Discord" c="#7b8cde" bc="rgba(123,140,222,0.22)" bg="rgba(123,140,222,0.05)" hc="#a5b4fc" hbg="rgba(123,140,222,0.14)" />
-                <SocialLink href="https://github.com/wiqilee" icon={<GitHubIcon size={12} color="currentColor"/>} label="GitHub" c="rgba(255,255,255,0.62)" bc="rgba(255,255,255,0.12)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
-                <div style={{ width:1,height:18,background:'rgba(255,255,255,0.1)',margin:'0 3px' }} />
-                <SocialLink href="https://geminiliveagentchallenge.devpost.com" icon={null} label="#GeminiLiveAgentChallenge" c="#ffd60a" bc="rgba(255,214,10,0.22)" bg="rgba(255,214,10,0.05)" hc="#ffe55a" hbg="rgba(255,214,10,0.1)" />
+                <SocialLink href="https://x.com/wiqi_lee" icon={<XIcon size={11} color="currentColor"/>} label="@wiqi_lee" c="rgba(255,255,255,0.7)" bc="rgba(255,255,255,0.16)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
+                <SocialLink href="https://discord.com/users/209385020912173066" icon={<DiscordIcon size={12} color="#7b8cde"/>} label="Discord" c="#7b8cde" bc="rgba(123,140,222,0.25)" bg="rgba(123,140,222,0.06)" hc="#a5b4fc" hbg="rgba(123,140,222,0.14)" />
+                <SocialLink href="https://github.com/wiqilee" icon={<GitHubIcon size={12} color="currentColor"/>} label="GitHub" c="rgba(255,255,255,0.65)" bc="rgba(255,255,255,0.14)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
+                <div style={{ width:1,height:18,background:'rgba(255,255,255,0.12)',margin:'0 3px' }} />
+                <SocialLink href="https://geminiliveagentchallenge.devpost.com" icon={null} label="#GeminiLiveAgentChallenge" c="#ffd60a" bc="rgba(255,214,10,0.25)" bg="rgba(255,214,10,0.06)" hc="#ffe55a" hbg="rgba(255,214,10,0.12)" />
               </div>
-              {/* Right */}
-              <div style={{ fontFamily:PF,fontSize:6,color:'rgba(0,212,255,0.75)',letterSpacing:1.5,textAlign:'right',lineHeight:1.9 }}>
-                POWERED BY<br/><span style={{ color:'#4285F4',textShadow:'0 0 10px #4285F4aa',fontSize:5 }}>GEMINI LIVE API</span>
+              <div style={{ fontFamily:PF,fontSize:6,color:'rgba(0,255,255,0.8)',letterSpacing:1.5,textAlign:'right',lineHeight:1.9,textShadow:'0 0 6px rgba(0,255,255,0.3)' }}>
+                POWERED BY<br/><span style={{ color:'#5da9ff',textShadow:'0 0 10px #4285F4aa',fontSize:6 }}>GEMINI LIVE API</span>
               </div>
             </div>
           </footer>

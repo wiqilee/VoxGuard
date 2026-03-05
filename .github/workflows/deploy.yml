@@ -9,6 +9,7 @@ jobs:
     name: Deploy to Cloud Run
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -19,6 +20,9 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable Cloud Run API
+        run: gcloud services enable run.googleapis.com --project=voxguard-prod || true
 
       - name: Deploy backend to Cloud Run
         run: |
