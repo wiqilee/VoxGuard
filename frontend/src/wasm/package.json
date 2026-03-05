@@ -1,0 +1,20 @@
+{
+  "name": "scam-shield-audio",
+  "type": "module",
+  "collaborators": [
+    "Wiqi Lee <wiqi@scamshield.dev>"
+  ],
+  "description": "Real-time audio preprocessing engine for Scam Shield — compiled to WebAssembly",
+  "version": "1.0.0",
+  "license": "MIT",
+  "files": [
+    "scam_shield_audio_bg.wasm",
+    "scam_shield_audio.js",
+    "scam_shield_audio.d.ts"
+  ],
+  "main": "scam_shield_audio.js",
+  "types": "scam_shield_audio.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
