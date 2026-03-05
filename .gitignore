@@ -1,0 +1,43 @@
+# ── Environment & secrets ─────────────────────────────────────
+.env
+*.env.local
+service-account.json
+*.pem
+*.key
+
+# ── Node ──────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+backend/venv/
+backend/.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+
+# ── Rust ──────────────────────────────────────────────────────
+rust-engine/target/
+rust-engine/pkg/
+
+# ── WASM output (generated, not committed) ───────────────────
+frontend/src/wasm/
+
+# ── IDE ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ── Docker ───────────────────────────────────────────────────
+.dockerignore
+
+# ── GCP ──────────────────────────────────────────────────────
+.gcloud/

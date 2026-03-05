@@ -1,0 +1,54 @@
+/* ── SCAM SHIELD — Global Styles ────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+
+:root {
+  /* Pixel palette */
+  --cyan:    #00d4ff;
+  --purple:  #7b61ff;
+  --red:     #ff2d55;
+  --orange:  #ff9500;
+  --green:   #30d158;
+  --yellow:  #ffd60a;
+  --bg:      #020408;
+  --surface: rgba(255,255,255,0.025);
+
+  /* Fonts */
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-mono:  'Share Tech Mono', 'Courier New', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--bg);
+  color: #e0e0e0;
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+  image-rendering: pixelated;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: rgba(0,212,255,0.04); }
+::-webkit-scrollbar-thumb  { background: rgba(0,212,255,0.28); border-radius: 0; }
+
+/* Pixel cursor */
+* { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='0' y='0' width='4' height='4' fill='%2300d4ff'/%3E%3C/svg%3E") 2 2, crosshair; }
+button, a { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='0' y='0' width='6' height='6' fill='%2300d4ff'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23020408'/%3E%3C/svg%3E") 3 3, pointer; }
+
+/* Animations */
+@keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes marquee    { 0%{transform:translateX(100%)} 100%{transform:translateX(-200%)} }
+@keyframes ppulse     { 0%,100%{box-shadow:0 0 8px var(--red)} 50%{box-shadow:0 0 28px var(--red),0 0 56px rgba(255,45,85,0.3)} }
+@keyframes flicker    { 0%,100%{opacity:1} 93%{opacity:0.88} 94%{opacity:1} 97%{opacity:0.93} 98%{opacity:1} }
+@keyframes scanAnim   { 0%{top:-4px} 100%{top:100%} }
+@keyframes glitch     { 0%{clip-path:inset(10% 0 80% 0);transform:translate(-3px,0)} 33%{clip-path:inset(60% 0 20% 0);transform:translate(3px,0)} 66%{clip-path:inset(30% 0 50% 0);transform:translate(-2px,0)} 100%{clip-path:inset(0);transform:translate(0)} }
+@keyframes crtBoot    { 0%{transform:scaleY(0.008) scaleX(1.1);opacity:0.3} 60%{transform:scaleY(1) scaleX(1.04)} 100%{transform:scale(1);opacity:1} }
+@keyframes fadeUp     { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn    { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }

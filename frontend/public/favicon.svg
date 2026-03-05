@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Pixel shield — matches the app logo -->
+  <rect x="4"  y="0"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="8"  y="0"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="12" y="0"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="16" y="0"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="20" y="0"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="24" y="0"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="0"  y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="4"  y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="8"  y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="12" y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="16" y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="20" y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="24" y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="28" y="4"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="0"  y="8"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="8"  y="8"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="16" y="8"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="24" y="8"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="28" y="8"  width="4" height="4" fill="#00d4ff"/>
+  <rect x="0"  y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="4"  y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="8"  y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="12" y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="16" y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="20" y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="24" y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="28" y="12" width="4" height="4" fill="#00d4ff"/>
+  <rect x="4"  y="16" width="4" height="4" fill="#7b61ff"/>
+  <rect x="8"  y="16" width="4" height="4" fill="#7b61ff"/>
+  <rect x="20" y="16" width="4" height="4" fill="#7b61ff"/>
+  <rect x="24" y="16" width="4" height="4" fill="#7b61ff"/>
+  <rect x="8"  y="20" width="4" height="4" fill="#7b61ff"/>
+  <rect x="12" y="20" width="4" height="4" fill="#7b61ff"/>
+  <rect x="16" y="20" width="4" height="4" fill="#7b61ff"/>
+  <rect x="20" y="20" width="4" height="4" fill="#7b61ff"/>
+  <rect x="12" y="24" width="4" height="4" fill="#ff2d55"/>
+  <rect x="16" y="24" width="4" height="4" fill="#ff2d55"/>
+</svg>
