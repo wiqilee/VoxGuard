@@ -322,13 +322,6 @@ The interaction is **ambient** — the AI listens and watches while the user is 
 
 ### Demo & Presentation (30%)
 
-**2-Minute Run:**
-1. **0:00–0:20** — Open app, click START, select Bank Impersonation demo
-2. **0:20–0:50** — Watch 3 alerts fire, threat score climb to 95, psych vectors activate
-3. **0:50–1:20** — Switch to PSYCH tab — show Cialdini scoring in real-time
-4. **1:20–1:40** — Switch to PATTERNS tab — 50+ grounded library
-5. **1:40–2:00** — REPORT tab — export PDF forensic report
-
 **Live Demo URL**: [https://voxguard.vercel.app](https://voxguard.vercel.app)  
 **Demo Video**: [https://youtube.com/watch?v=PLACEHOLDER](https://youtube.com)
 
