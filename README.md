@@ -1,5 +1,5 @@
-# 🛡️ VoxGuard
-### Real-Time Multimodal AI Scam Detection — *During* Your Call, Not After
+# VoxGuard
+### Real-Time Multimodal AI Scam Detection -- *During* Your Call, Not After
 
 <div align="center">
 
@@ -12,28 +12,28 @@
 [![Google Cloud Run](https://img.shields.io/badge/Cloud-Run-4285F4?style=flat-square&logo=googlecloud)](https://cloud.google.com/run)
 [![Built for](https://img.shields.io/badge/Built%20for-Gemini%20Live%20Agent%20Challenge-FF6B35?style=flat-square)](https://geminiliveagentchallenge.devpost.com)
 
-**The world's first real-time multimodal scam detection agent.**  
+**The world's first real-time multimodal scam detection agent.**
 Gemini Live API + Rust WASM + Psychological AI = Protection in &lt;80ms.
 
-[▶ Live Demo (Vercel)](https://voxguard.vercel.app) · [📺 Demo Video (YouTube)](https://youtube.com) · [🏛️ For Judges](#for-judges-2-minute-guide)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel)](https://voxguard-kappa.vercel.app) [![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube)](https://youtube.com) [![For Judges](https://img.shields.io/badge/For%20Judges-2%20Minute%20Guide-FF6B35?style=for-the-badge)](#for-judges-2-minute-guide)
 
 </div>
 
 ---
 
-## ⚡ For Judges — 2-Minute Guide
+## For Judges -- 2-Minute Guide
 
 > **TL;DR:** Open the demo, click START, play a demo script, watch real-time scam detection happen.
 
-### In 30 seconds (Demo Mode — no microphone needed):
+### In 30 seconds (Demo Mode -- no microphone needed):
 
 ```
-1. Open https://voxguard.vercel.app
+1. Open https://voxguard-kappa.vercel.app
 2. Click "MONITOR" tab (default)
-3. Click "▶ START"
-4. Click any Demo Script (e.g., "🏦 Bank Impersonation")
+3. Click "START"
+4. Click any Demo Script (e.g., "Bank Impersonation")
 5. Watch: alerts fire in real-time, threat score rises, psych vectors light up
-6. Click "REPORT" tab → see forensic report → export PDF
+6. Click "REPORT" tab -> see forensic report -> export PDF
 ```
 
 ### What to look for:
@@ -46,11 +46,11 @@ Gemini Live API + Rust WASM + Psychological AI = Protection in &lt;80ms.
 | **ABOUT** | Architecture + data sources + why this is unprecedented |
 
 ### Innovation in one sentence:
-> *Every other tool blocks calls before they happen. VoxGuard protects you **while** the scammer is talking — in real-time, with psychological manipulation scoring no other system has ever attempted.*
+> *Every other tool blocks calls before they happen. VoxGuard protects you **while** the scammer is talking -- in real-time, with psychological manipulation scoring no other system has ever attempted.*
 
 ---
 
-## 📖 The Problem
+## The Problem
 
 Every 30 seconds, someone in the world loses money to a phone or video call scam.
 
@@ -62,11 +62,11 @@ According to the **FBI IC3 2024 Annual Report**, internet crime losses in the Un
 
 Every existing tool shares one fatal flaw: **they act after the damage is done.**
 
-> *"The difference between a scam succeeding and failing is often a single moment of doubt. VoxGuard creates that moment."* — Wiqi Lee
+> *"The difference between a scam succeeding and failing is often a single moment of doubt. VoxGuard creates that moment."* -- Wiqi Lee
 
 ---
 
-## 🌟 What Makes VoxGuard Unprecedented
+## What Makes VoxGuard Unprecedented
 
 <div align="center">
 <img src="docs/svgs/features-badge.svg" alt="Features" width="100%"/>
@@ -74,20 +74,20 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 
 | Feature | Truecaller | Hiya | ScamShield (SG) | **VoxGuard** |
 |---|---|---|---|---|
-| Pre-call blocking | ✅ | ✅ | ✅ | ✅ |
-| During-call analysis | ❌ | ❌ | ❌ | ✅ **First** |
-| Multimodal (audio + vision) | ❌ | ❌ | ❌ | ✅ **First** |
-| Real-time transcript analysis | ❌ | ❌ | ❌ | ✅ |
-| Screen share scam detection | ❌ | ❌ | ❌ | ✅ **First** |
-| Sub-100ms alert latency | ❌ | ❌ | ❌ | ✅ (Rust WASM) |
-| Psychological manipulation scoring | ❌ | ❌ | ❌ | ✅ **First** |
-| Multi-language support | Partial | Partial | SG only | ✅ 40+ languages |
-| Grounded to global scam databases | ❌ | Partial | Partial | ✅ |
-| Works on any call platform | ❌ | ❌ | ❌ | ✅ (browser-based) |
+| Pre-call blocking | Yes | Yes | Yes | Yes |
+| During-call analysis | No | No | No | **Yes (First)** |
+| Multimodal (audio + vision) | No | No | No | **Yes (First)** |
+| Real-time transcript analysis | No | No | No | Yes |
+| Screen share scam detection | No | No | No | **Yes (First)** |
+| Sub-100ms alert latency | No | No | No | Yes (Rust WASM) |
+| Psychological manipulation scoring | No | No | No | **Yes (First)** |
+| Multi-language support | Partial | Partial | SG only | Yes, 40+ languages |
+| Grounded to global scam databases | No | Partial | Partial | Yes |
+| Works on any call platform | No | No | No | Yes (browser-based) |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 <div align="center">
 <img src="docs/architecture.svg" alt="System Architecture"/>
@@ -95,59 +95,59 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 
 ### Layer-by-Layer Breakdown
 
-#### ① Input Sources
-- **CALLER** — The adversary's voice/video (phone, WhatsApp, Zoom, Teams — anything)
-- **USER** — The protected party's microphone (captured via Web Audio API)
-- **SCREEN SHARE** — Optional screen capture for visual scam detection (fake bank UIs, QR codes)
+#### Input Sources
+- **CALLER** -- The adversary's voice/video (phone, WhatsApp, Zoom, Teams -- anything)
+- **USER** -- The protected party's microphone (captured via Web Audio API)
+- **SCREEN SHARE** -- Optional screen capture for visual scam detection (fake bank UIs, QR codes)
 
-#### ② Browser Layer (Rust WASM + React)
-- **React (Vite 5 + JSX)** — 5-tab UI: Monitor, Psych, Patterns, Report, About
-- **Rust WASM** — Spectral analysis, Wiener NR, Float32 PCM, <100ms latency, zero-copy
-- **Web Audio API** — 16kHz Mono PCM capture, 250ms frames via ScriptProcessor
-- **WS Hook** — WebSocket to backend with backoff reconnect
+#### Browser Layer (Rust WASM + React)
+- **React (Vite 5 + JSX)** -- 5-tab UI: Monitor, Psych, Patterns, Report, About
+- **Rust WASM** -- Spectral analysis, Wiener NR, Float32 PCM, <100ms latency, zero-copy
+- **Web Audio API** -- 16kHz Mono PCM capture, 250ms frames via ScriptProcessor
+- **WS Hook** -- WebSocket to backend with backoff reconnect
 
-#### ③ Backend (Google Cloud Run — Python FastAPI)
-- **FastAPI** — Port 8000, `/ws/session`, REST + WebSocket, auto-scale
-- **Threat Engine** — `0.45×Language + 0.35×Behavioral + 0.20×Visual` → score 0-100 per 500ms
-- **Audio SVC** — VAD + buffer, Float32 → Gemini, 50+ pattern match
-- **Vision SVC** — Screenshot → Gemini Vision, fake bank UI detection, QR malicious scan
-- **Psych SVC** — 6 Cialdini vectors scored live: Scarcity, Authority, Fear, Reciprocity, Isolation, Commitment
+#### Backend (Google Cloud Run -- Python FastAPI)
+- **FastAPI** -- Port 8000, `/ws/session`, REST + WebSocket, auto-scale
+- **Threat Engine** -- `0.45 x Language + 0.35 x Behavioral + 0.20 x Visual` -> score 0-100 per 500ms
+- **Audio SVC** -- VAD + buffer, Float32 -> Gemini, 50+ pattern match
+- **Vision SVC** -- Screenshot -> Gemini Vision, fake bank UI detection, QR malicious scan
+- **Psych SVC** -- 6 Cialdini vectors scored live: Scarcity, Authority, Fear, Reciprocity, Isolation, Commitment
 
-#### ④ Google Gemini AI
-- **Gemini Live API** (`gemini-2.0-flash-live`) — Real-time audio stream, barge-in support
-- **Gemini Vision** (`gemini-2.0-flash`) — Screenshot analysis, visual scam detection
-- **Gemini Text** (`gemini-2.0-flash`) — Transcript analysis, psych vector scoring
-- **Grounding DB** — `scam_patterns.json`, 50+ verified patterns — NOT hallucination
+#### Google Gemini AI
+- **Gemini Live API** (`gemini-2.0-flash-live`) -- Real-time audio stream, barge-in support
+- **Gemini Vision** (`gemini-2.0-flash`) -- Screenshot analysis, visual scam detection
+- **Gemini Text** (`gemini-2.0-flash`) -- Transcript analysis, psych vector scoring
+- **Grounding DB** -- `scam_patterns.json`, 50+ verified patterns, not hallucination
 
-#### ⑤ Outputs
-- **ALERT** — <80ms latency, SAFE/CAUTION/WARNING/CRITICAL, glitch FX on CRITICAL
-- **PSYCH SCORE** — 6 vectors scored live, animated radar bars
-- **PATTERN** — 50+ matched live, FBI grounded, severity tiered
-- **REPORT** — Forensic export, HTML + PDF, saves to localStorage, full transcript timeline
-- **SCREEN VIZ** — Visual UI scan, phishing detected, QR malicious alert
-- **THREAT METER** — Composite 0-100 score, SVG circular gauge
+#### Outputs
+- **ALERT** -- <80ms latency, SAFE/CAUTION/WARNING/CRITICAL, glitch FX on CRITICAL
+- **PSYCH SCORE** -- 6 vectors scored live, animated radar bars
+- **PATTERN** -- 50+ matched live, FBI grounded, severity tiered
+- **REPORT** -- Forensic export, HTML + PDF, saves to localStorage, full transcript timeline
+- **SCREEN VIZ** -- Visual UI scan, phishing detected, QR malicious alert
+- **THREAT METER** -- Composite 0-100 score, SVG circular gauge
 
 ---
 
-## ✨ Features — Deep, Not Wide
+## Features -- Deep, Not Wide
 
-### 1. 🎙️ Live Audio Stream Analysis
-The Rust WebAssembly audio engine captures microphone input at the browser level with **zero-copy processing**. Audio is downsampled to 16kHz Mono PCM, processed through Wiener noise reduction, and streamed to Gemini Live API in 250ms frames — achieving **<80ms alert latency** from speech to alert.
+### 1. Live Audio Stream Analysis
+The Rust WebAssembly audio engine captures microphone input at the browser level with **zero-copy processing**. Audio is downsampled to 16kHz Mono PCM, processed through Wiener noise reduction, and streamed to Gemini Live API in 250ms frames -- achieving **<80ms alert latency** from speech to alert.
 
-### 2. 👁️ Screen Share Scam Vision
+### 2. Screen Share Scam Vision
 With explicit user consent, VoxGuard captures screen frames (JPEG 1280px) every 2 seconds and sends them to Gemini Vision for analysis: fake bank login pages, fraudulent investment dashboards, malicious QR codes, spoofed government portals.
 
-### 3. ⚡ Real-Time Threat Intelligence Engine
+### 3. Real-Time Threat Intelligence Engine
 A weighted composite scoring system:
-- `0.45 × Language Score` — transcript pattern matching against 50+ verified patterns
-- `0.35 × Behavioral Score` — urgency, isolation, impersonation signals
-- `0.20 × Visual Score` — screen analysis (when active)
+- `0.45 x Language Score` -- transcript pattern matching against 50+ verified patterns
+- `0.35 x Behavioral Score` -- urgency, isolation, impersonation signals
+- `0.20 x Visual Score` -- screen analysis (when active)
 - **Output**: 0-100 threat score updated every 500ms
 
-### 4. 📚 Scam Pattern Library (50+ Grounded Patterns)
-All patterns grounded to published sources: FTC Consumer Sentinel, FBI IC3 2024, GASA Global Scam Report, MAS ScamShield (SG), ACCC ScamWatch. No hallucination — verified structured knowledge.
+### 4. Scam Pattern Library (50+ Grounded Patterns)
+All patterns grounded to published sources: FTC Consumer Sentinel, FBI IC3 2024, GASA Global Scam Report, MAS ScamShield (SG), ACCC ScamWatch. No hallucination -- verified structured knowledge.
 
-### 5. 🧠 Psychological Manipulation Scoring
+### 5. Psychological Manipulation Scoring
 
 <div align="center">
 <img src="docs/svgs/psych-vectors.svg" alt="Psychological Vectors" width="260"/>
@@ -164,37 +164,37 @@ The **only scam detection system in the world** that maps psychological manipula
 | **ISOLATION** | *"Don't tell your family about this"* |
 | **COMMITMENT** | *"You already agreed to verify your identity"* |
 
-### 6. 📊 Session Report & Forensic Export
-Every session generates a complete forensic report: alert timeline with timestamps, psychological vector breakdown, confidence scores, recommended actions (FTC/FBI links). Export as dark-theme HTML or print-ready PDF. **Transcript recording** — every utterance logged with per-minute summary.
+### 6. Session Report and Forensic Export
+Every session generates a complete forensic report: alert timeline with timestamps, psychological vector breakdown, confidence scores, recommended actions (FTC/FBI links). Export as dark-theme HTML or print-ready PDF. Every utterance is logged with per-minute summary.
 
-### 7. 🌐 Multi-Language Support
+### 7. Multi-Language Support
 Gemini Live API supports 40+ languages natively. VoxGuard auto-detects language and adapts pattern matching accordingly. Indonesian scam variants (BRILink palsu, Pinjol, "mama minta pulsa") are included in the pattern library.
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
-voxguard/                          
+voxguard/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                 
+│       └── ci.yml
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── PixelLogo.jsx
-│   │   │   ├── Primitives.jsx     ← PBox, PBtn, StatCard
+│   │   │   ├── Primitives.jsx         # PBox, PBtn, StatCard
 │   │   │   ├── AlertCard.jsx
 │   │   │   ├── ThreatMeter.jsx
 │   │   │   └── WaveformVisualizer.jsx
 │   │   ├── pages/
 │   │   │   ├── MonitorTab.jsx
-│   │   │   └── Tabs.jsx           ← Psych, Patterns, Report, About
+│   │   │   └── Tabs.jsx               # Psych, Patterns, Report, About
 │   │   ├── hooks/
 │   │   │   ├── useWebSocket.ts
-│   │   │   ├── useAudioEngine.ts  ← Calls Rust WASM
+│   │   │   ├── useAudioEngine.ts      # Calls Rust WASM
 │   │   │   └── useScreenCapture.ts
-│   │   ├── wasm/                  ← Generated by wasm-pack (gitignored)
+│   │   ├── wasm/                      # Generated by wasm-pack (gitignored)
 │   │   │   ├── scam_shield_audio.js
 │   │   │   └── scam_shield_audio_bg.wasm
 │   │   ├── utils/constants.ts
@@ -204,16 +204,16 @@ voxguard/
 │   └── vite.config.ts
 ├── rust-engine/
 │   ├── src/
-│   │   └── lib.rs                 ← WASM audio engine (zero unsafe warnings)
+│   │   └── lib.rs                     # WASM audio engine
 │   └── Cargo.toml
 ├── backend/
-│   ├── main.py                    ← FastAPI entry
+│   ├── main.py                        # FastAPI entry
 │   ├── threat_engine.py
 │   ├── audio_analyzer.py
 │   ├── vision_analyzer.py
 │   ├── psych_analyzer.py
 │   ├── grounding/
-│   │   └── scam_patterns.json     ← 50+ verified patterns
+│   │   └── scam_patterns.json         # 50+ verified patterns
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── docs/
@@ -230,11 +230,11 @@ voxguard/
 └── README.md
 ```
 
-> **Note:** `frontend/src/wasm/` is **gitignored** — it is generated by `wasm-pack build` during CI. This is why the Frontend Build must depend on the Rust WASM Build in CI/CD. See `.github/workflows/ci.yml`.
+> **Note:** `frontend/src/wasm/` is **gitignored** -- it is generated by `wasm-pack build` during CI. This is why the Frontend Build must depend on the Rust WASM Build in CI/CD. See `.github/workflows/ci.yml`.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 20+
@@ -243,7 +243,7 @@ voxguard/
 - `wasm-pack` installed
 - Google Gemini API key
 
-### Step 1 — Clone & Configure
+### Step 1 -- Clone and Configure
 ```bash
 git clone https://github.com/wiqilee/voxguard
 cd voxguard
@@ -251,28 +251,28 @@ cp .env.example .env
 # Add your GEMINI_API_KEY to .env
 ```
 
-### Step 2 — Build Rust WASM Engine (REQUIRED FIRST)
+### Step 2 -- Build Rust WASM Engine (required first)
 ```bash
 cd rust-engine
 wasm-pack build --target web --out-dir ../frontend/src/wasm
 cd ..
 ```
 
-### Step 3 — Install Frontend
+### Step 3 -- Install Frontend
 ```bash
 cd frontend
 npm install
 npm run dev     # http://localhost:5173
 ```
 
-### Step 4 — Install Backend
+### Step 4 -- Install Backend
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-### Step 5 — Run Everything
+### Step 5 -- Run Everything
 ```bash
 # Terminal 1: Backend
 cd backend && uvicorn main:app --reload --port 8000
@@ -283,33 +283,33 @@ cd frontend && npm run dev
 
 ---
 
-## 🧪 Demo Scripts
+## Demo Scripts
 
 Three pre-loaded scripts for Demo Mode (no microphone needed):
 
-**Script A — Bank Impersonation (Critical):**
-> *"Hello, I'm calling from Chase Bank fraud prevention. We've detected suspicious activity on your account. Your account will be frozen in 10 minutes unless you verify your identity — please provide your account number and the OTP."*
+**Script A -- Bank Impersonation (Critical):**
+> *"Hello, I'm calling from Chase Bank fraud prevention. We've detected suspicious activity on your account. Your account will be frozen in 10 minutes unless you verify your identity -- please provide your account number and the OTP."*
 
-**Script B — Investment Scam (Critical):**
-> *"This is a guaranteed investment opportunity — 300% returns in 30 days, zero risk. To lock in your position before it expires in 10 minutes, I need you to transfer $500 immediately. Don't tell your family."*
+**Script B -- Investment Scam (Critical):**
+> *"This is a guaranteed investment opportunity -- 300% returns in 30 days, zero risk. To lock in your position before it expires in 10 minutes, I need you to transfer $500 immediately. Don't tell your family."*
 
-**Script C — Tech Support Scam (High):**
+**Script C -- Tech Support Scam (High):**
 > *"Your computer has been compromised. I'm calling from Microsoft Security Center. You must install our remote access tool immediately or we cannot protect your credit cards."*
 
 ---
 
-## 🏛️ For Judges — Full Evaluation Guide
+## For Judges -- Full Evaluation Guide
 
-### Innovation & Multimodal UX (40%)
+### Innovation and Multimodal UX (40%)
 
 **The "Beyond Text" Factor**: VoxGuard has no text box. The user never types. The interface is entirely driven by:
-1. **Audio** — microphone stream via Rust WASM → Gemini Live API
-2. **Vision** — screen capture → Gemini Vision API
-3. **Inference** — psychological vector scoring via Gemini Text
+1. **Audio** -- microphone stream via Rust WASM -> Gemini Live API
+2. **Vision** -- screen capture -> Gemini Vision API
+3. **Inference** -- psychological vector scoring via Gemini Text
 
-The interaction is **ambient** — the AI listens and watches while the user is on their call, intervening only when a threat is detected.
+The interaction is **ambient** -- the AI listens and watches while the user is on their call, intervening only when a threat is detected.
 
-**Unprecedented feature — psychological scoring**: No scam detection system has ever mapped which manipulation principle is being used in real-time. VoxGuard shows not just *that* a scam is happening, but *how your brain is being hijacked*.
+**Unprecedented feature -- psychological scoring**: No scam detection system has ever mapped which manipulation principle is being used in real-time. VoxGuard shows not just *that* a scam is happening, but *how your brain is being hijacked*.
 
 ### Technical Implementation (30%)
 
@@ -317,17 +317,17 @@ The interaction is **ambient** — the AI listens and watches while the user is 
 - **Gemini Live API**: `gemini-2.0-flash-live` for real-time audio streaming with barge-in
 - **Rust WASM**: Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency
 - **Cloud Run**: Fully containerized, auto-scale, health check endpoints
-- **Grounding**: Reasoning against 50+ verified patterns — zero hallucination
+- **Grounding**: Reasoning against 50+ verified patterns -- zero hallucination
 - **Multi-language**: 40+ language support via Gemini's native multilingual capability
 
-### Demo & Presentation (30%)
+### Demo and Presentation (30%)
 
-**Live Demo URL**: [https://voxguard.vercel.app](https://voxguard.vercel.app)  
-**Demo Video**: [https://youtube.com/watch?v=PLACEHOLDER](https://youtube.com)
+**Live Demo URL**: [https://voxguard-kappa.vercel.app](https://voxguard-kappa.vercel.app)
+**Demo Video**: [https://youtube.com](https://youtube.com)
 
 ---
 
-## ☁️ Google Cloud Deployment
+## Google Cloud Deployment
 
 ### One-Command Deploy
 ```bash
@@ -345,12 +345,12 @@ chmod +x scripts/deploy.sh && ./scripts/deploy.sh
 
 ---
 
-## 👤 About the Creator
+## About the Creator
 
-**Wiqi Lee** — Data Scientist · AI/ML Researcher · Software Engineer · Cellist  
-Languages: Python · Java · Rust · Julia
+**Wiqi Lee** -- Data Scientist, AI/ML Researcher, Software Engineer, Cellist
+Languages: Python, Java, Rust, Julia
 
-- 𝕏 Twitter: [@wiqi_lee](https://x.com/wiqi_lee)
+- X (Twitter): [@wiqi_lee](https://x.com/wiqi_lee)
 - Discord: `209385020912173066`
 - GitHub: [github.com/wiqilee](https://github.com/wiqilee)
 - Submitted to: **Gemini Live Agent Challenge 2026** `#GeminiLiveAgentChallenge`
@@ -359,7 +359,7 @@ Languages: Python · Java · Rust · Julia
 
 ---
 
-## 📊 Data Sources
+## Data Sources
 
 | Source | URL | Usage |
 |--------|-----|-------|
@@ -373,7 +373,7 @@ No proprietary or licensed data. No personal victim data. All examples reconstru
 
 ---
 
-## 🔒 Privacy & Ethics
+## Privacy and Ethics
 
 - **No audio stored**: Processed in-stream, discarded immediately
 - **No raw audio transmission**: Rust WASM sends only preprocessed feature vectors and transcripts
@@ -382,15 +382,15 @@ No proprietary or licensed data. No personal victim data. All examples reconstru
 
 ---
 
-## 📄 License
+## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License -- see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
-**VOXGUARD © 2026 · WIQI LEE · MIT License · [#GeminiLiveAgentChallenge](https://geminiliveagentchallenge.devpost.com)**  
+**VOXGUARD 2026 · WIQI LEE · MIT License · [#GeminiLiveAgentChallenge](https://geminiliveagentchallenge.devpost.com)**
 **Powered by [Gemini Live API](https://cloud.google.com) · [@wiqi_lee](https://x.com/wiqi_lee)**
 
 *Built to protect the people who need it most.*
