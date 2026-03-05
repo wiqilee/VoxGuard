@@ -175,7 +175,7 @@ Gemini Live API supports 40+ languages natively. VoxGuard auto-detects language 
 ## 🗂️ Project Structure
 
 ```
-voxguard/                          ← rename from scam-shield
+voxguard/                          
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                 ← Fixed: WASM build before frontend
