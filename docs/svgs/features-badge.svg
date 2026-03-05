@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="90" viewBox="0 0 700 90">
+  <rect width="700" height="90" fill="#020408"/>
+  <rect x="0" y="0" width="700" height="90" fill="none" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+  
+  <!-- Scanline animation -->
+  <rect x="0" y="0" width="700" height="2" fill="rgba(0,212,255,0.06)" opacity="0.5">
+    <animateTransform attributeName="transform" type="translate" from="0,0" to="0,90" dur="3s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Feature 1: Audio -->
+  <rect x="10" y="15" width="90" height="60" rx="2" fill="none" stroke="#ff9500" stroke-width="1" opacity="0.7"/>
+  <text x="55" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🎙️</text>
+  <text x="55" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#ff9500">LIVE AUDIO</text>
+  <text x="55" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">&lt;80ms</text>
+  <circle cx="95" cy="21" r="3" fill="#ff9500"><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/></circle>
+
+  <!-- Feature 2: Vision -->
+  <rect x="110" y="15" width="90" height="60" rx="2" fill="none" stroke="#7b61ff" stroke-width="1" opacity="0.7"/>
+  <text x="155" y="38" text-anchor="middle" font-family="Courier New" font-size="18">👁️</text>
+  <text x="155" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#7b61ff">SCREEN VISION</text>
+  <text x="155" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">Multimodal</text>
+
+  <!-- Feature 3: Patterns -->
+  <rect x="210" y="15" width="90" height="60" rx="2" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.7"/>
+  <text x="255" y="38" text-anchor="middle" font-family="Courier New" font-size="18">◎</text>
+  <text x="255" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#00d4ff">50+ PATTERNS</text>
+  <text x="255" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">FTC·FBI·GASA</text>
+
+  <!-- Feature 4: Psych -->
+  <rect x="310" y="15" width="90" height="60" rx="2" fill="none" stroke="#ff2d55" stroke-width="1" opacity="0.7"/>
+  <text x="355" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🧠</text>
+  <text x="355" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#ff2d55">PSYCH SCORING</text>
+  <text x="355" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">6 Vectors</text>
+
+  <!-- Feature 5: Report -->
+  <rect x="410" y="15" width="90" height="60" rx="2" fill="none" stroke="#30d158" stroke-width="1" opacity="0.7"/>
+  <text x="455" y="38" text-anchor="middle" font-family="Courier New" font-size="18">📊</text>
+  <text x="455" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#30d158">FORENSIC RPT</text>
+  <text x="455" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">PDF · HTML</text>
+
+  <!-- Feature 6: Rust -->
+  <rect x="510" y="15" width="90" height="60" rx="2" fill="none" stroke="#ffd60a" stroke-width="1" opacity="0.7"/>
+  <text x="555" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🦀</text>
+  <text x="555" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#ffd60a">RUST WASM</text>
+  <text x="555" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">Zero-copy</text>
+
+  <!-- Feature 7: Multi-lang -->
+  <rect x="610" y="15" width="80" height="60" rx="2" fill="none" stroke="#4285F4" stroke-width="1" opacity="0.7"/>
+  <text x="650" y="38" text-anchor="middle" font-family="Courier New" font-size="18">🌐</text>
+  <text x="650" y="54" text-anchor="middle" font-family="Courier New" font-size="7" fill="#4285F4">MULTI-LANG</text>
+  <text x="650" y="65" text-anchor="middle" font-family="Courier New" font-size="7" fill="rgba(255,255,255,0.5)">40+ langs</text>
+
+  <!-- Highlight cycling -->
+  <rect x="10" y="15" width="90" height="60" rx="2" fill="#ff9500" fill-opacity="0">
+    <animate attributeName="fill-opacity" values="0;0.05;0;0;0;0;0;0" dur="5.6s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="110" y="15" width="90" height="60" rx="2" fill="#7b61ff" fill-opacity="0">
+    <animate attributeName="fill-opacity" values="0;0;0.05;0;0;0;0;0" dur="5.6s" repeatCount="indefinite"/>
+  </rect>
+</svg>

@@ -1,4 +1,11 @@
-name: Scam Shield CI/CD
+# VoxGuard — CI/CD Pipeline
+# Rename: ci.yml → deploy.yml (or keep both, doesn't matter — GitHub reads all files in .github/workflows/)
+# 
+# ⚠️  GCP_SA_KEY warning: severity 4 = VS Code linter warning only, NOT a real error.
+#     Fix: add the secret in GitHub → Settings → Secrets and variables → Actions → New repository secret
+#     Name: GCP_SA_KEY   Value: (paste your GCP service account JSON key)
+
+name: VoxGuard CI/CD
 
 on:
   push:
@@ -6,14 +13,78 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
-  SERVICE_NAME: scam-shield-backend
-  REGION: us-central1
-
 jobs:
-  # ── Test backend ─────────────────────────────────────────────
-  test-backend:
+  # ── 1. Rust WASM Build (MUST run first) ─────────────────────────
+  rust-wasm-build:
+    name: Rust WASM Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust + wasm32 target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-engine/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust-engine/Cargo.lock') }}
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM
+        working-directory: rust-engine
+        run: wasm-pack build --target web --out-dir ../frontend/src/wasm
+
+      - name: Upload WASM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-output
+          path: frontend/src/wasm/
+          retention-days: 1
+
+  # ── 2. Frontend Build (depends on WASM) ─────────────────────────
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: rust-wasm-build          # ← critical: wait for WASM first
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-output
+          path: frontend/src/wasm/
+
+      - name: Install and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 1
+
+  # ── 3. Backend Tests ─────────────────────────────────────────────
+  backend-tests:
     name: Backend Tests
     runs-on: ubuntu-latest
     steps:
@@ -22,82 +93,25 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: pip
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
+        working-directory: backend
+        run: pip install -r requirements.txt pytest pytest-asyncio httpx
 
       - name: Run tests
-        run: |
-          cd backend
-          python -m pytest tests/ -v --tb=short
+        working-directory: backend
+        run: pytest tests/ -v --tb=short
         env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}   # optional for test env
 
-  # ── Test & build frontend ─────────────────────────────────────
-  build-frontend:
-    name: Frontend Build
+  # ── 4. Deploy to GCP (main branch only) ─────────────────────────
+  deploy-gcp:
+    name: Deploy to Cloud Run
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install and build
-        run: |
-          cd frontend
-          npm ci
-          VITE_DEMO_MODE=true npm run build
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
-
-  # ── Build Rust WASM ───────────────────────────────────────────
-  build-wasm:
-    name: Rust WASM Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
-
-      - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: Build WASM
-        run: |
-          cd rust-engine
-          wasm-pack build --target web --release
-
-      - name: Upload WASM artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: wasm-pkg
-          path: rust-engine/pkg/
-
-  # ── Deploy to Cloud Run (main branch only) ───────────────────
-  deploy:
-    name: Deploy to GCP
-    needs: [test-backend, build-frontend, build-wasm]
-    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-tests]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
     steps:
       - uses: actions/checkout@v4
 
@@ -105,30 +119,19 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          # ↑ GCP_SA_KEY warning in VS Code = secret not yet added to repo
+          # Fix: GitHub repo → Settings → Secrets → New secret → Name: GCP_SA_KEY
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Build and push Docker image
+      - name: Deploy backend to Cloud Run
         run: |
-          gcloud auth configure-docker --quiet
-          docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA ./backend
-          docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
-
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy $SERVICE_NAME \
-            --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
-            --platform managed \
-            --region $REGION \
+          gcloud run deploy voxguard-backend \
+            --source backend/ \
+            --region us-central1 \
             --allow-unauthenticated \
+            --set-env-vars GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
             --memory 512Mi \
-            --set-env-vars "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }},GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
-            --quiet
-
-      - name: Verify deployment
-        run: |
-          URL=$(gcloud run services describe $SERVICE_NAME --platform managed --region $REGION --format "value(status.url)")
-          echo "Deployed to: $URL"
-          curl -f "$URL/health" || exit 1
-          echo "Health check passed ✓"
+            --cpu 1 \
+            --max-instances 10

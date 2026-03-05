@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280">
+  <rect width="280" height="280" fill="#020408"/>
+  <rect x="1" y="1" width="278" height="278" fill="none" stroke="rgba(255,149,0,0.3)" stroke-width="1"/>
+
+  <text x="140" y="22" text-anchor="middle" font-family="'Courier New',monospace" font-size="8" fill="#ff9500" letter-spacing="2">PSYCH VECTORS</text>
+
+  <!-- Hex grid rings -->
+  <g fill="none" stroke="rgba(255,149,0,0.1)" stroke-width="1">
+    <polygon points="140,80 184,105 184,155 140,180 96,155 96,105"/>
+    <polygon points="140,60 196,92 196,158 140,190 84,158 84,92"/>
+    <polygon points="140,45 205,82 205,163 140,200 75,163 75,82"/>
+  </g>
+  <!-- Axis lines -->
+  <g stroke="rgba(255,149,0,0.15)" stroke-width="1">
+    <line x1="140" y1="45" x2="140" y2="200"/>
+    <line x1="75" y1="82" x2="205" y2="163"/>
+    <line x1="75" y1="163" x2="205" y2="82"/>
+  </g>
+
+  <!-- Animated threat polygon -->
+  <polygon fill="rgba(255,149,0,0.15)" stroke="#ff9500" stroke-width="1.5">
+    <animate attributeName="points"
+      values="140,95 172,112 172,148 140,165 108,148 108,112;
+              140,68 188,94 188,166 140,192 92,166 92,94;
+              140,80 178,104 180,156 140,178 100,156 102,104;
+              140,95 172,112 172,148 140,165 108,148 108,112"
+      dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1"/>
+  </polygon>
+
+  <!-- Labels -->
+  <text x="140" y="40" text-anchor="middle" font-family="'Courier New',monospace" font-size="7" fill="#ff9500">SCARCITY</text>
+  <text x="218" y="88" font-family="'Courier New',monospace" font-size="7" fill="#ffd60a">AUTHORITY</text>
+  <text x="213" y="172" font-family="'Courier New',monospace" font-size="7" fill="#ff2d55">FEAR</text>
+  <text x="126" y="208" font-family="'Courier New',monospace" font-size="7" fill="#30d158">RECIPROCITY</text>
+  <text x="36" y="172" font-family="'Courier New',monospace" font-size="7" fill="#7b61ff">ISOLATION</text>
+  <text x="38" y="88" font-family="'Courier New',monospace" font-size="7" fill="#00d4ff">COMMIT</text>
+
+  <!-- Center -->
+  <circle cx="140" cy="130" r="3" fill="#ff9500"><animate attributeName="r" values="3;6;3" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
+
+  <text x="140" y="262" text-anchor="middle" font-family="'Courier New',monospace" font-size="7" fill="rgba(255,149,0,0.4)">Cialdini's 6 Influence Principles</text>
+</svg>
