@@ -1,5 +1,5 @@
-//! scam_shield_audio
-//! ─────────────────
+//! voxguard_audio
+//! -----------------
 //! Rust WebAssembly audio preprocessing engine for Scam Shield.
 //!
 //! Compiled to WASM via wasm-pack. Provides GC-pause-free, sub-100ms
@@ -7,31 +7,30 @@
 //!
 //! Full pipeline per 250ms frame:
 //!   Raw PCM (Float32, 16kHz, mono)
-//!     → Adaptive noise profile estimation (online, minimum-statistics)
-//!     → Wiener filter         (frequency-domain SNR-based suppression)
-//!     → Spectral subtraction  (residual noise floor removal)
-//!     → Hybrid VAD            (RMS energy + zero-crossing rate)
-//!     → RMS normalization     (target -22dBFS for ASR)
-//!     → Pre-emphasis filter   (boost high-freq consonants for ASR)
-//!     → Int16 PCM → Base64    (WebSocket transmission)
+//!     -> Adaptive noise profile estimation (online, minimum-statistics)
+//!     -> Wiener filter         (frequency-domain SNR-based suppression)
+//!     -> Spectral subtraction  (residual noise floor removal)
+//!     -> Hybrid VAD            (RMS energy + zero-crossing rate)
+//!     -> RMS normalization     (target -22dBFS for ASR)
+//!     -> Pre-emphasis filter   (boost high-freq consonants for ASR)
+//!     -> Int16 PCM -> Base64   (WebSocket transmission)
 
 use wasm_bindgen::prelude::*;
 
-// ── Console bridge ────────────────────────────────────────────
+// -- Console bridge ---------------------------------------------------
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
 }
 
-// Fix E0133: extern "C" calls must be wrapped in unsafe {}
 macro_rules! console_log {
     ($($t:tt)*) => {
-        unsafe { log(&format_args!($($t)*).to_string()) }
+        log(&format_args!($($t)*).to_string())
     }
 }
 
-// ── Constants ─────────────────────────────────────────────────
+// -- Constants --------------------------------------------------------
 const SAMPLE_RATE:        u32   = 16_000;
 const CHUNK_SAMPLES:      usize = 4_000;      // 250ms at 16kHz
 const NUM_BINS:           usize = 257;        // Frequency bands for spectral processing
@@ -41,7 +40,7 @@ const NOISE_ALPHA:        f32   = 0.95;       // Smoothing for adaptive noise up
 const NOISE_INIT_FRAMES:  usize = 8;          // Bootstrap frames (assumed silence)
 
 // Wiener filter
-const WIENER_BETA:        f32   = 0.001;      // Floor — prevents full suppression
+const WIENER_BETA:        f32   = 0.001;      // Floor -- prevents full suppression
 
 // Spectral subtraction
 const SPECTRAL_SUB_ALPHA: f32   = 2.0;        // Over-subtraction factor
@@ -59,7 +58,7 @@ const MAX_GAIN:           f32   = 10.0;       // Cap at +20dB
 // Pre-emphasis
 const PRE_EMPHASIS_COEFF: f32   = 0.97;
 
-// ── Noise Profile ─────────────────────────────────────────────
+// -- Noise Profile ----------------------------------------------------
 struct NoiseProfile {
     noise_psd:        Vec<f32>,
     frames_seen:      usize,
@@ -105,7 +104,7 @@ impl NoiseProfile {
     }
 }
 
-// ── VAD State ─────────────────────────────────────────────────
+// -- VAD State --------------------------------------------------------
 struct VadState {
     smoothed_energy: f32,
     hold_counter:    usize,
@@ -135,7 +134,7 @@ impl VadState {
     }
 }
 
-// ── Audio Preprocessor ────────────────────────────────────────
+// -- Audio Preprocessor -----------------------------------------------
 #[wasm_bindgen]
 pub struct AudioPreprocessor {
     buffer:        Vec<f32>,
@@ -152,7 +151,7 @@ impl AudioPreprocessor {
     pub fn new() -> AudioPreprocessor {
         console_log!("[ScamShield WASM] AudioPreprocessor v2.0 initialized");
         console_log!(
-            "[ScamShield WASM] Pipeline: AdaptiveNR → Wiener → SpectralSub → VAD → RMS-Norm → PreEmphasis"
+            "[ScamShield WASM] Pipeline: AdaptiveNR -> Wiener -> SpectralSub -> VAD -> RMS-Norm -> PreEmphasis"
         );
         AudioPreprocessor {
             buffer:        Vec::with_capacity(CHUNK_SAMPLES * 4),
@@ -237,7 +236,7 @@ impl AudioPreprocessor {
     }
 }
 
-// ── Internal denoising ────────────────────────────────────────
+// -- Internal denoising -----------------------------------------------
 impl AudioPreprocessor {
     fn denoise(&mut self, samples: &[f32], is_speech: bool) -> Vec<f32> {
         let power = band_power_spectrum(samples);
@@ -253,7 +252,7 @@ impl AudioPreprocessor {
     }
 }
 
-// ── DSP: Band power spectrum ──────────────────────────────────
+// -- DSP: Band power spectrum -----------------------------------------
 fn band_power_spectrum(samples: &[f32]) -> Vec<f32> {
     let mut power = vec![0.0f32; NUM_BINS];
     let band_size = (samples.len() / NUM_BINS).max(1);
@@ -266,7 +265,7 @@ fn band_power_spectrum(samples: &[f32]) -> Vec<f32> {
     power
 }
 
-// ── DSP: Wiener filter ────────────────────────────────────────
+// -- DSP: Wiener filter -----------------------------------------------
 fn wiener_filter(samples: &[f32], power_spec: &[f32], noise_psd: &[f32]) -> Vec<f32> {
     let band_size  = (samples.len() / NUM_BINS).max(1);
     let mut output = samples.to_vec();
@@ -283,7 +282,7 @@ fn wiener_filter(samples: &[f32], power_spec: &[f32], noise_psd: &[f32]) -> Vec<
     output
 }
 
-// ── DSP: Spectral subtraction ─────────────────────────────────
+// -- DSP: Spectral subtraction ----------------------------------------
 fn spectral_subtraction(samples: &[f32], noise_psd: &[f32]) -> Vec<f32> {
     let band_size  = (samples.len() / NUM_BINS).max(1);
     let mut output = samples.to_vec();
@@ -304,7 +303,7 @@ fn spectral_subtraction(samples: &[f32], noise_psd: &[f32]) -> Vec<f32> {
     output
 }
 
-// ── DSP: VAD helpers ──────────────────────────────────────────
+// -- DSP: VAD helpers -------------------------------------------------
 fn compute_rms(samples: &[f32]) -> f32 {
     if samples.is_empty() { return 0.0; }
     let sum_sq: f32 = samples.iter().map(|&s| s * s).sum();
@@ -319,7 +318,7 @@ fn compute_zcr(samples: &[f32]) -> f32 {
     crossings as f32 / (samples.len() - 1) as f32
 }
 
-// ── DSP: Normalization ────────────────────────────────────────
+// -- DSP: Normalization -----------------------------------------------
 fn rms_normalize(samples: &[f32], target: f32) -> Vec<f32> {
     let rms = compute_rms(samples);
     if rms < 1e-6 { return samples.to_vec(); }
@@ -327,7 +326,7 @@ fn rms_normalize(samples: &[f32], target: f32) -> Vec<f32> {
     samples.iter().map(|&s| (s * scale).clamp(-1.0, 1.0)).collect()
 }
 
-// ── DSP: Pre-emphasis ─────────────────────────────────────────
+// -- DSP: Pre-emphasis ------------------------------------------------
 fn pre_emphasis(samples: &[f32], alpha: f32, prev: &mut f32) -> Vec<f32> {
     let mut out = Vec::with_capacity(samples.len());
     for &s in samples {
@@ -337,7 +336,7 @@ fn pre_emphasis(samples: &[f32], alpha: f32, prev: &mut f32) -> Vec<f32> {
     out
 }
 
-// ── Encoding ──────────────────────────────────────────────────
+// -- Encoding ---------------------------------------------------------
 fn float32_to_pcm16(samples: &[f32]) -> Vec<u8> {
     let mut bytes = Vec::with_capacity(samples.len() * 2);
     for &s in samples {
@@ -369,11 +368,11 @@ fn base64_encode(bytes: &[u8]) -> String {
     String::from_utf8(out).unwrap_or_default()
 }
 
-// ── Module init ───────────────────────────────────────────────
+// -- Module init ------------------------------------------------------
 #[wasm_bindgen(start)]
 pub fn init() {
     console_log!(
-        "[ScamShield WASM] Audio engine loaded — Rust {}",
+        "[ScamShield WASM] Audio engine loaded -- Rust {}",
         env!("CARGO_PKG_VERSION")
     );
     console_log!(
