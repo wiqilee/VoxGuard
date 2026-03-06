@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-const BAR_COUNT = 36
+const BAR_COUNT = 42
 
 const COLOR_MAP = {
-  safe:     { light:'#4aeaff', dark:'#007a8c' },
-  high:     { light:'#ffbb44', dark:'#aa6600' },
-  critical: { light:'#ff5577', dark:'#991133' },
+  safe:     { light:'#4aeaff', mid:'#00a4c4', dark:'#005a6e' },
+  high:     { light:'#ffbb44', mid:'#cc8800', dark:'#885500' },
+  critical: { light:'#ff5577', mid:'#cc2244', dark:'#881133' },
 }
 
 export function WaveformVisualizer({ active, threatLevel, audioLevel = 0 }) {
   const [bars, setBars] = useState(Array(BAR_COUNT).fill(0.08))
   const colors = COLOR_MAP[threatLevel] || COLOR_MAP.safe
+  const frameRef = useRef(0)
 
   useEffect(() => {
     if (!active) {
@@ -18,12 +19,14 @@ export function WaveformVisualizer({ active, threatLevel, audioLevel = 0 }) {
       return
     }
     const t = setInterval(() => {
+      frameRef.current++
       setBars(() =>
         Array.from({ length: BAR_COUNT }, (_, i) => {
           const base  = audioLevel || 0.3
           const noise = Math.random() * 0.5
           const shape = Math.sin((i / BAR_COUNT) * Math.PI) * 0.4
-          return Math.min(1, Math.max(0.05, base * noise + shape))
+          const wave  = Math.sin((frameRef.current * 0.05) + (i * 0.3)) * 0.15
+          return Math.min(1, Math.max(0.05, base * noise + shape + wave))
         })
       )
     }, 70)
@@ -31,24 +34,40 @@ export function WaveformVisualizer({ active, threatLevel, audioLevel = 0 }) {
   }, [active, audioLevel])
 
   return (
-    <div style={{ display:'flex', alignItems:'flex-end', gap:3, height:56, padding:'4px 2px' }}>
+    <div style={{ display:'flex', alignItems:'flex-end', gap:2, height:64, padding:'4px 2px', perspective:'600px', transformStyle:'preserve-3d' }}>
       {bars.map((h, i) => {
         const pct = Math.max(4, h * 100)
+        const centerDist = Math.abs(i - BAR_COUNT / 2) / (BAR_COUNT / 2)
+        const depth = centerDist * 8
         return (
-          <div key={i} style={{ width:6, height:`${pct}%`, position:'relative', transition:'height 0.07s ease' }}>
-            {/* Dark bottom half */}
+          <div key={i} style={{
+            width: 7, height: `${pct}%`, position: 'relative',
+            transition: 'height 0.07s ease',
+            transform: `rotateY(${(i - BAR_COUNT / 2) * 0.8}deg) translateZ(${depth}px)`,
+            transformStyle: 'preserve-3d',
+          }}>
+            {/* Main bar body — 3-color gradient */}
             <div style={{
-              position:'absolute', bottom:0, left:0, right:0, height:'55%',
-              background: active ? colors.dark : 'rgba(255,255,255,0.06)',
+              position:'absolute', bottom:0, left:0, right:0, height:'100%',
+              background: active
+                ? `linear-gradient(0deg, ${colors.dark} 0%, ${colors.mid} 40%, ${colors.light} 100%)`
+                : 'linear-gradient(0deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 100%)',
+              boxShadow: active ? `0 0 8px ${colors.light}66, inset 0 0 4px ${colors.mid}44` : 'none',
               transition: 'background 0.4s',
             }} />
-            {/* Light top half */}
+            {/* Top cap glow */}
             <div style={{
-              position:'absolute', top:0, left:0, right:0, height:'55%',
-              background: active ? colors.light : 'rgba(255,255,255,0.1)',
-              boxShadow: active ? `0 0 6px ${colors.light}88` : 'none',
+              position:'absolute', top:0, left:-1, right:-1, height:3,
+              background: active ? colors.light : 'rgba(255,255,255,0.06)',
+              boxShadow: active ? `0 -2px 8px ${colors.light}88, 0 0 4px ${colors.light}` : 'none',
               transition: 'background 0.4s',
             }} />
+            {/* Reflection / bottom glow */}
+            {active && <div style={{
+              position:'absolute', bottom:-6, left:1, right:1, height:6,
+              background: `linear-gradient(0deg, transparent, ${colors.dark}44)`,
+              opacity: 0.5,
+            }} />}
           </div>
         )
       })}

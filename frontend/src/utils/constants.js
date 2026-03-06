@@ -43,3 +43,121 @@ export const MOCK_ALERTS = [
 // ── Fonts ──────────────────────────────────────────────────────
 export const PF = "'Press Start 2P', monospace"  // pixel display
 export const MF = "'Share Tech Mono', 'Courier New', monospace"  // mono body
+
+// ── Recommended Actions per Language/Country ──────────────────
+export const RECOMMENDED_ACTIONS = {
+  en: {
+    country: 'United States',
+    actions: [
+      { icon:'🚫', text:'Do NOT transfer money, gift cards, or cryptocurrency to anyone', priority:'critical' },
+      { icon:'📞', text:'Hang up immediately — do not engage further with the caller', priority:'critical' },
+      { icon:'🏦', text:'Contact your bank\'s official fraud hotline (number on back of your card)', priority:'high' },
+      { icon:'📋', text:'Report to FTC: reportfraud.ftc.gov', link:'https://reportfraud.ftc.gov', priority:'high' },
+      { icon:'🔍', text:'File FBI IC3 complaint: ic3.gov', link:'https://ic3.gov', priority:'high' },
+      { icon:'📱', text:'Enable two-factor authentication on all financial accounts', priority:'medium' },
+      { icon:'🔒', text:'Change passwords on any accounts you may have disclosed', priority:'high' },
+      { icon:'📝', text:'Document everything: save call logs, screenshots, messages', priority:'medium' },
+      { icon:'👥', text:'Alert family members — scammers often target multiple people', priority:'medium' },
+      { icon:'⚖️', text:'Contact your state Attorney General\'s consumer protection office', priority:'low' },
+    ]
+  },
+  id: {
+    country: 'Indonesia',
+    actions: [
+      { icon:'🚫', text:'JANGAN transfer uang, pulsa, atau kripto ke siapapun', priority:'critical' },
+      { icon:'📞', text:'Putuskan panggilan segera — jangan lanjutkan percakapan', priority:'critical' },
+      { icon:'🏦', text:'Hubungi hotline resmi bank Anda (BRI: 14017, BCA: 1500888, Mandiri: 14000)', priority:'high' },
+      { icon:'📋', text:'Lapor ke OJK: konsumen@ojk.go.id atau 157', link:'https://ojk.go.id', priority:'high' },
+      { icon:'🔍', text:'Lapor ke Kominfo: aduankonten.id', link:'https://aduankonten.id', priority:'high' },
+      { icon:'👮', text:'Lapor ke Bareskrim Polri: patrolisiber.id', link:'https://patrolisiber.id', priority:'high' },
+      { icon:'📱', text:'Aktifkan verifikasi 2 langkah di semua akun keuangan', priority:'medium' },
+      { icon:'🔒', text:'Ganti PIN dan password mobile banking segera', priority:'high' },
+      { icon:'📝', text:'Simpan semua bukti: screenshot, log panggilan, pesan', priority:'medium' },
+      { icon:'👥', text:'Peringatkan keluarga — penipu sering menargetkan banyak orang', priority:'medium' },
+    ]
+  },
+  'zh-CN': {
+    country: '中国',
+    actions: [
+      { icon:'🚫', text:'切勿向任何人转账、汇款或提供银行信息', priority:'critical' },
+      { icon:'📞', text:'立即挂断电话 — 不要继续与来电者交流', priority:'critical' },
+      { icon:'🏦', text:'联系银行官方客服热线（工行95588、建行95533、招行95555）', priority:'high' },
+      { icon:'📋', text:'拨打反诈热线 96110 报警', priority:'high' },
+      { icon:'🔍', text:'下载国家反诈中心APP进行举报', priority:'high' },
+      { icon:'👮', text:'向当地公安局报案', priority:'high' },
+      { icon:'📱', text:'开启银行账户交易提醒和二次验证', priority:'medium' },
+      { icon:'🔒', text:'立即修改网银密码和支付密码', priority:'high' },
+      { icon:'📝', text:'保留所有证据：通话记录、截图、转账记录', priority:'medium' },
+      { icon:'👥', text:'提醒家人朋友注意 — 诈骗分子通常群发目标', priority:'medium' },
+    ]
+  },
+  ja: {
+    country: '日本',
+    actions: [
+      { icon:'🚫', text:'絶対にお金を振り込まない・渡さない', priority:'critical' },
+      { icon:'📞', text:'すぐに電話を切る — これ以上会話しない', priority:'critical' },
+      { icon:'🏦', text:'銀行の公式相談窓口に連絡', priority:'high' },
+      { icon:'📋', text:'警察相談 #9110 に電話', priority:'high' },
+      { icon:'🔍', text:'消費者ホットライン 188 に相談', priority:'high' },
+      { icon:'👮', text:'最寄りの警察署に被害届を提出', priority:'high' },
+      { icon:'📱', text:'全ての金融口座で二段階認証を有効化', priority:'medium' },
+      { icon:'🔒', text:'暗証番号・パスワードを直ちに変更', priority:'high' },
+    ]
+  },
+  ko: {
+    country: '대한민국',
+    actions: [
+      { icon:'🚫', text:'절대 송금하거나 개인정보를 제공하지 마세요', priority:'critical' },
+      { icon:'📞', text:'즉시 전화를 끊으세요', priority:'critical' },
+      { icon:'🏦', text:'은행 공식 콜센터에 연락 (국민: 1588-9999, 신한: 1577-8000)', priority:'high' },
+      { icon:'📋', text:'금융감독원 1332에 신고', priority:'high' },
+      { icon:'🔍', text:'경찰청 사이버수사대 182에 신고', priority:'high' },
+      { icon:'📱', text:'모든 금융계좌 2단계 인증 활성화', priority:'medium' },
+      { icon:'🔒', text:'비밀번호 즉시 변경', priority:'high' },
+    ]
+  },
+  es: {
+    country: 'España',
+    actions: [
+      { icon:'🚫', text:'NO transfiera dinero ni proporcione datos personales', priority:'critical' },
+      { icon:'📞', text:'Cuelgue inmediatamente', priority:'critical' },
+      { icon:'🏦', text:'Contacte la línea de fraude oficial de su banco', priority:'high' },
+      { icon:'📋', text:'Denuncie a la Policía Nacional: 091', priority:'high' },
+      { icon:'🔍', text:'Reporte en INCIBE: incibe.es', link:'https://incibe.es', priority:'high' },
+      { icon:'📱', text:'Active la verificación en dos pasos', priority:'medium' },
+      { icon:'🔒', text:'Cambie contraseñas inmediatamente', priority:'high' },
+    ]
+  },
+  fr: {
+    country: 'France',
+    actions: [
+      { icon:'🚫', text:'Ne transférez PAS d\'argent et ne communiquez aucune donnée', priority:'critical' },
+      { icon:'📞', text:'Raccrochez immédiatement', priority:'critical' },
+      { icon:'🏦', text:'Contactez votre banque via le numéro officiel', priority:'high' },
+      { icon:'📋', text:'Signalez sur Pharos: internet-signalement.gouv.fr', priority:'high' },
+      { icon:'🔍', text:'Appelez Info Escroqueries: 0 805 805 817', priority:'high' },
+      { icon:'📱', text:'Activez l\'authentification à deux facteurs', priority:'medium' },
+    ]
+  },
+  hi: {
+    country: 'भारत',
+    actions: [
+      { icon:'🚫', text:'किसी को भी पैसे ट्रांसफर न करें या OTP न बताएं', priority:'critical' },
+      { icon:'📞', text:'तुरंत कॉल काट दें', priority:'critical' },
+      { icon:'🏦', text:'अपने बैंक की आधिकारिक हेल्पलाइन पर कॉल करें', priority:'high' },
+      { icon:'📋', text:'साइबर क्राइम हेल्पलाइन 1930 पर रिपोर्ट करें', priority:'high' },
+      { icon:'🔍', text:'cybercrime.gov.in पर शिकायत दर्ज करें', link:'https://cybercrime.gov.in', priority:'high' },
+      { icon:'📱', text:'सभी वित्तीय खातों पर 2FA सक्रिय करें', priority:'medium' },
+      { icon:'🔒', text:'UPI PIN और बैंकिंग पासवर्ड तुरंत बदलें', priority:'high' },
+    ]
+  },
+}
+
+// Helper to get actions for a language code
+export function getActionsForLang(langCode) {
+  // Try exact match first, then base language
+  if (RECOMMENDED_ACTIONS[langCode]) return RECOMMENDED_ACTIONS[langCode]
+  const base = langCode.split('-')[0]
+  if (RECOMMENDED_ACTIONS[base]) return RECOMMENDED_ACTIONS[base]
+  return RECOMMENDED_ACTIONS['en']
+}

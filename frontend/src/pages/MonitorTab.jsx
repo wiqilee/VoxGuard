@@ -6,29 +6,29 @@ import { AlertCard }             from '../components/AlertCard'
 import { PF, MF }                from '../utils/constants'
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   VOICE CONFIG — natural voice selection per language
+   VOICE CONFIG — REVERTED to default rate/pitch for natural sound
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const VOICE_PREFS = {
-  en: { langPrefix: ['en-US','en-GB','en'], rate: 0.95, pitch: 0.92 },
-  id: { langPrefix: ['id-ID','id'], rate: 0.93, pitch: 0.95 },
-  zh: { langPrefix: ['zh-CN','zh-TW','zh'], rate: 0.88, pitch: 0.94 },
-  ja: { langPrefix: ['ja-JP','ja'], rate: 0.90, pitch: 0.96 },
-  ko: { langPrefix: ['ko-KR','ko'], rate: 0.90, pitch: 0.94 },
-  es: { langPrefix: ['es-ES','es-MX','es'], rate: 0.93, pitch: 0.94 },
-  fr: { langPrefix: ['fr-FR','fr'], rate: 0.92, pitch: 0.95 },
-  de: { langPrefix: ['de-DE','de'], rate: 0.90, pitch: 0.90 },
-  hi: { langPrefix: ['hi-IN','hi'], rate: 0.92, pitch: 0.94 },
-  ar: { langPrefix: ['ar-SA','ar'], rate: 0.90, pitch: 0.92 },
-  pt: { langPrefix: ['pt-BR','pt-PT','pt'], rate: 0.93, pitch: 0.94 },
-  ru: { langPrefix: ['ru-RU','ru'], rate: 0.90, pitch: 0.88 },
-  th: { langPrefix: ['th-TH','th'], rate: 0.90, pitch: 0.95 },
-  vi: { langPrefix: ['vi-VN','vi'], rate: 0.92, pitch: 0.94 },
-  ms: { langPrefix: ['ms-MY','ms'], rate: 0.93, pitch: 0.95 },
-  tr: { langPrefix: ['tr-TR','tr'], rate: 0.92, pitch: 0.94 },
-  it: { langPrefix: ['it-IT','it'], rate: 0.93, pitch: 0.95 },
-  nl: { langPrefix: ['nl-NL','nl'], rate: 0.92, pitch: 0.92 },
-  pl: { langPrefix: ['pl-PL','pl'], rate: 0.90, pitch: 0.92 },
-  sv: { langPrefix: ['sv-SE','sv'], rate: 0.92, pitch: 0.93 },
+  en: { langPrefix: ['en-US','en-GB','en'], rate: 1.0, pitch: 1.0 },
+  id: { langPrefix: ['id-ID','id'], rate: 1.0, pitch: 1.0 },
+  zh: { langPrefix: ['zh-CN','zh-TW','zh'], rate: 1.0, pitch: 1.0 },
+  ja: { langPrefix: ['ja-JP','ja'], rate: 1.0, pitch: 1.0 },
+  ko: { langPrefix: ['ko-KR','ko'], rate: 1.0, pitch: 1.0 },
+  es: { langPrefix: ['es-ES','es-MX','es'], rate: 1.0, pitch: 1.0 },
+  fr: { langPrefix: ['fr-FR','fr'], rate: 1.0, pitch: 1.0 },
+  de: { langPrefix: ['de-DE','de'], rate: 1.0, pitch: 1.0 },
+  hi: { langPrefix: ['hi-IN','hi'], rate: 1.0, pitch: 1.0 },
+  ar: { langPrefix: ['ar-SA','ar'], rate: 1.0, pitch: 1.0 },
+  pt: { langPrefix: ['pt-BR','pt-PT','pt'], rate: 1.0, pitch: 1.0 },
+  ru: { langPrefix: ['ru-RU','ru'], rate: 1.0, pitch: 1.0 },
+  th: { langPrefix: ['th-TH','th'], rate: 1.0, pitch: 1.0 },
+  vi: { langPrefix: ['vi-VN','vi'], rate: 1.0, pitch: 1.0 },
+  ms: { langPrefix: ['ms-MY','ms'], rate: 1.0, pitch: 1.0 },
+  tr: { langPrefix: ['tr-TR','tr'], rate: 1.0, pitch: 1.0 },
+  it: { langPrefix: ['it-IT','it'], rate: 1.0, pitch: 1.0 },
+  nl: { langPrefix: ['nl-NL','nl'], rate: 1.0, pitch: 1.0 },
+  pl: { langPrefix: ['pl-PL','pl'], rate: 1.0, pitch: 1.0 },
+  sv: { langPrefix: ['sv-SE','sv'], rate: 1.0, pitch: 1.0 },
 }
 
 function getVoiceForLang(lang) {
@@ -43,7 +43,100 @@ function getVoiceForLang(lang) {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ENGLISH DEMO SCRIPTS — 8 scam scenarios
+   CALLER VISUAL — blurred face silhouette SVG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function CallerVisual({ mode = 'phone', active }) {
+  if (!active) return null
+  return (
+    <div style={{ position:'relative', width:'100%', height:80, marginBottom:12, overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', background:'rgba(0,0,0,0.6)' }}>
+      <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="faceBlur"><feGaussianBlur stdDeviation="6" /></filter>
+          <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#d4a574" />
+            <stop offset="100%" stopColor="#b08050" />
+          </linearGradient>
+        </defs>
+        <rect width="300" height="80" fill="#0a0a12" />
+        {/* Head/face — blurred */}
+        <g filter="url(#faceBlur)">
+          <ellipse cx="150" cy="32" rx="22" ry="26" fill="url(#skinGrad)" />
+          <rect x="140" y="52" width="20" height="18" rx="4" fill="url(#skinGrad)" />
+          <ellipse cx="150" cy="14" rx="24" ry="14" fill="#2a1a0a" />
+          <ellipse cx="142" cy="30" rx="3" ry="2" fill="#1a1a1a" opacity="0.5" />
+          <ellipse cx="158" cy="30" rx="3" ry="2" fill="#1a1a1a" opacity="0.5" />
+        </g>
+        {/* Mode indicators */}
+        {mode === 'phone' && <>
+          <rect x="10" y="8" width="32" height="14" rx="2" fill="none" stroke="#ff2d55" strokeWidth="1" opacity="0.6" />
+          <text x="26" y="18" textAnchor="middle" fill="#ff2d55" fontSize="7" fontFamily="monospace" opacity="0.8">CALL</text>
+          <circle cx="26" cy="32" r="4" fill="#ff2d55" opacity="0.4"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite" /></circle>
+        </>}
+        {mode === 'zoom' && <>
+          <rect x="6" y="6" width="44" height="22" rx="3" fill="none" stroke="#2d8cff" strokeWidth="1.5" opacity="0.7" />
+          <text x="28" y="20" textAnchor="middle" fill="#2d8cff" fontSize="6" fontFamily="monospace" opacity="0.8">ZOOM</text>
+          <rect x="252" y="6" width="42" height="22" rx="3" fill="none" stroke="#30d158" strokeWidth="1" opacity="0.5" />
+          <text x="273" y="20" textAnchor="middle" fill="#30d158" fontSize="5" fontFamily="monospace" opacity="0.6">YOU</text>
+        </>}
+        {mode === 'video' && <>
+          <circle cx="20" cy="15" r="5" fill="none" stroke="#ff2d55" strokeWidth="1.5" opacity="0.8"><animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" /></circle>
+          <text x="32" y="18" fill="#ff2d55" fontSize="6" fontFamily="monospace" opacity="0.7">REC</text>
+        </>}
+        {/* Scan line */}
+        <rect x="0" y="0" width="300" height="2" fill="rgba(0,212,255,0.15)"><animate attributeName="y" values="0;80;0" dur="3s" repeatCount="indefinite" /></rect>
+        {/* Corner brackets */}
+        <path d="M4,4 L4,16 M4,4 L16,4" stroke="#ff2d55" strokeWidth="1.5" fill="none" opacity="0.5" />
+        <path d="M296,4 L296,16 M296,4 L284,4" stroke="#ff2d55" strokeWidth="1.5" fill="none" opacity="0.5" />
+        <path d="M4,76 L4,64 M4,76 L16,76" stroke="#ff2d55" strokeWidth="1.5" fill="none" opacity="0.5" />
+        <path d="M296,76 L296,64 M296,76 L284,76" stroke="#ff2d55" strokeWidth="1.5" fill="none" opacity="0.5" />
+      </svg>
+      <div style={{ position:'absolute', bottom:4, right:8, fontFamily:PF, fontSize:5, color:'#ff2d55', opacity:0.7, letterSpacing:1 }}>◉ ANALYZING CALLER</div>
+    </div>
+  )
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PREMIUM ANALYSIS PROGRESS BAR — animated gradient
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function AnalysisProgressBar({ progress, threatColor }) {
+  const complete = progress >= 100
+  return (
+    <div style={{ marginBottom:16 }}>
+      <div style={{ display:'flex',justifyContent:'space-between',marginBottom:6 }}>
+        <span style={{ fontFamily:PF,fontSize:6,color:'rgba(0,212,255,0.5)',letterSpacing:1 }}>ANALYSIS PROGRESS</span>
+        <span style={{ fontFamily:MF,fontSize:9,color:complete?'#30d158':'#00d4ff' }}>{complete?'✓ COMPLETE':progress+'%'}</span>
+      </div>
+      <div style={{ height:6, background:'rgba(0,212,255,0.08)', overflow:'hidden', position:'relative', border:'1px solid rgba(0,212,255,0.1)' }}>
+        <div style={{
+          height:'100%', width:`${progress}%`,
+          background: complete
+            ? 'linear-gradient(90deg, #30d158, #4aeaff, #30d158)'
+            : `linear-gradient(90deg, #00d4ff, ${threatColor}, #7b61ff, #00d4ff)`,
+          backgroundSize: '200% 100%',
+          animation: complete ? 'none' : 'progressShimmer 2s linear infinite',
+          boxShadow: `0 0 12px ${complete?'#30d158':'#00d4ff'}66, 0 0 24px ${complete?'#30d158':'#00d4ff'}33`,
+          transition:'width 0.5s ease',
+        }} />
+        {!complete && progress > 0 && (
+          <div style={{
+            position:'absolute', top:0, height:'100%', width:30,
+            background:'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+            animation:'progressScan 1.5s ease-in-out infinite',
+            left:`${Math.max(0,progress-10)}%`,
+          }} />
+        )}
+      </div>
+      <div style={{ display:'flex', justifyContent:'space-between', marginTop:3 }}>
+        {[0,25,50,75,100].map(v => (
+          <div key={v} style={{ width:2, height:4, background:progress>=v?'#00d4ff':'rgba(0,212,255,0.15)', boxShadow:progress>=v?'0 0 4px #00d4ff':'none', transition:'all 0.3s' }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DEMO SCRIPTS — kept as original (English + Indonesian)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const SCRIPTS_EN = [
   {
@@ -53,13 +146,13 @@ const SCRIPTS_EN = [
       { text: "We have detected suspicious activity on your checking account ending in four seven eight two.", delay: 4200 },
       { text: "Someone attempted to transfer three thousand two hundred dollars to an overseas account just minutes ago.", delay: 9200 },
       { text: "Your account will be permanently frozen within the next ten minutes unless you verify your identity immediately.", delay: 15000,
-        alert: { id:'b1', severity:'critical', pattern:'Bank Impersonation', quote:'"Your account will be permanently frozen in 10 minutes unless you verify your identity."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel' }},
+        alert: { id:'b1', severity:'critical', pattern:'Bank Impersonation', quote:'"Your account will be permanently frozen in 10 minutes unless you verify your identity."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel', time:'00:15' }},
       { text: "I need you to confirm your full account number and the one time passcode we just sent to your phone.", delay: 23000,
-        alert: { id:'b2', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Confirm your full account number and the one-time passcode."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'FBI IC3 2024' }},
+        alert: { id:'b2', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Confirm your full account number and the one-time passcode."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'FBI IC3 2024', time:'00:23' }},
       { text: "Please do not contact your branch directly. This is a confidential internal investigation.", delay: 30000,
-        alert: { id:'b3', severity:'high', pattern:'Isolation Tactic', quote:'"Do not contact your branch. This is a confidential investigation."', confidence:91, tactics:['ISOLATION','AUTHORITY'], source:'GASA 2024' }},
+        alert: { id:'b3', severity:'high', pattern:'Isolation Tactic', quote:'"Do not contact your branch. This is a confidential investigation."', confidence:91, tactics:['ISOLATION','AUTHORITY'], source:'GASA 2024', time:'00:30' }},
       { text: "Time is running out. If you don't act now, we cannot protect your funds and your savings will be at risk.", delay: 37000,
-        alert: { id:'b4', severity:'critical', pattern:'Artificial Urgency', quote:'"Time is running out. If you don\'t act now, we cannot protect your funds."', confidence:95, tactics:['SCARCITY','FEAR'], source:'FTC Sentinel' }},
+        alert: { id:'b4', severity:'critical', pattern:'Artificial Urgency', quote:'"Time is running out. If you don\'t act now, we cannot protect your funds."', confidence:95, tactics:['SCARCITY','FEAR'], source:'FTC Sentinel', time:'00:37' }},
     ]
   },
   {
@@ -68,13 +161,13 @@ const SCRIPTS_EN = [
       { text: "Good afternoon. I'm calling from Global Wealth Partners, an elite investment advisory firm.", delay: 0 },
       { text: "Congratulations. You've been pre-selected for an exclusive blockchain investment opportunity.", delay: 5000 },
       { text: "Our clients have seen guaranteed returns of three hundred percent in just thirty days, with absolutely zero risk.", delay: 10500,
-        alert: { id:'i1', severity:'high', pattern:'Investment Fraud', quote:'"Guaranteed returns of 300% in 30 days, zero risk."', confidence:96, tactics:['SCARCITY','COMMITMENT'], source:'FBI IC3 2024' }},
+        alert: { id:'i1', severity:'high', pattern:'Investment Fraud', quote:'"Guaranteed returns of 300% in 30 days, zero risk."', confidence:96, tactics:['SCARCITY','COMMITMENT'], source:'FBI IC3 2024', time:'00:10' }},
       { text: "There are only five positions remaining and this window closes in exactly ten minutes.", delay: 17500,
-        alert: { id:'i2', severity:'critical', pattern:'Artificial Urgency', quote:'"Only 5 positions remaining, window closes in 10 minutes."', confidence:94, tactics:['SCARCITY','FEAR'], source:'GASA 2024' }},
+        alert: { id:'i2', severity:'critical', pattern:'Artificial Urgency', quote:'"Only 5 positions remaining, window closes in 10 minutes."', confidence:94, tactics:['SCARCITY','FEAR'], source:'GASA 2024', time:'00:17' }},
       { text: "To secure your position, I need you to transfer five hundred dollars in cryptocurrency to our escrow wallet right now.", delay: 23500,
-        alert: { id:'i3', severity:'critical', pattern:'Crypto Transfer Scam', quote:'"Transfer $500 in cryptocurrency to our escrow wallet."', confidence:98, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel' }},
+        alert: { id:'i3', severity:'critical', pattern:'Crypto Transfer Scam', quote:'"Transfer $500 in cryptocurrency to our escrow wallet."', confidence:98, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel', time:'00:23' }},
       { text: "This is strictly confidential. Do not discuss this with your family or financial advisor. It could void your eligibility.", delay: 31000,
-        alert: { id:'i4', severity:'high', pattern:'Isolation Tactic', quote:'"Do not discuss with your family — it could void your eligibility."', confidence:92, tactics:['ISOLATION','RECIPROCITY'], source:'GASA 2024' }},
+        alert: { id:'i4', severity:'high', pattern:'Isolation Tactic', quote:'"Do not discuss with your family — it could void your eligibility."', confidence:92, tactics:['ISOLATION','RECIPROCITY'], source:'GASA 2024', time:'00:31' }},
     ]
   },
   {
@@ -82,93 +175,32 @@ const SCRIPTS_EN = [
     sentences: [
       { text: "Hello, this is the Microsoft Windows Security Center calling about your computer.", delay: 0 },
       { text: "Our monitoring systems have detected that your device has been infected with a critical Trojan virus.", delay: 4800,
-        alert: { id:'t1', severity:'high', pattern:'Tech Support Impersonation', quote:'"Microsoft Security Center — your device is infected with a Trojan."', confidence:93, tactics:['AUTHORITY','FEAR'], source:'FBI IC3 2024' }},
+        alert: { id:'t1', severity:'high', pattern:'Tech Support Impersonation', quote:'"Microsoft Security Center — your device is infected with a Trojan."', confidence:93, tactics:['AUTHORITY','FEAR'], source:'FBI IC3 2024', time:'00:04' }},
       { text: "Hackers currently have active access to your banking passwords and personal files as we speak.", delay: 11000 },
       { text: "You must install our certified remote access tool immediately so our engineers can remove the threat from your system.", delay: 16500,
-        alert: { id:'t2', severity:'critical', pattern:'Tech Support Impersonation', quote:'"Install remote access tool immediately so we can remove the threat."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel' }},
+        alert: { id:'t2', severity:'critical', pattern:'Tech Support Impersonation', quote:'"Install remote access tool immediately so we can remove the threat."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel', time:'00:16' }},
       { text: "If you do not act within the next thirty minutes, your credit card information will be compromised permanently.", delay: 24000,
-        alert: { id:'t3', severity:'critical', pattern:'Artificial Urgency', quote:'"Within 30 minutes your credit card information will be compromised."', confidence:95, tactics:['SCARCITY','FEAR'], source:'FBI IC3 2024' }},
+        alert: { id:'t3', severity:'critical', pattern:'Artificial Urgency', quote:'"Within 30 minutes your credit card information will be compromised."', confidence:95, tactics:['SCARCITY','FEAR'], source:'FBI IC3 2024', time:'00:24' }},
       { text: "Our premium protection service costs two hundred and ninety nine dollars, payable by Google Play gift cards for secure processing.", delay: 31500,
-        alert: { id:'t4', severity:'high', pattern:'Gift Card Demand', quote:'"$299 payable by Google Play gift cards."', confidence:98, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel' }},
+        alert: { id:'t4', severity:'high', pattern:'Gift Card Demand', quote:'"$299 payable by Google Play gift cards."', confidence:98, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel', time:'00:31' }},
     ]
   },
   {
     id: 'gov', label: '🏛 Government / IRS', category: 'critical',
     sentences: [
       { text: "This is Officer Johnson, badge number eight four seven three, calling from the Internal Revenue Service enforcement division.", delay: 0,
-        alert: { id:'g1', severity:'critical', pattern:'Government Impersonation', quote:'"Officer Johnson, badge 8473, IRS enforcement division."', confidence:96, tactics:['AUTHORITY'], source:'FBI IC3 2024' }},
+        alert: { id:'g1', severity:'critical', pattern:'Government Impersonation', quote:'"Officer Johnson, badge 8473, IRS enforcement division."', confidence:96, tactics:['AUTHORITY'], source:'FBI IC3 2024', time:'00:00' }},
       { text: "We have identified unpaid federal taxes under your Social Security number totaling twelve thousand four hundred dollars.", delay: 7000 },
       { text: "A warrant has already been issued for your arrest, and local law enforcement has been notified.", delay: 13000,
-        alert: { id:'g2', severity:'critical', pattern:'Government Impersonation', quote:'"A warrant has been issued for your arrest."', confidence:98, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel' }},
+        alert: { id:'g2', severity:'critical', pattern:'Government Impersonation', quote:'"A warrant has been issued for your arrest."', confidence:98, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel', time:'00:13' }},
       { text: "However, if you settle this outstanding balance right now over the phone, we can cancel the warrant.", delay: 20000,
-        alert: { id:'g3', severity:'critical', pattern:'Artificial Urgency', quote:'"Settle this balance right now or face arrest."', confidence:95, tactics:['SCARCITY','FEAR'], source:'FBI IC3 2024' }},
+        alert: { id:'g3', severity:'critical', pattern:'Artificial Urgency', quote:'"Settle this balance right now or face arrest."', confidence:95, tactics:['SCARCITY','FEAR'], source:'FBI IC3 2024', time:'00:20' }},
       { text: "You will need to purchase prepaid debit cards and read me the card numbers.", delay: 28000,
-        alert: { id:'g4', severity:'high', pattern:'Gift Card Demand', quote:'"Purchase prepaid debit cards and read me the numbers."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel' }},
-      { text: "Do not speak to anyone about this matter. Discussing an active federal investigation is a criminal offense.", delay: 35500,
-        alert: { id:'g5', severity:'high', pattern:'Isolation Tactic', quote:'"Discussing a federal investigation is criminal."', confidence:93, tactics:['ISOLATION','FEAR'], source:'GASA 2024' }},
-    ]
-  },
-  {
-    id: 'romance', label: '💔 Romance Scam', category: 'high',
-    sentences: [
-      { text: "Hey baby, it's me. I've been thinking about you all day. You're the only person I can trust.", delay: 0 },
-      { text: "Something terrible happened. I was in an accident overseas and the hospital won't release me until I pay.", delay: 6000 },
-      { text: "My wallet and passport were stolen. I need two thousand dollars for the medical bill.", delay: 13000,
-        alert: { id:'r1', severity:'high', pattern:'Romance Manipulation', quote:'"Hospital won\'t release me. I need $2,000."', confidence:88, tactics:['RECIPROCITY','FEAR'], source:'FTC Sentinel' }},
-      { text: "If you really love me, you would help me. Just this once, I promise I'll pay you back.", delay: 20000,
-        alert: { id:'r2', severity:'high', pattern:'Romance Manipulation', quote:'"If you really love me you would help me."', confidence:92, tactics:['RECIPROCITY','COMMITMENT'], source:'FBI IC3 2024' }},
-      { text: "Don't tell your family about this. They wouldn't understand our relationship.", delay: 27500,
-        alert: { id:'r3', severity:'high', pattern:'Isolation Tactic', quote:'"Don\'t tell your family."', confidence:91, tactics:['ISOLATION','RECIPROCITY'], source:'GASA 2024' }},
-      { text: "Send the money through Western Union or Bitcoin. It's the fastest way to reach me here.", delay: 34000,
-        alert: { id:'r4', severity:'critical', pattern:'Crypto Transfer Scam', quote:'"Send money through Western Union or Bitcoin."', confidence:95, tactics:['COMMITMENT','AUTHORITY'], source:'FTC Sentinel' }},
-    ]
-  },
-  {
-    id: 'lottery', label: '🎰 Prize / Lottery', category: 'medium',
-    sentences: [
-      { text: "Congratulations! Your phone number has been randomly selected as the grand prize winner of our international lottery.", delay: 0 },
-      { text: "You have won five hundred thousand dollars in our annual promotional sweepstakes.", delay: 7500,
-        alert: { id:'l1', severity:'medium', pattern:'Fake Prize / Lottery', quote:'"You won $500,000 in our international lottery."', confidence:94, tactics:['RECIPROCITY'], source:'FTC Sentinel' }},
-      { text: "To release your winnings, there is a small processing fee of just nine hundred and ninety nine dollars.", delay: 14000,
-        alert: { id:'l2', severity:'high', pattern:'Fake Prize / Lottery', quote:'"Processing fee of $999 to release winnings."', confidence:97, tactics:['RECIPROCITY','COMMITMENT'], source:'FBI IC3 2024' }},
-      { text: "Claim within twenty four hours or it will be forfeited to someone else.", delay: 22000,
-        alert: { id:'l3', severity:'high', pattern:'Artificial Urgency', quote:'"24 hours or prize forfeited."', confidence:93, tactics:['SCARCITY','FEAR'], source:'GASA 2024' }},
-      { text: "Please provide your full name, date of birth, and bank account details for the deposit.", delay: 30000,
-        alert: { id:'l4', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Provide bank account details for deposit."', confidence:98, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel' }},
-    ]
-  },
-  {
-    id: 'delivery', label: '📦 Package / Customs', category: 'high',
-    sentences: [
-      { text: "This is the customs and border protection agency regarding a package intercepted at the port addressed to your name.", delay: 0,
-        alert: { id:'d1', severity:'high', pattern:'Government Impersonation', quote:'"Customs — package intercepted at the port."', confidence:90, tactics:['AUTHORITY'], source:'GASA 2024' }},
-      { text: "The package contained illegal substances. A criminal case has been opened under your name.", delay: 7500 },
-      { text: "If you do not cooperate immediately, officers will be dispatched to your residence.", delay: 14500,
-        alert: { id:'d2', severity:'critical', pattern:'Government Impersonation', quote:'"Officers dispatched to your residence."', confidence:95, tactics:['AUTHORITY','FEAR'], source:'FBI IC3 2024' }},
-      { text: "Pay a security clearance bond of three thousand dollars via wire transfer to resolve this.", delay: 22000,
-        alert: { id:'d3', severity:'critical', pattern:'Safe Account Transfer', quote:'"Security bond of $3,000 via wire transfer."', confidence:96, tactics:['FEAR','COMMITMENT'], source:'FTC Sentinel' }},
-      { text: "This is classified. Do not discuss it with anyone or you risk obstruction charges.", delay: 30000,
-        alert: { id:'d4', severity:'high', pattern:'Isolation Tactic', quote:'"Classified — discussing risks obstruction charges."', confidence:92, tactics:['ISOLATION','FEAR'], source:'GASA 2024' }},
-    ]
-  },
-  {
-    id: 'crypto', label: '🪙 Crypto Pig Butchering', category: 'critical',
-    sentences: [
-      { text: "Hey! Remember me from the networking event? I've been meaning to reach out.", delay: 0 },
-      { text: "I've been doing really well with this crypto trading platform. Made over fifty thousand in two weeks.", delay: 6500 },
-      { text: "My mentor has insider trading signals with a perfect track record and zero losses.", delay: 13000,
-        alert: { id:'c1', severity:'high', pattern:'Investment Fraud', quote:'"Insider signals, perfect track record, zero losses."', confidence:94, tactics:['AUTHORITY','RECIPROCITY'], source:'FBI IC3 2024' }},
-      { text: "Only three spots left. Minimum investment is just one thousand dollars to start.", delay: 20000,
-        alert: { id:'c2', severity:'critical', pattern:'Artificial Urgency', quote:'"Only 3 spots left, $1,000 minimum."', confidence:93, tactics:['SCARCITY','COMMITMENT'], source:'GASA 2024' }},
-      { text: "Download this trading app and connect your wallet. I'll walk you through the deposit.", delay: 27500,
-        alert: { id:'c3', severity:'critical', pattern:'Crypto Transfer Scam', quote:'"Download app and connect your wallet."', confidence:97, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel' }},
-      { text: "Don't mention this to friends. Too many people would reduce our profit margins.", delay: 34500,
-        alert: { id:'c4', severity:'high', pattern:'Isolation Tactic', quote:'"Don\'t mention to friends — reduces profits."', confidence:90, tactics:['ISOLATION','SCARCITY'], source:'GASA 2024' }},
+        alert: { id:'g4', severity:'high', pattern:'Gift Card Demand', quote:'"Purchase prepaid debit cards and read me the numbers."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'FTC Sentinel', time:'00:28' }},
     ]
   },
 ]
 
-/* ━━━ INDONESIAN ━━━ */
 const SCRIPTS_ID = [
   {
     id: 'bri', label: '🏦 Penipuan Bank BRI', category: 'critical',
@@ -176,140 +208,32 @@ const SCRIPTS_ID = [
       { text: "Halo selamat siang. Saya dari pusat keamanan Bank BRI. Kami mendeteksi aktivitas mencurigakan di rekening Anda.", delay: 0 },
       { text: "Ada transaksi sebesar lima belas juta rupiah yang tidak dikenal dari rekening Anda ke luar negeri.", delay: 6000 },
       { text: "Rekening Anda akan kami blokir permanen dalam sepuluh menit jika Anda tidak segera melakukan verifikasi identitas.", delay: 12500,
-        alert: { id:'id1', severity:'critical', pattern:'Bank Impersonation', quote:'"Rekening akan diblokir permanen dalam 10 menit."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'GASA 2024' }},
+        alert: { id:'id1', severity:'critical', pattern:'Bank Impersonation', quote:'"Rekening akan diblokir permanen dalam 10 menit."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'GASA 2024', time:'00:12' }},
       { text: "Tolong sebutkan nomor rekening lengkap dan kode OTP yang baru saja kami kirim ke nomor handphone Anda.", delay: 20000,
-        alert: { id:'id2', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Sebutkan nomor rekening dan kode OTP."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'MAS ScamShield' }},
+        alert: { id:'id2', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Sebutkan nomor rekening dan kode OTP."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'MAS ScamShield', time:'00:20' }},
       { text: "Jangan menghubungi cabang bank. Ini investigasi internal yang bersifat rahasia.", delay: 27500,
-        alert: { id:'id3', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan hubungi cabang. Investigasi rahasia."', confidence:91, tactics:['ISOLATION','AUTHORITY'], source:'GASA 2024' }},
+        alert: { id:'id3', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan hubungi cabang. Investigasi rahasia."', confidence:91, tactics:['ISOLATION','AUTHORITY'], source:'GASA 2024', time:'00:27' }},
     ]
   },
   {
     id: 'pinjol', label: '💰 Pinjol Ilegal', category: 'high',
     sentences: [
       { text: "Selamat pagi. Bagian penagihan pinjaman. Anda punya tunggakan tiga juta rupiah yang harus dilunasi hari ini.", delay: 0,
-        alert: { id:'id4', severity:'high', pattern:'Government Impersonation', quote:'"Tunggakan 3 juta harus dilunasi hari ini."', confidence:88, tactics:['AUTHORITY','FEAR'], source:'GASA 2024' }},
+        alert: { id:'id4', severity:'high', pattern:'Government Impersonation', quote:'"Tunggakan 3 juta harus dilunasi hari ini."', confidence:88, tactics:['AUTHORITY','FEAR'], source:'GASA 2024', time:'00:00' }},
       { text: "Kalau tidak dibayar dalam satu jam, kami akan hubungi seluruh kontak di handphone Anda tentang hutang Anda.", delay: 7500,
-        alert: { id:'id5', severity:'critical', pattern:'Artificial Urgency', quote:'"Hubungi seluruh kontak HP tentang hutang."', confidence:95, tactics:['FEAR','SCARCITY'], source:'MAS ScamShield' }},
+        alert: { id:'id5', severity:'critical', pattern:'Artificial Urgency', quote:'"Hubungi seluruh kontak HP tentang hutang."', confidence:95, tactics:['FEAR','SCARCITY'], source:'MAS ScamShield', time:'00:07' }},
       { text: "Foto KTP dan data pribadi Anda akan kami sebarkan ke media sosial jika pembayaran tidak diterima.", delay: 15000,
-        alert: { id:'id6', severity:'critical', pattern:'Isolation Tactic', quote:'"KTP disebarkan ke media sosial."', confidence:96, tactics:['FEAR','ISOLATION'], source:'GASA 2024' }},
-      { text: "Transfer sekarang ke rekening yang saya sebutkan. Ini satu-satunya cara menghentikan penagihan.", delay: 22500,
-        alert: { id:'id7', severity:'high', pattern:'Safe Account Transfer', quote:'"Transfer sekarang ke rekening ini."', confidence:93, tactics:['COMMITMENT','SCARCITY'], source:'MAS ScamShield' }},
-    ]
-  },
-  {
-    id: 'mama', label: '📱 Mama Minta Pulsa', category: 'medium',
-    sentences: [
-      { text: "Halo nak, ini mama. Mama lagi di rumah sakit sekarang, butuh bantuan kamu.", delay: 0 },
-      { text: "Handphone mama kehabisan pulsa. Tolong kirimkan pulsa seratus ribu ke nomor ini.", delay: 6500,
-        alert: { id:'id8', severity:'medium', pattern:'Romance Manipulation', quote:'"Mama di rumah sakit, kirimkan pulsa 100 ribu."', confidence:85, tactics:['RECIPROCITY','FEAR'], source:'GASA 2024' }},
-      { text: "Cepat ya nak, ini darurat. Jangan bilang papa dulu.", delay: 14000,
-        alert: { id:'id9', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan bilang papa dulu."', confidence:90, tactics:['ISOLATION','SCARCITY'], source:'MAS ScamShield' }},
+        alert: { id:'id6', severity:'critical', pattern:'Isolation Tactic', quote:'"KTP disebarkan ke media sosial."', confidence:96, tactics:['FEAR','ISOLATION'], source:'GASA 2024', time:'00:15' }},
     ]
   },
 ]
 
-/* ━━━ CHINESE ━━━ */
-const SCRIPTS_ZH = [
-  {
-    id: 'police_zh', label: '🚔 公安局诈骗', category: 'critical',
-    sentences: [
-      { text: "你好，这里是公安局刑侦大队。我们发现你的身份证涉及一起重大洗钱案件。", delay: 0,
-        alert: { id:'zh1', severity:'critical', pattern:'Government Impersonation', quote:'"公安局 — 身份证涉及洗钱案。"', confidence:97, tactics:['AUTHORITY','FEAR'], source:'GASA 2024' }},
-      { text: "你的银行账户已被列为嫌疑账户，不配合调查将立即冻结所有资产。", delay: 7500,
-        alert: { id:'zh2', severity:'critical', pattern:'Artificial Urgency', quote:'"不配合将冻结所有资产。"', confidence:96, tactics:['FEAR','SCARCITY'], source:'GASA 2024' }},
-      { text: "为证明清白，你需要将全部存款转入安全监管账户。", delay: 15000,
-        alert: { id:'zh3', severity:'critical', pattern:'Safe Account Transfer', quote:'"存款转入安全监管账户。"', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'GASA 2024' }},
-      { text: "这是国家机密案件，严禁向任何人透露。", delay: 22500,
-        alert: { id:'zh4', severity:'high', pattern:'Isolation Tactic', quote:'"国家机密，严禁透露。"', confidence:94, tactics:['ISOLATION','FEAR'], source:'GASA 2024' }},
-    ]
-  },
-]
-
-/* ━━━ JAPANESE ━━━ */
-const SCRIPTS_JA = [
-  {
-    id: 'oreore', label: '📞 オレオレ詐欺', category: 'critical',
-    sentences: [
-      { text: "もしもし、お母さん？俺だよ。大変なことになっちゃって。", delay: 0 },
-      { text: "会社のお金を間違えて使っちゃって、今日中に三百万円返さないとクビになる。", delay: 6000,
-        alert: { id:'ja1', severity:'high', pattern:'Romance Manipulation', quote:'"会社のお金、300万円必要。"', confidence:92, tactics:['RECIPROCITY','FEAR'], source:'GASA 2024' }},
-      { text: "お願い、誰にも言わないで。特にお父さんには絶対言わないで。", delay: 13000,
-        alert: { id:'ja2', severity:'high', pattern:'Isolation Tactic', quote:'"誰にも言わないで。"', confidence:94, tactics:['ISOLATION','RECIPROCITY'], source:'GASA 2024' }},
-      { text: "今すぐATMに行って、この口座に振り込んでほしい。", delay: 19500,
-        alert: { id:'ja3', severity:'critical', pattern:'Safe Account Transfer', quote:'"ATMからこの口座に振り込んで。"', confidence:97, tactics:['COMMITMENT','SCARCITY'], source:'GASA 2024' }},
-    ]
-  },
-]
-
-/* ━━━ KOREAN ━━━ */
-const SCRIPTS_KO = [
-  {
-    id: 'vp_kr', label: '🏦 보이스피싱', category: 'critical',
-    sentences: [
-      { text: "안녕하세요. 금융감독원입니다. 고객님 계좌가 범죄에 연루된 것으로 확인되었습니다.", delay: 0,
-        alert: { id:'ko1', severity:'critical', pattern:'Government Impersonation', quote:'"금융감독원 — 계좌 범죄 연루."', confidence:96, tactics:['AUTHORITY','FEAR'], source:'GASA 2024' }},
-      { text: "안전계좌로 자금을 이체하지 않으면 계좌가 동결됩니다.", delay: 8000,
-        alert: { id:'ko2', severity:'critical', pattern:'Safe Account Transfer', quote:'"안전계좌로 이체 안하면 동결."', confidence:98, tactics:['FEAR','SCARCITY'], source:'GASA 2024' }},
-      { text: "수사 기밀이므로 가족이나 은행에 절대 말하면 안 됩니다.", delay: 16000,
-        alert: { id:'ko3', severity:'high', pattern:'Isolation Tactic', quote:'"수사 기밀 — 말하면 안 됩니다."', confidence:93, tactics:['ISOLATION','AUTHORITY'], source:'GASA 2024' }},
-    ]
-  },
-]
-
-/* ━━━ SPANISH ━━━ */
-const SCRIPTS_ES = [
-  {
-    id: 'banco_es', label: '🏦 Fraude Bancario', category: 'critical',
-    sentences: [
-      { text: "Buenas tardes. Departamento de seguridad de su banco. Hemos detectado movimientos sospechosos.", delay: 0 },
-      { text: "Alguien intentó transferir cinco mil euros desde su cuenta al extranjero.", delay: 6500 },
-      { text: "Su cuenta será bloqueada en diez minutos si no verifica su identidad ahora.", delay: 13000,
-        alert: { id:'es1', severity:'critical', pattern:'Bank Impersonation', quote:'"Cuenta bloqueada en 10 minutos."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'GASA 2024' }},
-      { text: "Confirme su número de cuenta y el código de verificación enviado a su teléfono.", delay: 21000,
-        alert: { id:'es2', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Confirme cuenta y código."', confidence:98, tactics:['AUTHORITY','COMMITMENT'], source:'GASA 2024' }},
-      { text: "No contacte con su sucursal. Investigación confidencial.", delay: 28500,
-        alert: { id:'es3', severity:'high', pattern:'Isolation Tactic', quote:'"No contacte sucursal."', confidence:91, tactics:['ISOLATION','AUTHORITY'], source:'GASA 2024' }},
-    ]
-  },
-]
-
-/* ━━━ FRENCH ━━━ */
-const SCRIPTS_FR = [
-  {
-    id: 'cpf_fr', label: '🏛 Arnaque CPF', category: 'high',
-    sentences: [
-      { text: "Bonjour, service de formation professionnelle. Votre compte CPF arrive à expiration.", delay: 0,
-        alert: { id:'fr1', severity:'high', pattern:'Government Impersonation', quote:'"CPF arrive à expiration."', confidence:92, tactics:['AUTHORITY','FEAR'], source:'GASA 2024' }},
-      { text: "Deux mille quatre cents euros de crédit seront perdus à la fin du mois.", delay: 8000,
-        alert: { id:'fr2', severity:'high', pattern:'Artificial Urgency', quote:'"2400€ perdus fin du mois."', confidence:90, tactics:['SCARCITY','FEAR'], source:'GASA 2024' }},
-      { text: "J'ai besoin de votre numéro de sécurité sociale et identifiants de connexion.", delay: 16000,
-        alert: { id:'fr3', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Numéro sécurité sociale et identifiants."', confidence:97, tactics:['AUTHORITY','COMMITMENT'], source:'GASA 2024' }},
-    ]
-  },
-]
-
-/* ━━━ HINDI ━━━ */
-const SCRIPTS_HI = [
-  {
-    id: 'aadh', label: '🏛 आधार कार्ड फ्रॉड', category: 'critical',
-    sentences: [
-      { text: "नमस्ते, TRAI से बोल रहा हूं। आपका नंबर अवैध गतिविधियों में इस्तेमाल हो रहा है।", delay: 0,
-        alert: { id:'hi1', severity:'critical', pattern:'Government Impersonation', quote:'"TRAI — नंबर अवैध गतिविधियों में।"', confidence:95, tactics:['AUTHORITY','FEAR'], source:'GASA 2024' }},
-      { text: "चौबीस घंटे में नंबर बंद हो जाएगा। आधार वेरिफाई करें।", delay: 9000,
-        alert: { id:'hi2', severity:'critical', pattern:'Artificial Urgency', quote:'"24 घंटे में नंबर बंद।"', confidence:96, tactics:['SCARCITY','FEAR'], source:'GASA 2024' }},
-      { text: "आधार नंबर और OTP बताइए।", delay: 17000,
-        alert: { id:'hi3', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"आधार और OTP बताइए।"', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'GASA 2024' }},
-    ]
-  },
-]
-
-/* ━━━ Script selector ━━━ */
 function getScriptsForLang(lang) {
-  const map = { id:SCRIPTS_ID, zh:SCRIPTS_ZH, ja:SCRIPTS_JA, ko:SCRIPTS_KO, es:SCRIPTS_ES, fr:SCRIPTS_FR, hi:SCRIPTS_HI }
+  const map = { id:SCRIPTS_ID }
   return map[lang] || SCRIPTS_EN
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━ Tech chips & helpers ━━━ */
 const TECH_ITEMS = [
   { icon:'🦀', name:'RUST WASM',   sub:'Audio Engine · Zero-copy',  c:'#ff9500' },
   { icon:'🐍', name:'PYTHON',      sub:'FastAPI · Cloud Run',        c:'#30d158' },
@@ -365,9 +289,9 @@ function LiveTranscript({ lines, speaking }) {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   MAIN COMPONENT
+   MAIN COMPONENT — added onTranscriptLine, CallerVisual, AnalysisProgressBar
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,language='en' }) {
+export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,language='en' }) {
   const [script,setScript]=useState(null)
   const [now,setNow]=useState(getNow())
   const [speaking,setSpeaking]=useState(false)
@@ -429,7 +353,10 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
               speechTimers.current.push(st)
             }
           }
-          setTranscriptLines(prev=>[...prev,{text:s.text,time:ts,flagged:!!s.alert}])
+          const line={text:s.text,time:ts,flagged:!!s.alert}
+          setTranscriptLines(prev=>[...prev,line])
+          // Send transcript line to parent for report saving
+          if(onTranscriptLine) onTranscriptLine(line)
           window.speechSynthesis.speak(u)
           if(s.alert){
             const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},1800)
@@ -444,13 +371,19 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
       window.speechSynthesis.addEventListener('voiceschanged',go,{once:true})
       setTimeout(go,300)
     } else go()
-  },[onDemoAlert,onStop,fmt,language])
+  },[onDemoAlert,onStop,onTranscriptLine,fmt,language])
 
   const handleStartWithVoice=()=>{ onStart(); if(script) setTimeout(()=>startVoiceDemo(script),500) }
   const handleStop=()=>{ window.speechSynthesis?.cancel(); speechTimers.current.forEach(t=>clearTimeout(t)); onStop() }
 
   return (
     <div style={{ display:'grid',gridTemplateColumns:'1fr 296px',gap:20 }}>
+      {/* Add keyframes for progress bar animations */}
+      <style>{`
+        @keyframes progressShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+        @keyframes progressScan{0%{opacity:0;transform:translateX(-20px)}50%{opacity:1}100%{opacity:0;transform:translateX(20px)}}
+      `}</style>
+
       <div style={{ display:'flex',flexDirection:'column',gap:16 }}>
 
         <PBox color={monitoring&&threatLevel==='critical'?'#ff2d55':'#00d4ff'} style={{ padding:24,background:'rgba(0,212,255,0.01)',transition:'all 0.5s' }}>
@@ -467,6 +400,9 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
             </div>
           </div>
 
+          {/* Caller Visual — blurred face silhouette */}
+          <CallerVisual mode="phone" active={voiceDemo && monitoring} />
+
           <div style={{ background:'rgba(0,0,0,0.5)',padding:'10px 14px',marginBottom:16,border:`1px solid ${tColor}18`,position:'relative',transition:'border-color 0.5s' }}>
             <div style={{ fontFamily:MF,fontSize:9,color:`${tColor}60`,marginBottom:8,letterSpacing:2 }}>
               {voiceDemo?'VOICE DEMO ── SPEECH SYNTHESIS ── REAL-TIME DETECTION':'AUDIO STREAM ── GEMINI LIVE API ── RUST WASM ENGINE'}
@@ -478,17 +414,8 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
 
           {voiceDemo && <LiveTranscript lines={transcriptLines} speaking={speaking} />}
 
-          {voiceDemo && (
-            <div style={{ marginBottom:16 }}>
-              <div style={{ display:'flex',justifyContent:'space-between',marginBottom:4 }}>
-                <span style={{ fontFamily:PF,fontSize:6,color:'rgba(0,212,255,0.5)',letterSpacing:1 }}>ANALYSIS</span>
-                <span style={{ fontFamily:MF,fontSize:9,color:demoProgress>=100?'#30d158':'#00d4ff' }}>{demoProgress>=100?'✓ COMPLETE':demoProgress+'%'}</span>
-              </div>
-              <div style={{ height:3,background:'rgba(0,212,255,0.1)',overflow:'hidden' }}>
-                <div style={{ height:'100%',width:`${demoProgress}%`,background:`linear-gradient(90deg,#00d4ff,${demoProgress>=100?'#30d158':tColor})`,boxShadow:`0 0 8px ${tColor}66`,transition:'width 0.5s ease' }} />
-              </div>
-            </div>
-          )}
+          {/* Premium Analysis Progress Bar */}
+          {voiceDemo && <AnalysisProgressBar progress={demoProgress} threatColor={tColor} />}
 
           <div style={{ display:'flex',gap:8 }}>
             <StatCard label="THREATS" value={alerts.length} color="#ff2d55" icon="⚠" />

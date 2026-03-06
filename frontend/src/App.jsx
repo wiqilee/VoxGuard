@@ -51,6 +51,7 @@ export default function App() {
   const [glitch,setGlitch]=useState(false)
   const [audioLevel,setAudioLevel]=useState(0)
   const [language,setLanguage]=useState('en')
+  const [transcript,setTranscript]=useState([])  // NEW: transcript state
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
 
   useEffect(()=>{ const t=setInterval(()=>setScanY(y=>(y+1.4)%100),16); return()=>clearInterval(t) },[])
@@ -80,12 +81,18 @@ export default function App() {
     if(alert.severity==='critical'){setGlitch(true);setTimeout(()=>setGlitch(false),500)}
   }
 
+  // NEW: Handler for transcript lines from MonitorTab
+  const handleTranscriptLine = (line) => {
+    setTranscript(prev=>[...prev,line])
+  }
+
   useEffect(()=>{ if(monitoring)timerRef.current=setInterval(()=>setSessionTime(t=>t+1),1000); else clearInterval(timerRef.current); return()=>clearInterval(timerRef.current) },[monitoring])
 
   const handleStart=()=>{
     setMonitoring(true);setAlerts([]);setThreatScore(8);setThreatLevel('safe')
     setSessionTime(0);setPsychScores({SCARCITY:0,AUTHORITY:0,FEAR:0,RECIPROCITY:0,ISOLATION:0,COMMITMENT:0})
     setDetectedIds([]);alertIdxRef.current=0
+    setTranscript([])  // NEW: reset transcript
     if(!DEMO){ws.reset();ws.startSession()}
   }
   const handleStop=()=>{setMonitoring(false);if(!DEMO)ws.endSession();setTab('report')}
@@ -121,7 +128,6 @@ export default function App() {
         {/* Grid overlay */}
         <div style={{ position:'fixed',inset:0,zIndex:0,pointerEvents:'none',opacity:0.028,backgroundImage:'linear-gradient(rgba(0,212,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,1) 1px,transparent 1px)',backgroundSize:'8px 8px' }} />
 
-        {/* ══ FIX: Vignette — reduced opacity from 0.82 to 0.55, larger transparent center ══ */}
         <div style={{ position:'fixed',inset:0,pointerEvents:'none',zIndex:999,background:'radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.55) 100%)' }} />
 
         {/* Scanline */}
@@ -136,21 +142,18 @@ export default function App() {
 
         <div style={{ position:'relative',zIndex:2,display:'flex',flexDirection:'column',minHeight:'100vh' }}>
 
-          {/* ══ HEADER — FIX: reduced blur from 24px→8px, more transparent bg, sharper text ══ */}
+          {/* HEADER */}
           <header style={{ background:'rgba(2,4,8,0.92)',borderBottom:'1px solid rgba(0,255,255,0.15)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)' }}>
-            {/* Top accent line */}
             <div style={{ height:2,background:monitoring?`linear-gradient(90deg,transparent,${tColor}cc,${tColor}88,transparent)`:'linear-gradient(90deg,transparent,rgba(0,255,255,0.6),rgba(167,139,250,0.4),transparent)',transition:'background 0.6s ease' }} />
             <div style={{ display:'flex',alignItems:'center',gap:0,height:90,padding:'0 32px' }}>
               <PixelLogo />
               <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
-              {/* MARQUEE */}
               <div style={{ flex:1,overflow:'hidden',height:20,display:'flex',alignItems:'center',minWidth:0 }}>
                 <div style={{ fontFamily:MF,fontSize:10,whiteSpace:'nowrap',animation:'marquee 28s linear infinite,colorCycle 8s ease infinite',letterSpacing:2 }}>
                   ◄ VOXGUARD - REAL-TIME MULTIMODAL AI PROTECTION - GEMINI LIVE API + RUST WASM ENGINE - &lt;80ms LATENCY - GROUNDED: FTC - FBI IC3 - GASA - MAS - ACCC - #GeminiLiveAgentChallenge - BY WIQI LEE ►
                 </div>
               </div>
               <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
-              {/* Language */}
               <LanguageSelector value={language} onChange={setLanguage} />
               <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 14px',flexShrink:0 }} />
               {/* Status indicator */}
@@ -168,7 +171,7 @@ export default function App() {
             </div>
           </header>
 
-          {/* ══ TABS — FIX: sharper bg, no heavy blur ══ */}
+          {/* TABS */}
           <nav style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.97)',padding:'0 32px',position:'sticky',top:92,zIndex:99 }}>
             {TABS.map(t=>(
               <button key={t} onClick={()=>setTab(t)}
@@ -182,10 +185,10 @@ export default function App() {
 
           {/* CONTENT */}
           <main style={{ flex:1,padding:'32px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
-            {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} language={language} />}
+            {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} onTranscriptLine={handleTranscriptLine} language={language} />}
             {tab==='psych'    && <PsychTab   psychScores={psychScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
-            {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} />}
+            {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} transcript={transcript} language={language} />}
             {tab==='about'    && <AboutTab />}
           </main>
 
