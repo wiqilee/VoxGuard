@@ -43,3 +43,4 @@ frontend/src/wasm/
 .gcloud/
 google-cloud-cli-darwin-x86_64.tar.gz
 gcp-key-new.json
+google-cloud-sdk/

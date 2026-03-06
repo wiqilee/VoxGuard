@@ -39,3 +39,4 @@ backend/data/*.json linguist-generated=true
 
 # ── CSS ──
 frontend/src/**/*.css linguist-detectable=true
+google-cloud-sdk/** linguist-vendored=true
