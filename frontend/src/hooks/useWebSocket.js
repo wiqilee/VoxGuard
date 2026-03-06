@@ -15,7 +15,6 @@ export function useWebSocket() {
   const [error,      setError]      = useState(null)
 
   const connect = useCallback(() => {
-    // In demo/Vercel mode (no backend), skip real WS
     if (import.meta.env.VITE_DEMO_MODE === 'true') return
 
     try {
@@ -25,7 +24,7 @@ export function useWebSocket() {
         setConnected(true)
         setError(null)
         retryRef.current = 0
-        console.log('[ScamShield WS] Connected to backend')
+        console.log('[VoxGuard WS] Connected to backend')
       }
 
       ws.onmessage = (evt) => {
@@ -40,7 +39,6 @@ export function useWebSocket() {
             case 'threat_alert':
               setAlerts(prev => [msg.alert, ...prev])
               setThreatScore(msg.threat_score)
-              // Update psych scores
               if (msg.tactics) {
                 setPsychScores(prev => {
                   const next = { ...prev }
@@ -64,21 +62,20 @@ export function useWebSocket() {
               break
           }
         } catch (e) {
-          console.warn('[ScamShield WS] Failed to parse message', e)
+          console.warn('[VoxGuard WS] Failed to parse message', e)
         }
       }
 
       ws.onerror = (e) => {
-        console.error('[ScamShield WS] Error', e)
+        console.error('[VoxGuard WS] Error', e)
         setError('WebSocket connection error')
       }
 
       ws.onclose = () => {
         setConnected(false)
-        // Exponential backoff retry: 1s, 2s, 4s, 8s, max 16s
         const delay = Math.min(1000 * Math.pow(2, retryRef.current), 16000)
         retryRef.current += 1
-        console.log(`[ScamShield WS] Disconnected. Retrying in ${delay}ms`)
+        console.log(`[VoxGuard WS] Disconnected. Retrying in ${delay}ms`)
         retryTimeout.current = setTimeout(connect, delay)
       }
 

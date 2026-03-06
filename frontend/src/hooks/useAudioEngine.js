@@ -3,10 +3,11 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 /**
  * useAudioEngine
  *
- * Attempts to load the Rust WASM audio engine (scam_shield_audio).
+ * Attempts to load the Rust WASM audio engine (voxguard_audio).
  * If WASM is unavailable (e.g. Vercel demo), falls back to the
  * Web Audio API for microphone capture and chunking.
  *
+ * NEW: Records session audio via MediaRecorder for gallery playback.
  * Emits 250ms PCM chunks as base64 strings via onChunk callback.
  */
 export function useAudioEngine({ onChunk, active }) {
@@ -14,26 +15,36 @@ export function useAudioEngine({ onChunk, active }) {
   const [hasWasm,    setHasWasm]    = useState(false)
   const [error,      setError]      = useState(null)
   const [audioLevel, setAudioLevel] = useState(0)
+  const [recordingBlob, setRecordingBlob] = useState(null)
 
-  const streamRef   = useRef(null)
-  const contextRef  = useRef(null)
-  const processorRef= useRef(null)
-  const wasmRef     = useRef(null)
-  const frameBuffer = useRef([])
+  const streamRef    = useRef(null)
+  const contextRef   = useRef(null)
+  const processorRef = useRef(null)
+  const wasmRef      = useRef(null)
+  const recorderRef  = useRef(null)
+  const chunksRef    = useRef([])
 
   // ── Try to load Rust WASM engine ──────────────────────────
   useEffect(() => {
     async function loadWasm() {
       try {
-        // Dynamic import — only present after `wasm-pack build`
-        const wasm = await import('../wasm/scam_shield_audio.js')
+        const wasm = await import('../wasm/voxguard_audio.js')
         await wasm.default()
         wasmRef.current = wasm
         setHasWasm(true)
-        console.log('[AudioEngine] Rust WASM loaded ✓')
+        console.log('[VoxGuard Audio] Rust WASM loaded ✓')
       } catch {
-        console.warn('[AudioEngine] WASM not available, using Web Audio fallback')
-        setHasWasm(false)
+        // Try legacy name
+        try {
+          const wasm = await import('../wasm/scam_shield_audio.js')
+          await wasm.default()
+          wasmRef.current = wasm
+          setHasWasm(true)
+          console.log('[VoxGuard Audio] Rust WASM (legacy) loaded ✓')
+        } catch {
+          console.warn('[VoxGuard Audio] WASM not available, using Web Audio fallback')
+          setHasWasm(false)
+        }
       }
       setReady(true)
     }
@@ -44,6 +55,8 @@ export function useAudioEngine({ onChunk, active }) {
   const start = useCallback(async () => {
     if (!ready) return
     setError(null)
+    setRecordingBlob(null)
+    chunksRef.current = []
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -56,44 +69,55 @@ export function useAudioEngine({ onChunk, active }) {
       })
       streamRef.current = stream
 
+      // ── Start MediaRecorder for session recording ──
+      try {
+        const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) chunksRef.current.push(e.data)
+        }
+        recorder.onstop = () => {
+          if (chunksRef.current.length > 0) {
+            const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+            setRecordingBlob(blob)
+          }
+        }
+        recorder.start(1000) // collect in 1s chunks
+        recorderRef.current = recorder
+      } catch (recErr) {
+        console.warn('[VoxGuard Audio] MediaRecorder not available:', recErr)
+      }
+
       const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 })
       contextRef.current = ctx
 
-      const source    = ctx.createMediaStreamSource(stream)
-      const analyser  = ctx.createAnalyser()
+      const source   = ctx.createMediaStreamSource(stream)
+      const analyser = ctx.createAnalyser()
       analyser.fftSize = 256
       source.connect(analyser)
 
-      // Chunk size: 250ms at 16kHz = 4000 samples
       const chunkSamples = 4000
       let   buffer       = new Float32Array(0)
 
       const processor = ctx.createScriptProcessor(4096, 1, 1)
       processor.onaudioprocess = (e) => {
-        const input   = e.inputBuffer.getChannelData(0)
-        const merged  = new Float32Array(buffer.length + input.length)
+        const input  = e.inputBuffer.getChannelData(0)
+        const merged = new Float32Array(buffer.length + input.length)
         merged.set(buffer)
         merged.set(input, buffer.length)
         buffer = merged
 
-        // Volume level for waveform visualizer
         const rms = Math.sqrt(input.reduce((s, v) => s + v * v, 0) / input.length)
         setAudioLevel(Math.min(1, rms * 8))
 
-        // Emit chunks
         while (buffer.length >= chunkSamples) {
           const chunk = buffer.slice(0, chunkSamples)
           buffer      = buffer.slice(chunkSamples)
 
           let processed = chunk
-          // Use Rust WASM preprocessor if available
           if (hasWasm && wasmRef.current?.preprocess_chunk) {
-            try {
-              processed = wasmRef.current.preprocess_chunk(chunk)
-            } catch { /* fall through to raw chunk */ }
+            try { processed = wasmRef.current.preprocess_chunk(chunk) } catch {}
           }
 
-          // Convert Float32 → Int16 PCM → base64
           const pcm    = float32ToInt16(processed)
           const base64 = int16ToBase64(pcm)
           onChunk?.(base64)
@@ -104,15 +128,21 @@ export function useAudioEngine({ onChunk, active }) {
       processor.connect(ctx.destination)
       processorRef.current = processor
 
-      console.log(`[AudioEngine] Started (${hasWasm ? 'Rust WASM' : 'Web Audio fallback'})`)
+      console.log(`[VoxGuard Audio] Started (${hasWasm ? 'Rust WASM' : 'Web Audio fallback'})`)
     } catch (e) {
       setError(e.message || 'Microphone access denied')
-      console.error('[AudioEngine] Failed to start:', e)
+      console.error('[VoxGuard Audio] Failed to start:', e)
     }
   }, [ready, hasWasm, onChunk])
 
   // ── Stop capturing ─────────────────────────────────────────
   const stop = useCallback(() => {
+    // Stop recorder first
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+      recorderRef.current.stop()
+    }
+    recorderRef.current = null
+
     processorRef.current?.disconnect()
     processorRef.current = null
     contextRef.current?.close()
@@ -120,7 +150,7 @@ export function useAudioEngine({ onChunk, active }) {
     streamRef.current?.getTracks().forEach(t => t.stop())
     streamRef.current   = null
     setAudioLevel(0)
-    console.log('[AudioEngine] Stopped')
+    console.log('[VoxGuard Audio] Stopped')
   }, [])
 
   useEffect(() => {
@@ -129,7 +159,7 @@ export function useAudioEngine({ onChunk, active }) {
     return () => stop()
   }, [active, start, stop])
 
-  return { ready, hasWasm, error, audioLevel }
+  return { ready, hasWasm, error, audioLevel, recordingBlob }
 }
 
 // ── Utilities ─────────────────────────────────────────────────
