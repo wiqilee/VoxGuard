@@ -182,7 +182,7 @@ export default function App() {
 
           {/* CONTENT */}
           <main style={{ flex:1,padding:'32px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
-            {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} />}
+            {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} language={language} />}
             {tab==='psych'    && <PsychTab   psychScores={psychScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
             {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} />}
