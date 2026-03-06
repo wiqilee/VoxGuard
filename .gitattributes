@@ -1,0 +1,5 @@
+# Force GitHub to detect Rust in language stats
+rust-engine/*.rs linguist-detectable=true
+frontend/src/wasm/*.js linguist-generated=true
+frontend/src/wasm/*.wasm linguist-generated=true
+*.json linguist-detectable=false

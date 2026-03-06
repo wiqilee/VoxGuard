@@ -188,7 +188,7 @@ export default function App() {
               <div style={{ display:'flex',gap:6,alignItems:'center',flexWrap:'wrap' }}>
                 <SocialLink href="https://x.com/wiqi_lee" icon={<XIcon size={11} color="currentColor"/>} label="@wiqi_lee" c="rgba(255,255,255,0.7)" bc="rgba(255,255,255,0.16)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
                 <SocialLink href="https://discord.com/users/209385020912173066" icon={<DiscordIcon size={12} color="#7b8cde"/>} label="Discord" c="#7b8cde" bc="rgba(123,140,222,0.25)" bg="rgba(123,140,222,0.06)" hc="#a5b4fc" hbg="rgba(123,140,222,0.14)" />
-                <SocialLink href="https://github.com/wiqilee" icon={<GitHubIcon size={12} color="currentColor"/>} label="GitHub" c="rgba(255,255,255,0.65)" bc="rgba(255,255,255,0.14)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
+                <SocialLink href="https://github.com/wiqilee" icon={<GitHubIcon size={12} color="currentColor"/>} label="GitHub" c="rgba(255,255,255,0.7)" bc="rgba(255,255,255,0.14)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
                 <div style={{ width:1,height:18,background:'rgba(255,255,255,0.12)',margin:'0 3px' }} />
                 <SocialLink href="https://geminiliveagentchallenge.devpost.com" icon={null} label="#GeminiLiveAgentChallenge" c="#ffd60a" bc="rgba(255,214,10,0.25)" bg="rgba(255,214,10,0.06)" hc="#ffe55a" hbg="rgba(255,214,10,0.12)" />
               </div>

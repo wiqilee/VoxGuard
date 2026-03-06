@@ -1,14 +1,80 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300">
-  <defs><style>@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}.bg{fill:#020408}.m{font-family:'Courier New',monospace}</style></defs>
-  <rect width="260" height="300" class="bg" rx="4"/><rect x="1" y="1" width="258" height="298" rx="4" fill="none" stroke="#ff9500" stroke-width="1" opacity=".2"/>
-  <text x="130" y="26" text-anchor="middle" class="m" font-size="9" fill="#ff9500" letter-spacing="3" font-weight="bold">PSYCH VECTORS</text>
-  <line x1="30" y1="36" x2="230" y2="36" stroke="#ff9500" stroke-width=".5" opacity=".2"/>
-  <circle cx="22" cy="23" r="3" fill="#ff9500" style="animation:blink 1.5s step-end infinite"/>
-  <g transform="translate(20,52)"><text x="0" y="10" class="m" font-size="8" fill="#ff2d55" letter-spacing="1">SCARCITY</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ff2d5512"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ff2d55" opacity=".85"><animate attributeName="width" from="0" to="119" dur=".8s" begin=".2s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ff2d55" font-weight="bold">85%</text></g>
-  <g transform="translate(20,92)"><text x="0" y="10" class="m" font-size="8" fill="#ff9500" letter-spacing="1">AUTHORITY</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ff950012"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ff9500" opacity=".85"><animate attributeName="width" from="0" to="133" dur=".8s" begin=".35s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ff9500" font-weight="bold">95%</text></g>
-  <g transform="translate(20,132)"><text x="0" y="10" class="m" font-size="8" fill="#ff2d55" letter-spacing="1">FEAR</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ff2d5512"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ff2d55" opacity=".85"><animate attributeName="width" from="0" to="126" dur=".8s" begin=".5s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ff2d55" font-weight="bold">90%</text></g>
-  <g transform="translate(20,172)"><text x="0" y="10" class="m" font-size="8" fill="#ffd60a" letter-spacing="1">RECIPROCITY</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#ffd60a12"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#ffd60a" opacity=".85"><animate attributeName="width" from="0" to="56" dur=".8s" begin=".65s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#ffd60a" font-weight="bold">40%</text></g>
-  <g transform="translate(20,212)"><text x="0" y="10" class="m" font-size="8" fill="#bf5af2" letter-spacing="1">ISOLATION</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#bf5af212"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#bf5af2" opacity=".85"><animate attributeName="width" from="0" to="98" dur=".8s" begin=".8s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#bf5af2" font-weight="bold">70%</text></g>
-  <g transform="translate(20,252)"><text x="0" y="10" class="m" font-size="8" fill="#30d158" letter-spacing="1">COMMITMENT</text><rect x="80" y="2" width="140" height="10" rx="1" fill="#30d15812"/><rect x="80" y="2" width="0" height="10" rx="1" fill="#30d158" opacity=".85"><animate attributeName="width" from="0" to="42" dur=".8s" begin=".95s" fill="freeze"/></rect><text x="228" y="11" class="m" font-size="8" fill="#30d158" font-weight="bold">30%</text></g>
-  <text x="130" y="290" text-anchor="middle" class="m" font-size="6" fill="rgba(255,255,255,.2)" letter-spacing="2">CIALDINI MODEL · REAL-TIME</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320">
+  <defs>
+    <style>
+      @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+      @keyframes colorShift1{0%{fill:#ff4d6a}50%{fill:#ff8fa3}100%{fill:#ff4d6a}}
+      @keyframes colorShift2{0%{fill:#ff9500}50%{fill:#ffbb55}100%{fill:#ff9500}}
+      @keyframes colorShift3{0%{fill:#ffd60a}50%{fill:#ffee66}100%{fill:#ffd60a}}
+      @keyframes colorShift4{0%{fill:#bf5af2}50%{fill:#d98fff}100%{fill:#bf5af2}}
+      @keyframes colorShift5{0%{fill:#30d158}50%{fill:#66e888}100%{fill:#30d158}}
+      .bg{fill:#020408}.m{font-family:'Courier New',monospace}
+    </style>
+  </defs>
+  <rect width="320" height="320" class="bg" rx="4"/>
+  <rect x="1" y="1" width="318" height="318" rx="4" fill="none" stroke="#ff9500" stroke-width="1" opacity=".25"/>
+  <text x="160" y="28" text-anchor="middle" class="m" font-size="10" fill="#ff9500" letter-spacing="3" font-weight="bold">PSYCH VECTORS</text>
+  <line x1="30" y1="40" x2="290" y2="40" stroke="#ff9500" stroke-width=".5" opacity=".25"/>
+  <circle cx="22" cy="24" r="4" fill="#ff9500" style="animation:blink 1.5s step-end infinite"/>
+
+  <!-- SCARCITY 85% -->
+  <g transform="translate(20,58)">
+    <text x="0" y="12" class="m" font-size="9" fill="#ff4d6a" letter-spacing="1" font-weight="bold">SCARCITY</text>
+    <rect x="0" y="20" width="280" height="12" rx="1" fill="#ff4d6a15"/>
+    <rect x="0" y="20" width="0" height="12" rx="1" style="animation:colorShift1 3s ease infinite" opacity=".9">
+      <animate attributeName="width" from="0" to="238" dur="1s" begin=".2s" fill="freeze"/>
+    </rect>
+    <text x="250" y="31" class="m" font-size="9" fill="#ff4d6a" font-weight="bold">85%</text>
+  </g>
+
+  <!-- AUTHORITY 95% -->
+  <g transform="translate(20,102)">
+    <text x="0" y="12" class="m" font-size="9" fill="#ff9500" letter-spacing="1" font-weight="bold">AUTHORITY</text>
+    <rect x="0" y="20" width="280" height="12" rx="1" fill="#ff950015"/>
+    <rect x="0" y="20" width="0" height="12" rx="1" style="animation:colorShift2 3s ease .5s infinite" opacity=".9">
+      <animate attributeName="width" from="0" to="266" dur="1s" begin=".35s" fill="freeze"/>
+    </rect>
+    <text x="250" y="31" class="m" font-size="9" fill="#ff9500" font-weight="bold">95%</text>
+  </g>
+
+  <!-- FEAR 90% -->
+  <g transform="translate(20,146)">
+    <text x="0" y="12" class="m" font-size="9" fill="#ff4d6a" letter-spacing="1" font-weight="bold">FEAR</text>
+    <rect x="0" y="20" width="280" height="12" rx="1" fill="#ff4d6a15"/>
+    <rect x="0" y="20" width="0" height="12" rx="1" style="animation:colorShift1 3s ease 1s infinite" opacity=".9">
+      <animate attributeName="width" from="0" to="252" dur="1s" begin=".5s" fill="freeze"/>
+    </rect>
+    <text x="250" y="31" class="m" font-size="9" fill="#ff4d6a" font-weight="bold">90%</text>
+  </g>
+
+  <!-- RECIPROCITY 40% -->
+  <g transform="translate(20,190)">
+    <text x="0" y="12" class="m" font-size="9" fill="#ffd60a" letter-spacing="1" font-weight="bold">RECIPROCITY</text>
+    <rect x="0" y="20" width="280" height="12" rx="1" fill="#ffd60a15"/>
+    <rect x="0" y="20" width="0" height="12" rx="1" style="animation:colorShift3 3s ease 1.5s infinite" opacity=".9">
+      <animate attributeName="width" from="0" to="112" dur="1s" begin=".65s" fill="freeze"/>
+    </rect>
+    <text x="250" y="31" class="m" font-size="9" fill="#ffd60a" font-weight="bold">40%</text>
+  </g>
+
+  <!-- ISOLATION 70% -->
+  <g transform="translate(20,234)">
+    <text x="0" y="12" class="m" font-size="9" fill="#bf5af2" letter-spacing="1" font-weight="bold">ISOLATION</text>
+    <rect x="0" y="20" width="280" height="12" rx="1" fill="#bf5af215"/>
+    <rect x="0" y="20" width="0" height="12" rx="1" style="animation:colorShift4 3s ease 2s infinite" opacity=".9">
+      <animate attributeName="width" from="0" to="196" dur="1s" begin=".8s" fill="freeze"/>
+    </rect>
+    <text x="250" y="31" class="m" font-size="9" fill="#bf5af2" font-weight="bold">70%</text>
+  </g>
+
+  <!-- COMMITMENT 30% -->
+  <g transform="translate(20,278)">
+    <text x="0" y="12" class="m" font-size="9" fill="#30d158" letter-spacing="1" font-weight="bold">COMMITMENT</text>
+    <rect x="0" y="20" width="280" height="12" rx="1" fill="#30d15815"/>
+    <rect x="0" y="20" width="0" height="12" rx="1" style="animation:colorShift5 3s ease 2.5s infinite" opacity=".9">
+      <animate attributeName="width" from="0" to="84" dur="1s" begin=".95s" fill="freeze"/>
+    </rect>
+    <text x="250" y="31" class="m" font-size="9" fill="#30d158" font-weight="bold">30%</text>
+  </g>
+
+  <text x="160" y="312" text-anchor="middle" class="m" font-size="7" fill="rgba(255,255,255,.35)" letter-spacing="2">CIALDINI MODEL - REAL-TIME SCORING</text>
 </svg>

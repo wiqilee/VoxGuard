@@ -93,7 +93,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 ## 🏗️ Architecture
 
 <div align="center">
-<img src="docs/svgs/architecture-badge.svg" alt="System Architecture" width="100%"/>
+<img src="docs/architecture.svg" alt="System Architecture" width="100%"/>
 </div>
 
 **Input Sources:** The adversary's voice/video (phone, WhatsApp, Zoom, Teams, anything), the protected party's microphone (via Web Audio API), and optional screen capture for visual scam detection.

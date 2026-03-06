@@ -41,3 +41,5 @@ frontend/src/wasm/
 
 # ── GCP ──────────────────────────────────────────────────────
 .gcloud/
+google-cloud-cli-darwin-x86_64.tar.gz
+gcp-key-new.json

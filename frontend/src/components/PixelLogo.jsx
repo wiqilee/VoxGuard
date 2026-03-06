@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react'
 const PF = "'Press Start 2P', monospace"
 const MF = "'Share Tech Mono', 'Courier New', monospace"
 
+// VoxGuard "V" shield shape
 const SHIELD = [
-  [0,0,1,1,1,1,1,1,0,0],
   [0,1,1,1,1,1,1,1,1,0],
   [1,1,1,1,1,1,1,1,1,1],
-  [1,1,1,0,1,1,0,1,1,1],
+  [1,1,0,1,1,1,1,0,1,1],
   [1,1,1,1,1,1,1,1,1,1],
-  [1,1,0,1,0,0,1,0,1,1],
+  [0,1,1,0,1,1,0,1,1,0],
   [0,1,1,1,1,1,1,1,1,0],
   [0,0,1,1,1,1,1,1,0,0],
   [0,0,0,1,1,1,1,0,0,0],
@@ -17,37 +17,36 @@ const SHIELD = [
 ]
 
 const CYCLE = [
-  ['#00ffff','#a78bfa','#4ade80'],
-  ['#a78bfa','#ff4d8d','#00ffff'],
-  ['#ffaa00','#ffe14d','#a78bfa'],
-  ['#4ade80','#00ffff','#ffaa00'],
-  ['#ff4d8d','#ffaa00','#ffe14d'],
+  ['#00ffff','#c084fc','#4ade80'],
+  ['#c084fc','#ff6b9d','#00ffff'],
+  ['#ffbb33','#ffee55','#c084fc'],
+  ['#4ade80','#00ffff','#ffbb33'],
+  ['#ff6b9d','#ffbb33','#ffee55'],
 ]
 
 export function PixelLogo({ compact = false }) {
   const [ci, setCi] = useState(0)
   useEffect(() => {
-    const t = setInterval(() => setCi(x => (x + 1) % CYCLE.length), 550)
+    const t = setInterval(() => setCi(x => (x + 1) % CYCLE.length), 500)
     return () => clearInterval(t)
   }, [])
   const [c1, c2, c3] = CYCLE[ci]
   const px = compact ? 5 : 7
-  const gap = compact ? 1 : 2
 
   return (
     <div style={{ display:'flex', alignItems:'center', gap: compact ? 10 : 18, flexShrink:0 }}>
       <div style={{ position:'relative' }}>
-        <div style={{ position:'absolute', inset:-16, borderRadius:4, background:`radial-gradient(ellipse at center, ${c1}88 0%, transparent 60%)`, transition:'background 0.4s', pointerEvents:'none' }} />
-        <div style={{ position:'absolute', inset:-8, background:`radial-gradient(ellipse at center, ${c2}44 0%, transparent 75%)`, transition:'background 0.4s', pointerEvents:'none' }} />
-        <div style={{ display:'grid', gridTemplateColumns:`repeat(10, ${px}px)`, gap, position:'relative', zIndex:1 }}>
+        {/* Strong outer glow */}
+        <div style={{ position:'absolute', inset:-20, borderRadius:6, background:`radial-gradient(ellipse at center, ${c1}99 0%, ${c2}44 40%, transparent 65%)`, transition:'background 0.35s', pointerEvents:'none', filter:'blur(4px)' }} />
+        <div style={{ display:'grid', gridTemplateColumns:`repeat(10, ${px}px)`, gap:2, position:'relative', zIndex:1 }}>
           {SHIELD.map((row, ri) => row.map((on, ci2) => {
-            const col = on ? (ri < 3 ? c1 : ri < 6 ? c2 : c3) : 'transparent'
+            const col = on ? (ri < 2 ? c1 : ri < 5 ? c2 : c3) : 'transparent'
             return (
               <div key={`${ri}-${ci2}`} style={{
                 width:px, height:px,
                 background: on ? col : 'transparent',
-                boxShadow: on ? `0 0 4px ${col}, 0 0 10px ${col}, 0 0 20px ${col}aa` : 'none',
-                transition: 'all 0.4s ease',
+                boxShadow: on ? `0 0 3px ${col}, 0 0 8px ${col}, 0 0 16px ${col}` : 'none',
+                transition: 'all 0.35s ease',
               }} />
             )
           }))}
@@ -55,14 +54,14 @@ export function PixelLogo({ compact = false }) {
       </div>
       <div>
         <div style={{
-          fontFamily:PF, fontSize: compact ? 9 : 13, lineHeight:1.45, letterSpacing: compact ? 1 : 3,
-          color:c1,
-          textShadow:`0 0 12px ${c1}, 0 0 28px ${c1}cc, 3px 3px 0 ${c2}aa, 6px 6px 0 ${c3}66`,
-          transition:'all 0.4s ease',
+          fontFamily:PF, fontSize: compact ? 9 : 14, lineHeight:1.4, letterSpacing: compact ? 1 : 3,
+          color:'#fff',
+          textShadow:`0 0 10px ${c1}, 0 0 25px ${c1}, 0 0 50px ${c1}88, 3px 3px 0 ${c2}cc`,
+          transition:'text-shadow 0.35s ease',
         }}>
           VOX<br/>GUARD
         </div>
-        <div style={{ fontFamily:MF, fontSize: compact ? 6 : 7, color:c2, letterSpacing:3, marginTop:2, textShadow:`0 0 8px ${c2}, 0 0 16px ${c2}88`, transition:'all 0.4s' }}>
+        <div style={{ fontFamily:MF, fontSize: compact ? 6 : 7, color:c2, letterSpacing:3, marginTop:2, textShadow:`0 0 6px ${c2}`, transition:'all 0.35s' }}>
           v1.0.0
         </div>
       </div>

@@ -426,7 +426,7 @@ export function AboutTab() {
             <div style={{ display:'flex',gap:8,flexWrap:'wrap' }}>
               <SLink href="https://x.com/wiqi_lee" icon={<XIcon size={11} color="currentColor"/>} label="@wiqi_lee" c="rgba(255,255,255,0.75)" bc="rgba(255,255,255,0.15)" bg="rgba(255,255,255,0.05)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
               <SLink href="https://discord.com/users/209385020912173066" icon={<DiscordIcon size={13} color="#7b8cde"/>} label="Discord" c="#7b8cde" bc="rgba(123,140,222,0.25)" bg="rgba(123,140,222,0.06)" hc="#a5b4fc" hbg="rgba(123,140,222,0.14)" />
-              <SLink href="https://github.com/wiqilee" icon={<GitHubIcon size={12} color="currentColor"/>} label="github.com/wiqilee" c="rgba(255,255,255,0.7)" bc="rgba(255,255,255,0.14)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
+              <SLink href="https://github.com/wiqilee/VoxGuard" icon={<GitHubIcon size={12} color="currentColor"/>} label="GitHub" c="rgba(255,255,255,0.7)" bc="rgba(255,255,255,0.14)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
             </div>
           </div>
         </div>
