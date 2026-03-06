@@ -11,6 +11,17 @@ import { LanguageSelector } from './components/LanguageSelector'
 const TABS = ['monitor','psych','patterns','report','about']
 const DEMO = import.meta.env.VITE_DEMO_MODE === 'true' || true
 
+// Languages where demo voice/alerts still use English (browser TTS limitation)
+const ENGLISH_FALLBACK_LANGS = {
+  'ms':'Malay','tl':'Filipino','th':'Thai','vi':'Vietnamese',
+  'de':'German','it':'Italian','nl':'Dutch','tr':'Turkish','pl':'Polish',
+  'ru':'Russian','uk':'Ukrainian','ro':'Romanian','cs':'Czech','hu':'Hungarian',
+  'sv':'Swedish','da':'Danish','fi':'Finnish','el':'Greek','he':'Hebrew',
+  'fa':'Persian','bn':'Bengali','ur':'Urdu','ta':'Tamil','sw':'Swahili',
+  'am':'Amharic','yo':'Yoruba','ha':'Hausa','af':'Afrikaans','no':'Norwegian',
+  'pt-BR':'Portuguese',
+}
+
 const XIcon = ({ size=12,color='currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{flexShrink:0,display:'block'}}>
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2.25 2.25h6.422l4.256 5.624 5.316-5.624Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -122,6 +133,24 @@ export default function App() {
         .tab-btn{color:rgba(255,255,255,0.6)!important;transition:all 0.15s ease;position:relative}
         .tab-btn:hover{color:rgba(255,255,255,0.95)!important;text-shadow:0 0 12px rgba(255,255,255,0.4)!important;background:rgba(255,255,255,0.04)!important}
         .tab-btn.active-tab{color:#00ffff!important;text-shadow:0 0 16px #00ffff,0 0 32px rgba(0,255,255,0.4)!important}
+
+        /* ── Responsive Phone View ── */
+        @media(max-width:768px){
+          .vg-header-inner{height:auto!important;flex-wrap:wrap!important;padding:10px 14px!important;gap:10px!important}
+          .vg-header-inner .vg-marquee{display:none!important}
+          .vg-header-inner .vg-divider{display:none!important}
+          .vg-header-inner .vg-status{min-width:auto!important;padding:6px 10px!important}
+          .vg-tabs{padding:0 10px!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+          .vg-tabs .tab-btn{padding:12px 14px!important;font-size:6px!important;white-space:nowrap}
+          .vg-content{padding:14px!important}
+          .vg-footer-inner{flex-direction:column!important;padding:12px 14px!important;text-align:center!important;gap:8px!important}
+          .vg-footer-inner>*{justify-content:center!important}
+        }
+        @media(max-width:480px){
+          .vg-header-inner{padding:8px 10px!important}
+          .vg-content{padding:10px!important}
+          .vg-tabs .tab-btn{padding:10px 10px!important;font-size:5px!important;letter-spacing:1px!important}
+        }
       `}</style>
 
       <div style={{ minHeight:'100vh',background:'#020408',color:'#e0e0e0',fontFamily:MF,position:'relative',overflow:'hidden',filter:glitch?'hue-rotate(18deg) saturate(2.2)':'none',transition:'filter 0.08s' }}>
@@ -145,19 +174,19 @@ export default function App() {
           {/* HEADER */}
           <header style={{ background:'rgba(2,4,8,0.92)',borderBottom:'1px solid rgba(0,255,255,0.15)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)' }}>
             <div style={{ height:2,background:monitoring?`linear-gradient(90deg,transparent,${tColor}cc,${tColor}88,transparent)`:'linear-gradient(90deg,transparent,rgba(0,255,255,0.6),rgba(167,139,250,0.4),transparent)',transition:'background 0.6s ease' }} />
-            <div style={{ display:'flex',alignItems:'center',gap:0,height:90,padding:'0 32px' }}>
+            <div className="vg-header-inner" style={{ display:'flex',alignItems:'center',gap:0,height:90,padding:'0 32px' }}>
               <PixelLogo />
-              <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
-              <div style={{ flex:1,overflow:'hidden',height:20,display:'flex',alignItems:'center',minWidth:0 }}>
+              <div className="vg-divider" style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
+              <div className="vg-marquee" style={{ flex:1,overflow:'hidden',height:20,display:'flex',alignItems:'center',minWidth:0 }}>
                 <div style={{ fontFamily:MF,fontSize:10,whiteSpace:'nowrap',animation:'marquee 28s linear infinite,colorCycle 8s ease infinite',letterSpacing:2 }}>
                   ◄ VOXGUARD - REAL-TIME MULTIMODAL AI PROTECTION - GEMINI LIVE API + RUST WASM ENGINE - &lt;80ms LATENCY - GROUNDED: FTC - FBI IC3 - GASA - MAS - ACCC - #GeminiLiveAgentChallenge - BY WIQI LEE ►
                 </div>
               </div>
-              <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
+              <div className="vg-divider" style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
               <LanguageSelector value={language} onChange={setLanguage} />
-              <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 14px',flexShrink:0 }} />
+              <div className="vg-divider" style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 14px',flexShrink:0 }} />
               {/* Status indicator */}
-              <div style={{ display:'flex',alignItems:'center',gap:12,padding:'10px 20px',border:`1px solid ${monitoring?tColor+'66':'rgba(255,255,255,0.15)'}`,background:monitoring?`linear-gradient(135deg,${tColor}14,${tColor}08)`:'rgba(255,255,255,0.04)',boxShadow:monitoring?`0 0 24px ${tColor}28`:'0 0 12px rgba(0,255,255,0.05)',transition:'all 0.5s ease',minWidth:150,flexShrink:0,animation:monitoring?'':'borderGlow 4s ease infinite' }}>
+              <div className="vg-status" style={{ display:'flex',alignItems:'center',gap:12,padding:'10px 20px',border:`1px solid ${monitoring?tColor+'66':'rgba(255,255,255,0.15)'}`,background:monitoring?`linear-gradient(135deg,${tColor}14,${tColor}08)`:'rgba(255,255,255,0.04)',boxShadow:monitoring?`0 0 24px ${tColor}28`:'0 0 12px rgba(0,255,255,0.05)',transition:'all 0.5s ease',minWidth:150,flexShrink:0,animation:monitoring?'':'borderGlow 4s ease infinite' }}>
                 <div style={{ position:'relative',width:12,height:12,flexShrink:0 }}>
                   {monitoring&&<div style={{ position:'absolute',inset:-4,borderRadius:'50%',border:`1px solid ${tColor}88`,animation:'ppulse 1.6s ease-in-out infinite' }} />}
                   <div style={{ width:12,height:12,background:monitoring?tColor:'rgba(0,255,255,0.5)',boxShadow:monitoring?`0 0 12px ${tColor},0 0 24px ${tColor}66`:'0 0 8px rgba(0,255,255,0.3)',animation:monitoring?'blink 0.9s step-end infinite':'none',transition:'all 0.4s' }} />
@@ -172,7 +201,7 @@ export default function App() {
           </header>
 
           {/* TABS */}
-          <nav style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.97)',padding:'0 32px',position:'sticky',top:92,zIndex:99 }}>
+          <nav className="vg-tabs" style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.97)',padding:'0 32px',position:'sticky',top:92,zIndex:99 }}>
             {TABS.map(t=>(
               <button key={t} onClick={()=>setTab(t)}
                 className={`tab-btn${tab===t?' active-tab':''}`}
@@ -184,7 +213,16 @@ export default function App() {
           </nav>
 
           {/* CONTENT */}
-          <main style={{ flex:1,padding:'32px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
+          <main className="vg-content" style={{ flex:1,padding:'32px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
+            {/* Language fallback notice */}
+            {ENGLISH_FALLBACK_LANGS[language]&&(
+              <div style={{ marginBottom:16,padding:'10px 16px',border:'1px solid rgba(255,214,10,0.25)',background:'rgba(255,214,10,0.04)',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' }}>
+                <span style={{ fontFamily:PF,fontSize:6,color:'#ffd60a',letterSpacing:1 }}>⚠ LANGUAGE NOTE</span>
+                <span style={{ fontFamily:MF,fontSize:10,color:'rgba(255,214,10,0.7)' }}>
+                  {ENGLISH_FALLBACK_LANGS[language]} demo currently uses English voice & alerts. Full native language support requires Google Cloud TTS backend (Gemini Live API).
+                </span>
+              </div>
+            )}
             {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} onTranscriptLine={handleTranscriptLine} language={language} />}
             {tab==='psych'    && <PsychTab   psychScores={psychScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
@@ -195,7 +233,7 @@ export default function App() {
           {/* FOOTER */}
           <footer style={{ background:'rgba(2,4,8,0.98)',borderTop:'1px solid rgba(0,255,255,0.12)' }}>
             <div style={{ height:1,background:'linear-gradient(90deg,transparent,rgba(0,255,255,0.4),rgba(167,139,250,0.3),rgba(74,222,128,0.2),transparent)' }} />
-            <div style={{ padding:'14px 32px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10 }}>
+            <div className="vg-footer-inner" style={{ padding:'14px 32px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10 }}>
               <div style={{ fontFamily:PF,fontSize:6,letterSpacing:1.5,lineHeight:2 }}>
                 <span style={{ color:'rgba(0,255,255,0.85)',textShadow:'0 0 6px rgba(0,255,255,0.4)' }}>VOXGUARD &copy; 2026</span><br/>
                 <span style={{ color:'rgba(255,255,255,0.5)',fontSize:5 }}>WIQI LEE - MIT LICENSE</span>

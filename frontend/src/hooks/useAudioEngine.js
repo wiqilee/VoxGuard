@@ -3,11 +3,11 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 /**
  * useAudioEngine
  *
- * Attempts to load the Rust WASM audio engine (voxguard_audio).
+ * Attempts to load the Rust WASM audio engine.
  * If WASM is unavailable (e.g. Vercel demo), falls back to the
  * Web Audio API for microphone capture and chunking.
  *
- * NEW: Records session audio via MediaRecorder for gallery playback.
+ * Records session audio via MediaRecorder for gallery playback.
  * Emits 250ms PCM chunks as base64 strings via onChunk callback.
  */
 export function useAudioEngine({ onChunk, active }) {
@@ -28,23 +28,17 @@ export function useAudioEngine({ onChunk, active }) {
   useEffect(() => {
     async function loadWasm() {
       try {
-        const wasm = await import('../wasm/voxguard_audio.js')
+        // Dynamic import with explicit catch — won't break Vite build
+        // The WASM file only exists after wasm-pack build (CI/CD pipeline)
+        const wasmPath = new URL('../wasm/scam_shield_audio.js', import.meta.url).href
+        const wasm = await import(/* @vite-ignore */ wasmPath)
         await wasm.default()
         wasmRef.current = wasm
         setHasWasm(true)
         console.log('[VoxGuard Audio] Rust WASM loaded ✓')
       } catch {
-        // Try legacy name
-        try {
-          const wasm = await import('../wasm/scam_shield_audio.js')
-          await wasm.default()
-          wasmRef.current = wasm
-          setHasWasm(true)
-          console.log('[VoxGuard Audio] Rust WASM (legacy) loaded ✓')
-        } catch {
-          console.warn('[VoxGuard Audio] WASM not available, using Web Audio fallback')
-          setHasWasm(false)
-        }
+        console.warn('[VoxGuard Audio] WASM not available, using Web Audio fallback')
+        setHasWasm(false)
       }
       setReady(true)
     }
@@ -81,7 +75,7 @@ export function useAudioEngine({ onChunk, active }) {
             setRecordingBlob(blob)
           }
         }
-        recorder.start(1000) // collect in 1s chunks
+        recorder.start(1000)
         recorderRef.current = recorder
       } catch (recErr) {
         console.warn('[VoxGuard Audio] MediaRecorder not available:', recErr)
@@ -137,7 +131,6 @@ export function useAudioEngine({ onChunk, active }) {
 
   // ── Stop capturing ─────────────────────────────────────────
   const stop = useCallback(() => {
-    // Stop recorder first
     if (recorderRef.current && recorderRef.current.state !== 'inactive') {
       recorderRef.current.stop()
     }
