@@ -61,22 +61,24 @@ export default function App() {
 
   useEffect(()=>{ if(DEMO)return; setAlerts(ws.alerts);setThreatScore(ws.threatScore);setPsychScores(ws.psychScores);setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe') },[ws.alerts,ws.threatScore,ws.psychScores])
 
+  // Voice demo: audio level simulation while monitoring
   useEffect(()=>{
-    if(!DEMO||!monitoring){clearInterval(demoRef.current);return}
+    if(!monitoring){clearInterval(demoRef.current);return}
     demoRef.current=setInterval(()=>{
-      setAudioLevel(Math.random()*0.8+0.2)
-      if(Math.random()>0.82&&alertIdxRef.current<MOCK_ALERTS.length){
-        const a=MOCK_ALERTS[alertIdxRef.current++]
-        setAlerts(prev=>[a,...prev])
-        const s=Math.min(95,threatScore+20+Math.floor(Math.random()*12))
-        setThreatScore(s);setThreatLevel(s>75?'critical':s>45?'high':'safe')
-        ;(a.tactics||[]).forEach(t=>setPsychScores(prev=>({...prev,[t]:Math.min(100,(prev[t]||0)+28+Math.floor(Math.random()*18))})))
-        setDetectedIds(prev=>prev.includes(a.pattern)?prev:[...prev,a.pattern])
-        if(a.severity==='critical'){setGlitch(true);setTimeout(()=>setGlitch(false),500)}
-      }
-    },1000)
+      setAudioLevel(Math.random()*0.6+0.1)
+    },150)
     return()=>clearInterval(demoRef.current)
-  },[monitoring,threatScore])
+  },[monitoring])
+
+  // Handler for voice demo alerts (called by MonitorTab when TTS triggers an alert)
+  const handleDemoAlert = (alert) => {
+    setAlerts(prev=>[alert,...prev])
+    const s=Math.min(95,threatScore+18+Math.floor(Math.random()*10))
+    setThreatScore(s);setThreatLevel(s>75?'critical':s>45?'high':'safe')
+    ;(alert.tactics||[]).forEach(t=>setPsychScores(prev=>({...prev,[t]:Math.min(100,(prev[t]||0)+25+Math.floor(Math.random()*15))})))
+    setDetectedIds(prev=>prev.includes(alert.pattern)?prev:[...prev,alert.pattern])
+    if(alert.severity==='critical'){setGlitch(true);setTimeout(()=>setGlitch(false),500)}
+  }
 
   useEffect(()=>{ if(monitoring)timerRef.current=setInterval(()=>setSessionTime(t=>t+1),1000); else clearInterval(timerRef.current); return()=>clearInterval(timerRef.current) },[monitoring])
 
@@ -116,32 +118,42 @@ export default function App() {
       `}</style>
 
       <div style={{ minHeight:'100vh',background:'#020408',color:'#e0e0e0',fontFamily:MF,position:'relative',overflow:'hidden',filter:glitch?'hue-rotate(18deg) saturate(2.2)':'none',transition:'filter 0.08s' }}>
+        {/* Grid overlay */}
         <div style={{ position:'fixed',inset:0,zIndex:0,pointerEvents:'none',opacity:0.028,backgroundImage:'linear-gradient(rgba(0,212,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,1) 1px,transparent 1px)',backgroundSize:'8px 8px' }} />
-        <div style={{ position:'fixed',inset:0,pointerEvents:'none',zIndex:999,background:'radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,0.82) 100%)' }} />
+
+        {/* ══ FIX: Vignette — reduced opacity from 0.82 to 0.55, larger transparent center ══ */}
+        <div style={{ position:'fixed',inset:0,pointerEvents:'none',zIndex:999,background:'radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.55) 100%)' }} />
+
+        {/* Scanline */}
         <div style={{ position:'fixed',left:0,right:0,height:2,zIndex:998,pointerEvents:'none',background:'linear-gradient(transparent,rgba(0,212,255,0.07),transparent)',top:`${scanY}%`,transition:'top 0.016s linear' }} />
+
+        {/* Ambient glow */}
         <div style={{ position:'fixed',inset:0,zIndex:0,pointerEvents:'none',transition:'background 1.8s ease',background:monitoring?`radial-gradient(ellipse 55% 35% at 50% 0%,${tColor}14 0%,transparent 70%)`:'radial-gradient(ellipse 70% 50% at 50% 35%,rgba(0,212,255,0.025) 0%,transparent 70%)' }} />
+
+        {/* Side glow lines */}
         <div style={{ position:'fixed',top:0,left:0,bottom:0,width:2,zIndex:1,pointerEvents:'none',background:`linear-gradient(180deg,transparent,${tColor}55,${tColor}22,transparent)`,animation:'dataGlow 3s ease-in-out infinite',transition:'background 1s' }} />
         <div style={{ position:'fixed',top:0,right:0,bottom:0,width:2,zIndex:1,pointerEvents:'none',background:`linear-gradient(180deg,transparent,${tColor}55,${tColor}22,transparent)`,animation:'dataGlow 3s ease-in-out infinite 1.5s',transition:'background 1s' }} />
 
         <div style={{ position:'relative',zIndex:2,display:'flex',flexDirection:'column',minHeight:'100vh' }}>
 
-          {/* HEADER - more spacing, brighter */}
-          <header style={{ background:'rgba(2,4,8,0.98)',borderBottom:'1px solid rgba(0,255,255,0.12)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(24px)' }}>
+          {/* ══ HEADER — FIX: reduced blur from 24px→8px, more transparent bg, sharper text ══ */}
+          <header style={{ background:'rgba(2,4,8,0.92)',borderBottom:'1px solid rgba(0,255,255,0.15)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)' }}>
+            {/* Top accent line */}
             <div style={{ height:2,background:monitoring?`linear-gradient(90deg,transparent,${tColor}cc,${tColor}88,transparent)`:'linear-gradient(90deg,transparent,rgba(0,255,255,0.6),rgba(167,139,250,0.4),transparent)',transition:'background 0.6s ease' }} />
             <div style={{ display:'flex',alignItems:'center',gap:0,height:90,padding:'0 32px' }}>
               <PixelLogo />
               <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
-              {/* MARQUEE - much brighter */}
+              {/* MARQUEE */}
               <div style={{ flex:1,overflow:'hidden',height:20,display:'flex',alignItems:'center',minWidth:0 }}>
                 <div style={{ fontFamily:MF,fontSize:10,whiteSpace:'nowrap',animation:'marquee 28s linear infinite,colorCycle 8s ease infinite',letterSpacing:2 }}>
                   ◄ VOXGUARD - REAL-TIME MULTIMODAL AI PROTECTION - GEMINI LIVE API + RUST WASM ENGINE - &lt;80ms LATENCY - GROUNDED: FTC - FBI IC3 - GASA - MAS - ACCC - #GeminiLiveAgentChallenge - BY WIQI LEE ►
                 </div>
               </div>
               <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
-              {/* Language - brighter */}
+              {/* Language */}
               <LanguageSelector value={language} onChange={setLanguage} />
               <div style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 14px',flexShrink:0 }} />
-              {/* Status indicator - brighter */}
+              {/* Status indicator */}
               <div style={{ display:'flex',alignItems:'center',gap:12,padding:'10px 20px',border:`1px solid ${monitoring?tColor+'66':'rgba(255,255,255,0.15)'}`,background:monitoring?`linear-gradient(135deg,${tColor}14,${tColor}08)`:'rgba(255,255,255,0.04)',boxShadow:monitoring?`0 0 24px ${tColor}28`:'0 0 12px rgba(0,255,255,0.05)',transition:'all 0.5s ease',minWidth:150,flexShrink:0,animation:monitoring?'':'borderGlow 4s ease infinite' }}>
                 <div style={{ position:'relative',width:12,height:12,flexShrink:0 }}>
                   {monitoring&&<div style={{ position:'absolute',inset:-4,borderRadius:'50%',border:`1px solid ${tColor}88`,animation:'ppulse 1.6s ease-in-out infinite' }} />}
@@ -156,8 +168,8 @@ export default function App() {
             </div>
           </header>
 
-          {/* TABS - more padding, better spacing from header */}
-          <nav style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.95)',padding:'0 32px',position:'sticky',top:92,zIndex:99 }}>
+          {/* ══ TABS — FIX: sharper bg, no heavy blur ══ */}
+          <nav style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.97)',padding:'0 32px',position:'sticky',top:92,zIndex:99 }}>
             {TABS.map(t=>(
               <button key={t} onClick={()=>setTab(t)}
                 className={`tab-btn${tab===t?' active-tab':''}`}
@@ -168,9 +180,9 @@ export default function App() {
             ))}
           </nav>
 
-          {/* CONTENT - more top padding for breathing room */}
+          {/* CONTENT */}
           <main style={{ flex:1,padding:'32px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
-            {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} />}
+            {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} />}
             {tab==='psych'    && <PsychTab   psychScores={psychScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
             {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} />}

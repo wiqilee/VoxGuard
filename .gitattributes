@@ -1,5 +1,41 @@
+# ── VoxGuard — GitHub Language Detection Fix ──────────────────
 # Force GitHub to detect Rust in language stats
-rust-engine/*.rs linguist-detectable=true
+
+# ── Force Rust detection ──
+rust-engine/**/*.rs linguist-detectable=true
+*.rs linguist-language=Rust
+
+# ── Force JavaScript/JSX detection ──
+frontend/src/**/*.jsx linguist-detectable=true
+frontend/src/**/*.js linguist-detectable=true
+*.jsx linguist-language=JavaScript
+
+# ── Mark generated files (exclude from stats) ──
 frontend/src/wasm/*.js linguist-generated=true
 frontend/src/wasm/*.wasm linguist-generated=true
+
+# ── Mark vendored files ──
+frontend/node_modules/** linguist-vendored=true
+
+# ── Exclude data/config from language stats ──
 *.json linguist-detectable=false
+*.lock linguist-generated=true
+*.toml linguist-detectable=false
+*.yml linguist-detectable=false
+*.yaml linguist-detectable=false
+*.md linguist-documentation=true
+*.txt linguist-documentation=true
+*.svg linguist-documentation=true
+*.env* linguist-detectable=false
+Dockerfile linguist-detectable=false
+docker-compose.yml linguist-detectable=false
+
+# ── Exclude CI/CD scripts from inflating Shell stats ──
+scripts/*.sh linguist-detectable=false
+.github/**/*.yml linguist-detectable=false
+
+# ── Exclude backend data files from inflating Python ──
+backend/data/*.json linguist-generated=true
+
+# ── CSS ──
+frontend/src/**/*.css linguist-detectable=true
