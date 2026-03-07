@@ -91,51 +91,6 @@ function CallerVisual({ mode='phone', active, screenWatchOn }) {
   )
 }
 
-        {/* Silhouette — head & shoulders outline only (no blur mess) */}
-        <g opacity="0.6">
-          {/* Shoulders */}
-          <path d="M155,88 Q155,70 170,62 Q185,55 200,52 Q215,55 230,62 Q245,70 245,88" fill="none" stroke="#ff2d5566" strokeWidth="1.5"/>
-          {/* Head outline */}
-          <ellipse cx="200" cy="36" rx="18" ry="22" fill="none" stroke="#ff2d5588" strokeWidth="1.5"/>
-          {/* Face scan lines */}
-          <line x1="188" y1="30" x2="195" y2="30" stroke="#ff2d5544" strokeWidth="1"/>
-          <line x1="205" y1="30" x2="212" y2="30" stroke="#ff2d5544" strokeWidth="1"/>
-          <line x1="194" y1="42" x2="206" y2="42" stroke="#ff2d5544" strokeWidth="1"/>
-        </g>
-
-        {/* Scan line */}
-        <line x1="170" y1="0" x2="170" y2="90" stroke="#00d4ff" strokeWidth="0.5" opacity="0.3">
-          <animate attributeName="x1" values="170;230;170" dur="2s" repeatCount="indefinite"/>
-          <animate attributeName="x2" values="170;230;170" dur="2s" repeatCount="indefinite"/>
-        </line>
-
-        {/* Mode label */}
-        {mode==='phone'&&<>
-          <rect x="12" y="8" width="40" height="16" rx="2" fill="rgba(255,45,85,0.15)" stroke="#ff2d55" strokeWidth="0.8"/>
-          <text x="32" y="19" textAnchor="middle" fill="#ff2d55" fontSize="7" fontFamily="monospace">CALL</text>
-          <circle cx="58" cy="16" r="3" fill="#ff2d55" opacity="0.5"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/></circle>
-        </>}
-        {mode==='zoom'&&<>
-          <rect x="12" y="8" width="44" height="16" rx="2" fill="rgba(45,140,255,0.15)" stroke="#2d8cff" strokeWidth="0.8"/>
-          <text x="34" y="19" textAnchor="middle" fill="#2d8cff" fontSize="7" fontFamily="monospace">VIDEO</text>
-        </>}
-
-        {/* Corner brackets */}
-        <path d="M6,6 L6,20 M6,6 L20,6" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-        <path d="M394,6 L394,20 M394,6 L380,6" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-        <path d="M6,84 L6,70 M6,84 L20,84" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-        <path d="M394,84 L394,70 M394,84 L380,84" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-
-        {/* Right side: analysis info */}
-        <text x="388" y="18" textAnchor="end" fill="#ff2d55" fontSize="6" fontFamily="monospace" opacity="0.6">◉ ANALYZING</text>
-        <text x="388" y="30" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">VOICE PATTERN</text>
-        <text x="388" y="40" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">PSYCH VECTOR</text>
-        {screenWatchOn&&<text x="388" y="50" textAnchor="end" fill="#7b61ff" fontSize="5" fontFamily="monospace">◈ SCREEN WATCH</text>}
-      </svg>
-    </div>
-  )
-}
-
 /* ━━━ Premium Analysis Progress Bar ━━━ */
 function AnalysisProgressBar({ progress, threatColor }) {
   const complete = progress >= 100
