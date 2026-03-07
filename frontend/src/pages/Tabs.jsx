@@ -2,7 +2,7 @@ import { useState, useEffect }  from 'react'
 import { PBox, PBtn }            from '../components/Primitives'
 import { AlertCard }             from '../components/AlertCard'
 import { PixelLogo }             from '../components/PixelLogo'
-import { SCAM_PATTERNS, PSYCH_TACTICS, SEV, PF, MF, RECOMMENDED_ACTIONS, getActionsForLang } from '../utils/constants'
+import { SCAM_PATTERNS, PSYCH_TACTICS, LIE_INDICATORS, SEV, PF, MF, RECOMMENDED_ACTIONS, getActionsForLang } from '../utils/constants'
 
 /* ── Social SVGs ─────────────────────────────────────────── */
 const XIcon = ({ size=12,color='currentColor' }) => <svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{flexShrink:0,display:'block'}}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2.25 2.25h6.422l4.256 5.624 5.316-5.624Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -93,7 +93,7 @@ function PsychVectorBar({ tac, score }) {
             }} />
           })}
         </div>
-        {h&&<div style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.45)',marginTop:4,lineHeight:1.5 }}>{tac.desc}</div>}
+        {h&&<div style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.65)',marginTop:4,lineHeight:1.5 }}>{tac.desc}</div>}
       </div>
       {active&&<div style={{ fontFamily:PF,fontSize:5,color:tac.color,animation:'blink 1s step-end infinite',flexShrink:0 }}>► ACTIVE</div>}
     </div>
@@ -139,67 +139,132 @@ function SessionGallery({ saved, onRefresh }) {
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
   if(saved.length===0) return null
 
+  // Language → country name mapping
+  const langCountry = { en:'🇺🇸 USA',id:'🇮🇩 Indonesia',zh:'🇨🇳 China','zh-CN':'🇨🇳 China',ja:'🇯🇵 Japan',ko:'🇰🇷 Korea',es:'🇪🇸 España',fr:'🇫🇷 France',hi:'🇮🇳 India',ar:'🇸🇦 Arabic',de:'🇩🇪 Germany',ru:'🇷🇺 Russia',th:'🇹🇭 Thailand',vi:'🇻🇳 Vietnam',pt:'🇧🇷 Brazil' }
+
   return (
     <div style={{ marginTop:32 }}>
       <div style={{ fontFamily:PF,fontSize:9,color:'rgba(0,212,255,0.7)',marginBottom:16,textShadow:'0 0 8px rgba(0,212,255,0.3)' }}>
         📁 SESSION GALLERY ({saved.length})
       </div>
-      <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:12 }}>
+
+      {/* Gallery grid — cards with visible borders */}
+      <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14 }}>
         {saved.map(r=>{
-          const isOpen=open?.id===r.id
           const scoreColor=r.threatScore>75?'#ff2d55':r.threatScore>45?'#ff9500':'#30d158'
-          return (
-            <PBox key={r.id} color={isOpen?'#00d4ff':'rgba(0,212,255,0.3)'} style={{ overflow:'hidden' }}>
-              {/* Header */}
-              <div onClick={()=>{setOpen(isOpen?null:r);setViewTab('alerts')}} style={{ padding:'14px 16px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',background:isOpen?'rgba(0,212,255,0.04)':'rgba(0,0,0,0.2)' }}>
-                <div>
-                  <div style={{ fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.5)',marginBottom:4 }}>
-                    {new Date(r.savedAt).toLocaleString('en-US',{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}
-                  </div>
-                  <div style={{ display:'flex',gap:12,alignItems:'center' }}>
-                    <span style={{ fontFamily:PF,fontSize:11,color:scoreColor,textShadow:`0 0 8px ${scoreColor}` }}>{r.threatScore}/100</span>
-                    <span style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.3)' }}>{r.alerts?.length||0} alerts · {fmt(r.sessionTime)}</span>
-                  </div>
-                </div>
-                <div style={{ display:'flex',gap:1 }}>
-                  {Array.from({length:10}).map((_,i)=><div key={i} style={{ width:3,height:16,background:i<Math.round(r.threatScore/10)?scoreColor:scoreColor+'22' }} />)}
-                </div>
-              </div>
-              {/* Expanded */}
-              {isOpen&&(
-                <div style={{ borderTop:'1px solid rgba(0,212,255,0.1)' }}>
-                  <div style={{ display:'flex',borderBottom:'1px solid rgba(0,212,255,0.08)' }}>
-                    {['alerts','psych','transcript'].map(t=>(
-                      <button key={t} onClick={()=>setViewTab(t)} style={{ flex:1,padding:'8px',fontFamily:PF,fontSize:6,border:'none',borderBottom:viewTab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:viewTab===t?'#00d4ff':'rgba(255,255,255,0.4)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1 }}>{t}</button>
-                    ))}
-                  </div>
-                  <div style={{ padding:'12px 14px',maxHeight:250,overflowY:'auto',background:'rgba(0,0,0,0.3)' }}>
-                    {viewTab==='alerts'&&(r.alerts||[]).map((a,i)=><AlertCard key={i} alert={a} index={i} />)}
-                    {viewTab==='psych'&&Object.entries(r.psychScores||{}).map(([k,v])=>{
-                      const tac=PSYCH_TACTICS.find(t=>t.id===k)
-                      return tac?<PsychVectorBar key={k} tac={tac} score={v} />:null
-                    })}
-                    {viewTab==='transcript'&&(
-                      (r.transcript||[]).length>0
-                        ? (r.transcript||[]).map((l,i)=>(
-                          <div key={i} style={{ fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.6)',padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':'2px solid transparent',paddingLeft:8 }}>
-                            <span style={{ color:'rgba(0,212,255,0.4)',fontSize:9,marginRight:6 }}>[{l.time}]</span>{l.text}
-                          </div>
-                        ))
-                        : <div style={{ fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.2)',textAlign:'center',padding:20 }}>No transcript saved</div>
-                    )}
-                  </div>
-                  <div style={{ display:'flex',gap:6,padding:'10px 14px',borderTop:'1px solid rgba(0,212,255,0.08)' }}>
-                    <button onClick={e=>{e.stopPropagation();exportPDF(r)}} style={{ flex:1,fontFamily:PF,fontSize:6,padding:'8px',border:'1px solid #ff950044',color:'#ff9500',background:'rgba(255,149,0,0.06)',cursor:'pointer' }}>↓ PDF</button>
-                    <button onClick={e=>{e.stopPropagation();exportHTML(r)}} style={{ flex:1,fontFamily:PF,fontSize:6,padding:'8px',border:'1px solid #7b61ff44',color:'#7b61ff',background:'rgba(123,97,255,0.06)',cursor:'pointer' }}>↓ HTML</button>
-                    <button onClick={e=>{e.stopPropagation();delReport(r.id);onRefresh();if(open?.id===r.id)setOpen(null)}} style={{ fontFamily:PF,fontSize:6,padding:'8px 12px',border:'1px solid #ff2d5544',color:'#ff2d55',background:'rgba(255,45,85,0.06)',cursor:'pointer' }}>✕ DEL</button>
-                  </div>
-                </div>
-              )}
-            </PBox>
-          )
+          const country = langCountry[r.language] || langCountry[(r.language||'').split('-')[0]] || '🌐 Global'
+          return <GalleryCard key={r.id} r={r} scoreColor={scoreColor} country={country} fmt={fmt} onOpen={()=>{setOpen(r);setViewTab('alerts')}} onDelete={()=>{delReport(r.id);onRefresh()}} onExportPDF={()=>exportPDF(r)} onExportHTML={()=>exportHTML(r)} />
         })}
       </div>
+
+      {/* Full-screen modal when gallery item is opened */}
+      {open&&(
+        <div style={{ position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,0.92)',backdropFilter:'blur(8px)',overflowY:'auto',padding:'40px 20px' }} onClick={()=>setOpen(null)}>
+          <div style={{ maxWidth:900,margin:'0 auto',position:'relative' }} onClick={e=>e.stopPropagation()}>
+            {/* Close button */}
+            <button onClick={()=>setOpen(null)} style={{ position:'absolute',top:-10,right:0,fontFamily:PF,fontSize:10,color:'#ff2d55',border:'1px solid #ff2d5555',background:'rgba(255,45,85,0.1)',padding:'8px 16px',cursor:'pointer',zIndex:1 }}>✕ CLOSE</button>
+
+            <PBox color="#00d4ff" style={{ padding:28,background:'rgba(0,212,255,0.02)' }}>
+              <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10 }}>
+                <div>
+                  <div style={{ fontFamily:PF,fontSize:10,color:'#00d4ff',marginBottom:6 }}>SESSION DETAIL</div>
+                  <div style={{ fontFamily:MF,fontSize:11,color:'rgba(255,255,255,0.5)' }}>
+                    {new Date(open.savedAt).toLocaleString()} · {fmt(open.sessionTime)} · {langCountry[open.language]||'🌐'}
+                  </div>
+                </div>
+                <div style={{ fontFamily:PF,fontSize:20,color:open.threatScore>75?'#ff2d55':open.threatScore>45?'#ff9500':'#30d158',textShadow:`0 0 12px ${open.threatScore>75?'#ff2d55':open.threatScore>45?'#ff9500':'#30d158'}` }}>
+                  {open.threatScore}/100
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div style={{ display:'flex',borderBottom:'1px solid rgba(0,212,255,0.15)',marginBottom:16 }}>
+                {['alerts','psych','transcript'].map(t=>(
+                  <button key={t} onClick={()=>setViewTab(t)} style={{ flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:viewTab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:viewTab===t?'#00d4ff':'rgba(255,255,255,0.4)',cursor:'pointer',textTransform:'uppercase',letterSpacing:2 }}>{t}</button>
+                ))}
+              </div>
+
+              {/* Content */}
+              <div style={{ minHeight:300,maxHeight:'60vh',overflowY:'auto',paddingRight:8 }}>
+                {viewTab==='alerts'&&(open.alerts||[]).map((a,i)=><AlertCard key={i} alert={a} index={i} />)}
+                {viewTab==='psych'&&Object.entries(open.psychScores||{}).map(([k,v])=>{
+                  const tac=PSYCH_TACTICS.find(t=>t.id===k)
+                  return tac?<PsychVectorBar key={k} tac={tac} score={v} />:null
+                })}
+                {viewTab==='transcript'&&(
+                  (open.transcript||[]).length>0
+                    ? (open.transcript||[]).map((l,i)=>(
+                      <div key={i} style={{ fontFamily:MF,fontSize:11,color:l.speaker==='me'?'#30d158':'rgba(255,255,255,0.7)',padding:'4px 0',borderLeft:l.flagged?'2px solid #ff2d55':l.speaker==='me'?'2px solid #30d15844':'2px solid transparent',paddingLeft:10,lineHeight:1.7 }}>
+                        <span style={{ color:'rgba(0,212,255,0.5)',fontSize:9,marginRight:6 }}>[{l.time}]</span>
+                        <span style={{ fontFamily:PF,fontSize:5,color:l.speaker==='me'?'#30d158':'#ff9500',marginRight:5 }}>{l.speaker==='me'?'ME':'CALLER'}</span>
+                        {l.text}
+                        {l.flagged&&<span style={{ color:'#ff2d55',fontSize:8,marginLeft:6 }}>⚠</span>}
+                      </div>
+                    ))
+                    : <div style={{ fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.25)',textAlign:'center',padding:40 }}>No transcript saved</div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display:'flex',gap:8,marginTop:16,paddingTop:16,borderTop:'1px solid rgba(0,212,255,0.1)' }}>
+                <PBtn onClick={()=>exportPDF(open)} color="#ff9500" style={{ flex:1,padding:'10px' }}>↓ PDF</PBtn>
+                <PBtn onClick={()=>exportHTML(open)} color="#7b61ff" style={{ flex:1,padding:'10px' }}>↓ HTML</PBtn>
+                <PBtn onClick={()=>{delReport(open.id);onRefresh();setOpen(null)}} danger style={{ padding:'10px 20px' }}>✕ DELETE</PBtn>
+              </div>
+            </PBox>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* Gallery card — visible border, hover glow, country badge */
+function GalleryCard({ r, scoreColor, country, fmt, onOpen, onDelete, onExportPDF, onExportHTML }) {
+  const [hov,setHov]=useState(false)
+  return (
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} onClick={onOpen}
+      style={{
+        padding:'16px',cursor:'pointer',
+        border:`1px solid ${hov?scoreColor+'88':'rgba(0,212,255,0.2)'}`,
+        background:hov?`linear-gradient(135deg,${scoreColor}0c,rgba(0,0,0,0.3))`:'rgba(0,0,0,0.25)',
+        boxShadow:hov?`0 0 20px ${scoreColor}22,inset 0 0 12px ${scoreColor}06`:'none',
+        transform:hov?'translateY(-2px)':'none',
+        transition:'all 0.2s ease',position:'relative',
+      }}>
+      {/* Corner accents */}
+      <div style={{ position:'absolute',top:-1,left:-1,width:12,height:2,background:hov?scoreColor:scoreColor+'55',transition:'background 0.2s' }}/>
+      <div style={{ position:'absolute',top:-1,left:-1,width:2,height:12,background:hov?scoreColor:scoreColor+'55',transition:'background 0.2s' }}/>
+      <div style={{ position:'absolute',bottom:-1,right:-1,width:12,height:2,background:hov?scoreColor:scoreColor+'55',transition:'background 0.2s' }}/>
+      <div style={{ position:'absolute',bottom:-1,right:-1,width:2,height:12,background:hov?scoreColor:scoreColor+'55',transition:'background 0.2s' }}/>
+
+      <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10 }}>
+        <div>
+          <div style={{ fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.5)',marginBottom:3 }}>
+            {new Date(r.savedAt).toLocaleString('en-US',{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}
+          </div>
+          <div style={{ fontFamily:PF,fontSize:13,color:scoreColor,textShadow:`0 0 8px ${scoreColor}` }}>{r.threatScore}/100</div>
+        </div>
+        {/* Country badge */}
+        <div style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.6)',padding:'4px 8px',border:'1px solid rgba(255,255,255,0.1)',background:'rgba(255,255,255,0.03)' }}>
+          {country}
+        </div>
+      </div>
+      <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center' }}>
+        <span style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.35)' }}>{r.alerts?.length||0} alerts · {fmt(r.sessionTime)}</span>
+        {/* Mini threat bar */}
+        <div style={{ display:'flex',gap:1 }}>
+          {Array.from({length:10}).map((_,i)=><div key={i} style={{ width:3,height:12,background:i<Math.round(r.threatScore/10)?scoreColor:scoreColor+'22',transition:'all 0.3s' }}/>)}
+        </div>
+      </div>
+      {/* Quick actions on hover */}
+      {hov&&(
+        <div style={{ display:'flex',gap:6,marginTop:10,paddingTop:8,borderTop:`1px solid ${scoreColor}22` }} onClick={e=>e.stopPropagation()}>
+          <button onClick={onExportPDF} style={{ flex:1,fontFamily:PF,fontSize:5,padding:'5px',border:`1px solid #ff950044`,color:'#ff9500',background:'rgba(255,149,0,0.06)',cursor:'pointer' }}>PDF</button>
+          <button onClick={onExportHTML} style={{ flex:1,fontFamily:PF,fontSize:5,padding:'5px',border:`1px solid #7b61ff44`,color:'#7b61ff',background:'rgba(123,97,255,0.06)',cursor:'pointer' }}>HTML</button>
+          <button onClick={onDelete} style={{ fontFamily:PF,fontSize:5,padding:'5px 8px',border:`1px solid #ff2d5544`,color:'#ff2d55',background:'rgba(255,45,85,0.06)',cursor:'pointer' }}>✕</button>
+        </div>
+      )}
     </div>
   )
 }
@@ -218,14 +283,49 @@ export function PsychTab({ psychScores }) {
           Grounded in Cialdini's influence principles and FBI behavioral analysis of phone fraud perpetrators.
         </div>
       </div>
-      {/* Premium vector bars — replaces old card grid */}
-      <div style={{ marginBottom:24 }}>
+
+      {/* ── CALLER: Manipulation Vectors ── */}
+      <PBox color="#ff2d55" style={{ padding:20,marginBottom:16,background:'rgba(255,45,85,0.03)' }}>
+        <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:16 }}>
+          <div style={{ fontFamily:PF,fontSize:8,color:'#ff2d55',letterSpacing:1 }}>📞 CALLER — MANIPULATION VECTORS</div>
+          <div style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)' }}>What tactics the scammer is using against you</div>
+        </div>
         {PSYCH_TACTICS.map(tac=><PsychVectorBar key={tac.id} tac={tac} score={psychScores[tac.id]||0} />)}
-      </div>
+      </PBox>
+
+      {/* ── CALLER: Lie Detection ── */}
+      <PBox color="#ff9500" style={{ padding:20,marginBottom:16,background:'rgba(255,149,0,0.03)' }}>
+        <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:16 }}>
+          <div style={{ fontFamily:PF,fontSize:8,color:'#ff9500',letterSpacing:1 }}>🔍 CALLER — LIE DETECTION ANALYSIS</div>
+          <div style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)' }}>Deception indicators based on linguistic & behavioral cues</div>
+        </div>
+        {(LIE_INDICATORS||[]).map(li => {
+          // Derive lie scores from psych scores for demo
+          const scoreMap = { INCONSISTENCY: psychScores.AUTHORITY>50?68:psychScores.AUTHORITY>0?35:0, VAGUENESS: psychScores.ISOLATION>30?52:psychScores.ISOLATION>0?22:0, OVERDETAIL: psychScores.FEAR>40?45:psychScores.FEAR>0?18:0, DEFLECTION: psychScores.COMMITMENT>30?58:psychScores.COMMITMENT>0?25:0, PRESSURE: psychScores.SCARCITY>30?72:psychScores.SCARCITY>0?30:0 }
+          const score = scoreMap[li.id]||0
+          return <PsychVectorBar key={li.id} tac={li} score={score} />
+        })}
+      </PBox>
+
+      {/* ── VICTIM (ME): Psychological State ── */}
+      <PBox color="#30d158" style={{ padding:20,marginBottom:16,background:'rgba(48,209,88,0.03)' }}>
+        <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:16 }}>
+          <div style={{ fontFamily:PF,fontSize:8,color:'#30d158',letterSpacing:1 }}>🛡 ME — VICTIM PSYCHOLOGICAL STATE</div>
+          <div style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)' }}>How the scam is affecting your decision-making</div>
+        </div>
+        {[
+          { id:'STRESS',   label:'Stress Level',      icon:'😰', desc:'Elevated stress response from urgency and fear tactics — reduces rational thinking capacity.', color:'#ff2d55', score: (psychScores.FEAR||0)>30 ? Math.min(85,(psychScores.FEAR||0)+15) : 0 },
+          { id:'TRUST',    label:'Misplaced Trust',    icon:'🤝', desc:'False trust induced by authority impersonation — victim believes caller is legitimate.', color:'#ff9500', score: (psychScores.AUTHORITY||0)>30 ? Math.min(80,(psychScores.AUTHORITY||0)+10) : 0 },
+          { id:'URGENCY',  label:'Perceived Urgency',  icon:'⏰', desc:'Artificial time pressure making victim feel they must act immediately without verification.', color:'#ffd60a', score: (psychScores.SCARCITY||0)>20 ? Math.min(90,(psychScores.SCARCITY||0)+20) : 0 },
+          { id:'ISOLATE',  label:'Social Isolation',    icon:'🔇', desc:'Victim cut off from family/friends who could identify the scam — increasing vulnerability.', color:'#bf5af2', score: (psychScores.ISOLATION||0)>20 ? Math.min(75,(psychScores.ISOLATION||0)+15) : 0 },
+          { id:'COMPLY',   label:'Compliance Drift',    icon:'📉', desc:'Incremental agreement pattern — each small compliance makes the next demand harder to refuse.', color:'#30d158', score: (psychScores.COMMITMENT||0)>20 ? Math.min(70,(psychScores.COMMITMENT||0)+10) : 0 },
+        ].map(item => <PsychVectorBar key={item.id} tac={item} score={item.score} />)}
+      </PBox>
+
       <PBox color="#ff9500" style={{ padding:'22px 28px',background:'rgba(255,149,0,0.03)',position:'relative',overflow:'hidden' }}>
         <div style={{ position:'absolute',right:20,top:'50%',transform:'translateY(-50%)',fontFamily:PF,fontSize:60,color:'rgba(255,149,0,0.06)',pointerEvents:'none',lineHeight:1 }}>6</div>
         <div style={{ fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:12 }}>WHY THIS IS UNPRECEDENTED</div>
-        <div style={{ fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:2,maxWidth:780 }}>
+        <div style={{ fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.6)',lineHeight:2,maxWidth:780 }}>
           Every other tool detects scam <span style={{ color:'#00d4ff' }}>keywords</span>.
           VoxGuard detects scam <span style={{ color:'#ff9500',textShadow:'0 0 8px #ff9500' }}>cognition</span>.<br/>
           Using Gemini's extended reasoning, we model which influence vectors are active in the conversation and at what
@@ -319,13 +419,13 @@ export function ReportTab({ alerts, sessionTime, threatScore, psychScores, trans
   const [msg,setMsg]=useState('')
   const [open,setOpen]=useState(null)
   useEffect(()=>setSaved(loadReports()),[])
-  const cur={alerts,sessionTime,threatScore,psychScores,transcript,id:Date.now().toString(),savedAt:new Date().toISOString()}
+  const cur={alerts,sessionTime,threatScore,psychScores,transcript,language,id:Date.now().toString(),savedAt:new Date().toISOString()}
 
   const actionsData = getActionsForLang(language)
 
   const doSave=()=>{
     if(!alerts.length)return
-    saveReport({alerts,sessionTime,threatScore,psychScores,transcript})
+    saveReport({alerts,sessionTime,threatScore,psychScores,transcript,language})
     setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)
   }
   return (

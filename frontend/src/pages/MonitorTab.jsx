@@ -33,10 +33,22 @@ function getVoiceForLang(lang) {
   const voices = window.speechSynthesis.getVoices()
   if (!voices.length) return null
   const prefs = VOICE_PREFS[lang] || VOICE_PREFS['en']
+
+  // Prefer Google/premium voices (they sound more natural)
   for (const prefix of prefs.langPrefix) {
-    const match = voices.find(v => v.lang.startsWith(prefix))
-    if (match) return match
+    // First try Google voices
+    const google = voices.find(v => v.lang.startsWith(prefix) && v.name.includes('Google'))
+    if (google) return google
+    // Then try any non-compact voice
+    const premium = voices.find(v => v.lang.startsWith(prefix) && !v.name.includes('Compact') && !v.name.includes('compact'))
+    if (premium) return premium
+    // Fallback to any matching voice
+    const any = voices.find(v => v.lang.startsWith(prefix))
+    if (any) return any
   }
+  // Final fallback: English Google voice
+  const enGoogle = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'))
+  if (enGoogle) return enGoogle
   return voices.find(v => v.lang.startsWith('en')) || voices[0]
 }
 
