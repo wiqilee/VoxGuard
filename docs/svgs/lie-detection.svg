@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="220" viewBox="0 0 300 220">
+  <style>
+    @keyframes pulse1{0%,100%{opacity:0.4}50%{opacity:1}}
+    @keyframes grow1{0%{width:0}100%{width:85px}}
+    @keyframes grow2{0%{width:0}100%{width:60px}}
+    @keyframes grow3{0%{width:0}100%{width:35px}}
+    @keyframes grow4{0%{width:0}100%{width:50px}}
+    @keyframes grow5{0%{width:0}100%{width:70px}}
+    @keyframes scan{0%{y:30}50%{y:190}100%{y:30}}
+    text{font-family:monospace}
+  </style>
+  <rect width="300" height="220" rx="8" fill="#020408" stroke="#ff2d5533" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="20" y="22" font-size="10" fill="#ff2d55" font-weight="bold" letter-spacing="2">LIE DETECTION ANALYSIS</text>
+  <text x="20" y="34" font-size="7" fill="#ff2d5566">FBI Behavioral Deception Indicators</text>
+  
+  <!-- Scan line -->
+  <rect x="0" width="300" height="2" fill="#ff2d5522" rx="1">
+    <animate attributeName="y" values="30;190;30" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Indicator 1: Inconsistency -->
+  <g transform="translate(20,55)">
+    <text x="0" y="0" font-size="8" fill="#ff2d55">🔀 INCONSISTENCY</text>
+    <rect x="0" y="6" width="140" height="8" rx="2" fill="#111" stroke="#222" stroke-width="0.5"/>
+    <rect x="0" y="6" rx="2" height="8" fill="#ff2d55">
+      <animate attributeName="width" from="0" to="85" dur="1.5s" fill="freeze"/>
+    </rect>
+    <text x="150" y="13" font-size="9" fill="#ff2d55" font-weight="bold">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+      61%
+    </text>
+  </g>
+  
+  <!-- Indicator 2: Vagueness -->
+  <g transform="translate(20,85)">
+    <text x="0" y="0" font-size="8" fill="#ff9500">🌫 VAGUENESS</text>
+    <rect x="0" y="6" width="140" height="8" rx="2" fill="#111" stroke="#222" stroke-width="0.5"/>
+    <rect x="0" y="6" rx="2" height="8" fill="#ff9500">
+      <animate attributeName="width" from="0" to="60" dur="1.8s" fill="freeze"/>
+    </rect>
+    <text x="150" y="13" font-size="9" fill="#ff9500" font-weight="bold">43%</text>
+  </g>
+  
+  <!-- Indicator 3: Overdetail -->
+  <g transform="translate(20,115)">
+    <text x="0" y="0" font-size="8" fill="#ffd60a">📋 OVERDETAIL</text>
+    <rect x="0" y="6" width="140" height="8" rx="2" fill="#111" stroke="#222" stroke-width="0.5"/>
+    <rect x="0" y="6" rx="2" height="8" fill="#ffd60a">
+      <animate attributeName="width" from="0" to="35" dur="2s" fill="freeze"/>
+    </rect>
+    <text x="150" y="13" font-size="9" fill="#ffd60a" font-weight="bold">25%</text>
+  </g>
+  
+  <!-- Indicator 4: Deflection -->
+  <g transform="translate(20,145)">
+    <text x="0" y="0" font-size="8" fill="#bf5af2">↩️ DEFLECTION</text>
+    <rect x="0" y="6" width="140" height="8" rx="2" fill="#111" stroke="#222" stroke-width="0.5"/>
+    <rect x="0" y="6" rx="2" height="8" fill="#bf5af2">
+      <animate attributeName="width" from="0" to="50" dur="1.6s" fill="freeze"/>
+    </rect>
+    <text x="150" y="13" font-size="9" fill="#bf5af2" font-weight="bold">35%</text>
+  </g>
+  
+  <!-- Indicator 5: Pressure -->
+  <g transform="translate(20,175)">
+    <text x="0" y="0" font-size="8" fill="#ff2d55">⏳ PRESSURE</text>
+    <rect x="0" y="6" width="140" height="8" rx="2" fill="#111" stroke="#222" stroke-width="0.5"/>
+    <rect x="0" y="6" rx="2" height="8" fill="#ff2d55">
+      <animate attributeName="width" from="0" to="70" dur="1.4s" fill="freeze"/>
+    </rect>
+    <text x="150" y="13" font-size="9" fill="#ff2d55" font-weight="bold">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+      50%
+    </text>
+  </g>
+  
+  <!-- Active indicator -->
+  <g transform="translate(210,55)">
+    <rect width="70" height="18" rx="2" fill="#ff2d5515" stroke="#ff2d55" stroke-width="0.5"/>
+    <text x="35" y="12" text-anchor="middle" font-size="6" fill="#ff2d55" font-weight="bold">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+      ► DETECTING
+    </text>
+  </g>
+  
+  <!-- Corner accents -->
+  <line x1="3" y1="5" x2="3" y2="18" stroke="#ff2d55" stroke-width="1.5" opacity="0.5"/>
+  <line x1="3" y1="5" x2="16" y2="5" stroke="#ff2d55" stroke-width="1.5" opacity="0.5"/>
+  <line x1="297" y1="215" x2="297" y2="202" stroke="#ff2d55" stroke-width="1.5" opacity="0.5"/>
+  <line x1="297" y1="215" x2="284" y2="215" stroke="#ff2d55" stroke-width="1.5" opacity="0.5"/>
+  
+  <!-- Footer -->
+  <text x="150" y="210" text-anchor="middle" font-size="6" fill="#ff2d5544">Based on FBI Interview Analysis Methodology</text>
+</svg>

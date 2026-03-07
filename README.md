@@ -40,14 +40,14 @@ Gemini Live API + Rust WASM + Psychological AI = Protection in <80ms.
 
 | Tab | What It Demonstrates |
 |-----|---------------------|
-| **MONITOR** | Live waveform + <80ms alert latency + Rust WASM engine |
-| **PSYCH** | 6 Cialdini vectors scored in real-time (world first) |
-| **PATTERNS** | 50+ grounded patterns from FTC/FBI/GASA databases |
-| **REPORT** | Forensic export (PDF + HTML) with full timeline |
+| **MONITOR** | 2-way dialog (ME + CALLER), 3D waveform, <80ms alerts, caller HUD, volume control, call mode |
+| **PSYCH** | 6 Cialdini vectors + 5 lie detection indicators + user vulnerability (world first) |
+| **PATTERNS** | 50+ grounded patterns with fullscreen detail view + interpretation |
+| **REPORT** | Full transcript, forensic export (PDF + HTML), session gallery, per-country actions |
 | **ABOUT** | Architecture + data sources + why this is unprecedented |
 
 ### Innovation in one sentence:
-> *Every other tool blocks calls before they happen. VoxGuard protects you **while** the scammer is talking, in real-time, with psychological manipulation scoring no other system has ever attempted.*
+> *Every other tool blocks calls before they happen. VoxGuard protects you **while** the scammer is talking, in real-time, with psychological manipulation scoring and lie detection analysis no other system has ever attempted.*
 
 ---
 
@@ -80,11 +80,16 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 | Pre-call blocking | Yes | Yes | Yes | Yes |
 | During-call analysis | No | No | No | **Yes (First)** |
 | Multimodal (audio + vision) | No | No | No | **Yes (First)** |
-| Real-time transcript analysis | No | No | No | Yes |
+| 2-way transcript (ME + CALLER) | No | No | No | **Yes (First)** |
 | Screen share scam detection | No | No | No | **Yes (First)** |
 | Sub-100ms alert latency | No | No | No | Yes (Rust WASM) |
 | Psychological manipulation scoring | No | No | No | **Yes (First)** |
+| Lie detection analysis | No | No | No | **Yes (First)** |
+| User vulnerability scoring | No | No | No | **Yes (First)** |
 | Multi-language support | Partial | Partial | SG only | Yes, 40+ languages |
+| Per-country recommended actions | No | No | No | **Yes (8 countries)** |
+| Session gallery with playback | No | No | No | **Yes** |
+| Forensic export (PDF + HTML) | No | No | No | **Yes** |
 | Grounded to global scam databases | No | Partial | Partial | Yes |
 | Works on any call platform | No | No | No | Yes (browser-based) |
 
@@ -134,24 +139,89 @@ All patterns grounded to published sources: FTC Consumer Sentinel, FBI IC3 2024,
 <img src="docs/svgs/psych-vectors.svg" alt="Psychological Vectors" width="260"/>
 </div>
 
-The **only scam detection system in the world** that maps psychological manipulation vectors in real-time. Using Gemini's reasoning, VoxGuard identifies which of Cialdini's 6 influence principles the scammer is exploiting:
+The **only scam detection system in the world** that maps psychological manipulation vectors in real-time using three analytical frameworks:
+
+**Framework 1: Cialdini's 6 Influence Principles** — Maps which persuasion vectors the caller is deploying:
 
 | Vector | Trigger Example |
 |--------|----------------|
 | **SCARCITY** | *"This offer expires in 10 minutes"* |
-| **AUTHORITY** | *"I'm calling from the IRS"* |
+| **AUTHORITY** | *"I'm calling from the tax office"* |
 | **FEAR** | *"Your account will be frozen"* |
 | **RECIPROCITY** | *"We already helped you, now you must..."* |
 | **ISOLATION** | *"Don't tell your family about this"* |
 | **COMMITMENT** | *"You already agreed to verify your identity"* |
 
-### 6. 📋 Session Report and Forensic Export
+**Framework 2: User Vulnerability State** — Derived metrics showing how the manipulation is affecting the user's decision-making (Panic Level, Compliance Risk, Misplaced Trust).
 
-Every session generates a complete forensic report: alert timeline with timestamps, psychological vector breakdown, confidence scores, and recommended actions (with FTC/FBI links). Export as dark-theme HTML or print-ready PDF.
+Each vector includes real-time interpretation (Inactive → Low → Moderate → Elevated → High → Critical) with explanations, plus a pie chart distribution view.
 
-### 7. 🌍 Multi-Language Support
+### 6. 🔍 Lie Detection Analysis
 
-Gemini Live API supports 40+ languages natively. VoxGuard auto-detects language and adapts pattern matching accordingly. Indonesian scam variants (BRILink palsu, Pinjol, "mama minta pulsa") are included.
+<div align="center">
+<img src="docs/svgs/lie-detection.svg" alt="Lie Detection" width="300"/>
+</div>
+
+**5 behavioral deception indicators** based on FBI Criteria-Based Content Analysis (CBCA) methodology:
+
+| Indicator | What It Detects |
+|-----------|----------------|
+| **Inconsistency** | Contradictions between claims made at different points |
+| **Strategic Vagueness** | Deliberately avoids specifics when challenged |
+| **Excessive Detail** | Unprompted flood of irrelevant details (overcompensation) |
+| **Question Deflection** | Changes subject or responds with new claims |
+| **Pressure to Comply** | Uses urgency to prevent verification |
+
+Lie detection scores are displayed in the PSYCH tab alongside manipulation vectors, included in forensic reports (PDF/HTML), and saved to the session gallery.
+
+### 7. 💬 Two-Way Communication Transcript
+
+Both sides of the conversation are transcribed in real-time:
+- **ME** (user) — displayed in green
+- **CALLER** (scammer) — displayed in orange with flag markers
+
+Flagged statements trigger real-time alerts. Full 2-way transcript is preserved in session reports and gallery.
+
+### 8. 📋 Session Report, Gallery & Forensic Export
+
+Every session generates a complete forensic report with:
+- Full 2-way transcript with timestamps
+- Alert timeline with confidence scores
+- Psychological vector breakdown + lie detection scores
+- Country-specific recommended actions with local emergency numbers
+- Country flag and language indicator
+
+**Export:** Dark-theme HTML or print-ready PDF with colored bars, all sections, and "Built by Wiqi Lee" footer.
+
+**Session Gallery:** Saved sessions with threat score preview, country label, duration. Click any session for fullscreen detail view with tabs (Transcript, Alerts, Psych + Lie Detection, Recommended Actions). Audio playback when recording is available.
+
+### 9. 🌍 Multi-Language Support (40+ Languages)
+
+Gemini Live API supports 40+ languages natively. VoxGuard includes region-specific scam patterns and localized alerts.
+
+#### Fully Native Support (demo scripts + localized alerts):
+
+| Language | Flag | Demo Scripts | Regional Scams |
+|----------|------|-------------|----------------|
+| English | 🇺🇸 | Bank Fraud, Tech Support, Gov/Tax, Investment | FTC/FBI patterns |
+| Indonesian | 🇮🇩 | Bank XYZ, Pinjol, Mama Minta Pulsa, Giveaway Palsu | OJK/Bareskrim |
+| Chinese | 🇨🇳 | 公安局诈骗 (Police Impersonation) | MPS Advisory |
+| Japanese | 🇯🇵 | オレオレ詐欺 (Ore Ore) | NPA patterns |
+| Korean | 🇰🇷 | 보이스피싱 (Voice Phishing) | FSS patterns |
+| Spanish | 🇪🇸 | Fraude Bancario | Guardia Civil |
+| French | 🇫🇷 | Arnaque CPF | DGCCRF |
+| Hindi | 🇮🇳 | Digital Arrest Fraud | MHA/RBI |
+| Arabic | 🇸🇦 | احتيال مصرفي (Bank Fraud) | GASA |
+
+#### English Fallback (voice + alerts in English, UI translated):
+
+Malay 🇲🇾, Filipino 🇵🇭, Thai 🇹🇭, Vietnamese 🇻🇳, German 🇩🇪, Italian 🇮🇹, Dutch 🇳🇱, Turkish 🇹🇷, Polish 🇵🇱, Russian 🇷🇺, Ukrainian 🇺🇦, Romanian 🇷🇴, Czech 🇨🇿, Hungarian 🇭🇺, Swedish 🇸🇪, Danish 🇩🇰, Finnish 🇫🇮, Greek 🇬🇷, Hebrew 🇮🇱, Persian 🇮🇷, Bengali 🇧🇩, Urdu 🇵🇰, Tamil 🇱🇰, Swahili 🇰🇪, Amharic 🇪🇹, Yoruba 🇳🇬, Hausa 🇳🇬, Afrikaans 🇿🇦, Norwegian 🇳🇴, Portuguese 🇧🇷
+
+> ⚠️ English fallback languages show a yellow notice in the app. Full native support requires Google Cloud TTS backend.
+
+### 10. 📱 Responsive Design
+
+Optimized for both desktop and mobile browsers. On phones: header wraps, tabs scroll horizontally, content padding reduced, footer stacks vertically.
 
 ---
 
@@ -312,12 +382,14 @@ VoxGuard has no text box. The user never types. The interface is entirely driven
 
 ## ⚠️ Limitations
 
-- **Demo Mode only on Vercel:** The live demo runs with simulated alerts. Full real-time analysis requires a running backend with a valid Gemini API key.
+- **Demo Mode on Vercel:** The live demo runs with simulated 2-way dialog and TTS alerts. Full real-time analysis requires a running backend with a valid Gemini API key.
+- **Browser Speech Synthesis:** Demo voice quality varies by browser/OS. A MUTE button + volume slider are available. Production uses Gemini Live API for natural voices.
+- **English fallback:** 30+ languages use English voice and alerts in demo. 9 languages have full native support (EN, ID, ZH, JA, KO, ES, FR, HI, AR).
 - **Browser-only:** No native mobile or desktop clients yet.
 - **Latency depends on network:** <80ms measured locally; 100-300ms over public internet with Cloud Run.
-- **English-first patterns:** The grounded pattern library is most comprehensive for English. Regional variants (Indonesian, Mandarin, Hindi) are included but less extensive.
 - **No persistent storage in demo:** Session reports use localStorage only.
 - **Screen capture requires user consent:** Vision analysis is opt-in and desktop-only.
+- **No brand names in demos:** All demo scripts use generic institution names to avoid trademark issues.
 
 ## 🔮 Future Work
 
@@ -327,6 +399,11 @@ VoxGuard has no text box. The user never types. The interface is entirely driven
 - **On-device WASM inference:** Running scam classification directly in Rust WASM for offline-capable protection.
 - **Community pattern submissions:** Crowd-sourced, continuously updated threat intelligence.
 - **Enterprise API:** Hosted API for banks, telcos, and contact centers.
+- **Real-time video deepfake detection:** Detect AI-generated video in video call scams.
+- **Auto-detect call platform:** Automatically identify if user is on phone, Zoom, WhatsApp, or Teams.
+- **Natural voice TTS:** Google Cloud TTS / ElevenLabs for natural demo voices across all 40+ languages.
+- **Emotional contagion scoring:** Measure how caller's emotional state transfers to the victim.
+- **Full native support for 40+ languages:** Extend localized demo scripts and alerts beyond current 9 languages.
 
 ---
 
@@ -370,6 +447,7 @@ No proprietary or licensed data. No personal victim data. All examples reconstru
 - **No raw audio transmission:** Rust WASM sends only preprocessed feature vectors and transcripts
 - **Explicit screen consent:** Screen capture requires explicit user activation
 - **No PII collection:** No personally identifiable information collected
+- **No brand names:** Demo scripts use generic institution names
 
 ---
 

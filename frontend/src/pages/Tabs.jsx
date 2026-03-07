@@ -4,6 +4,47 @@ import { AlertCard }             from '../components/AlertCard'
 import { PixelLogo }             from '../components/PixelLogo'
 import { SCAM_PATTERNS, PSYCH_TACTICS, SEV, PF, MF, LIE_INDICATORS, getActionsForLang } from '../utils/constants'
 
+/* ── Score Interpretation ── */
+function getInterpretation(score) {
+  if(score===0) return { level:'INACTIVE', color:'rgba(255,255,255,0.25)', text:'No activity detected in this vector.' }
+  if(score<=20) return { level:'LOW', color:'#30d158', text:'Minimal presence. Caller may be testing this approach.' }
+  if(score<=40) return { level:'MODERATE', color:'#ffd60a', text:'Noticeable pattern. Stay alert — this tactic is being deployed.' }
+  if(score<=60) return { level:'ELEVATED', color:'#ff9500', text:'Active manipulation. The caller is deliberately using this technique.' }
+  if(score<=80) return { level:'HIGH', color:'#ff2d55', text:'Intense pressure. Strong likelihood of scam — exercise extreme caution.' }
+  return { level:'CRITICAL', color:'#ff2d55', text:'Maximum intensity. This is a confirmed manipulation tactic — disengage immediately.' }
+}
+
+/* ── Mini Pie Chart ── */
+function MiniPie({ data, size=100 }) {
+  const total = data.reduce((s,d)=>s+d.value,0) || 1
+  let cum = 0
+  const slices = data.filter(d=>d.value>0).map(d => {
+    const start = cum / total * 360
+    cum += d.value
+    const end = cum / total * 360
+    return { ...d, start, end }
+  })
+  const r = size/2 - 4
+  const cx = size/2, cy = size/2
+  const arc = (startAngle, endAngle) => {
+    const s = (startAngle-90)*Math.PI/180, e = (endAngle-90)*Math.PI/180
+    const x1=cx+r*Math.cos(s), y1=cy+r*Math.sin(s), x2=cx+r*Math.cos(e), y2=cy+r*Math.sin(e)
+    const large = endAngle-startAngle > 180 ? 1 : 0
+    return `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`
+  }
+  return (
+    <svg width={size} height={size} style={{ flexShrink:0 }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+      {slices.map((s,i)=><path key={i} d={arc(s.start,s.end)} fill={s.color+'cc'} stroke="#020408" strokeWidth="1" style={{ filter:`drop-shadow(0 0 3px ${s.color}44)` }}/>)}
+      {total===0&&<circle cx={cx} cy={cy} r={r} fill="rgba(255,255,255,0.03)"/>}
+    </svg>
+  )
+}
+
+/* ── Country Flags ── */
+const FLAGS = { en:'🇺🇸',id:'🇮🇩','zh-CN':'🇨🇳',zh:'🇨🇳',ja:'🇯🇵',ko:'🇰🇷',es:'🇪🇸',fr:'🇫🇷',hi:'🇮🇳',ar:'🇸🇦',de:'🇩🇪',pt:'🇧🇷','pt-BR':'🇧🇷',ru:'🇷🇺',th:'🇹🇭',vi:'🇻🇳',ms:'🇲🇾',tr:'🇹🇷',it:'🇮🇹',nl:'🇳🇱',pl:'🇵🇱',sv:'🇸🇪' }
+function getFlag(lang) { return FLAGS[lang] || FLAGS[lang?.split('-')[0]] || '🌐' }
+
 /* ── Social SVGs ── */
 const XIcon=({size=12,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{flexShrink:0,display:'block'}}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2.25 2.25h6.422l4.256 5.624 5.316-5.624Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
 const DiscordIcon=({size=13,color='#7b8cde'})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{flexShrink:0,display:'block'}}><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.36-.698.772-1.362 1.225-1.993a.077.077 0 0 0-.041-.107 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.12-.094.246-.194.373-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419s.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419s.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
@@ -105,22 +146,29 @@ ${actionsData.actions.map(a=>`<div class="action">${a.icon} ${a.text}<span class
 function exportHTML(report){const b=new Blob([genHTML(report)],{type:'text/html'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`voxguard-${report.id}.html`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)}
 function exportPDF(report){const w=window.open('','_blank');if(!w)return;w.document.write(genHTML(report)+'<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>');w.document.close()}
 
-/* ═══ Vector Bar — brighter text ═══ */
+/* ═══ Vector Bar — with interpretation ═══ */
 function VectorBar({tac,score}){
   const[h,setH]=useState(false);const active=score>0
   const barColors=[tac.color+'55',tac.color+'99',tac.color]
+  const interp = getInterpretation(score)
   return(
     <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',marginBottom:4,border:`1px solid ${h?tac.color+'55':tac.color+'18'}`,background:h?tac.color+'0a':'transparent',transition:'all 0.2s ease'}}>
       <span style={{fontSize:16,filter:h||active?`drop-shadow(0 0 6px ${tac.color})`:'none',transition:'filter 0.3s',flexShrink:0}}>{tac.icon}</span>
       <div style={{flex:1,minWidth:0}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
           <span style={{fontFamily:PF,fontSize:7,color:h?tac.color:(active?tac.color:'rgba(255,255,255,0.55)'),letterSpacing:0.5}}>{tac.label}</span>
-          <span style={{fontFamily:PF,fontSize:10,color:tac.color,textShadow:active?`0 0 10px ${tac.color}`:'none'}}>{score}%</span>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontFamily:MF,fontSize:8,color:interp.color,opacity:h?1:0,transition:'opacity 0.2s'}}>{interp.level}</span>
+            <span style={{fontFamily:PF,fontSize:10,color:tac.color,textShadow:active?`0 0 10px ${tac.color}`:'none'}}>{score}%</span>
+          </div>
         </div>
         <div style={{display:'flex',gap:1,height:h?8:6,transition:'height 0.2s'}}>
           {Array.from({length:20}).map((_,i)=>{const filled=i<Math.round(score/5);const ci=i<7?0:i<14?1:2;return<div key={i} style={{flex:1,background:filled?barColors[ci]:tac.color+'12',boxShadow:filled&&i>=14?`0 0 6px ${tac.color}`:'none',transition:'all 0.4s'}}/>})}
         </div>
-        {h&&<div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.6)',marginTop:4,lineHeight:1.5}}>{tac.desc}</div>}
+        {h&&<div style={{marginTop:5}}>
+          <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.6)',lineHeight:1.5}}>{tac.desc}</div>
+          <div style={{fontFamily:MF,fontSize:8,color:interp.color,marginTop:3,fontStyle:'italic'}}>{interp.text}</div>
+        </div>}
       </div>
       {active&&<div style={{fontFamily:PF,fontSize:5,color:tac.color,animation:'blink 1s step-end infinite',flexShrink:0}}>► ACTIVE</div>}
     </div>
@@ -238,32 +286,84 @@ function GalleryCard({r,sc,fmt,onOpen,onDel}){
    PSYCH TAB
 ══════════════════════════════════════════════════════════ */
 export function PsychTab({psychScores,lieScores={}}){
+  const psychData = PSYCH_TACTICS.map(t=>({label:t.label,value:psychScores[t.id]||0,color:t.color}))
+  const lieData = (LIE_INDICATORS||[]).map(l=>({label:l.label,value:lieScores[l.id]||0,color:l.color}))
+
   return(
     <div>
-      <div style={{marginBottom:28,paddingLeft:18,borderLeft:'3px solid #ff9500'}}>
+      {/* Methodology info */}
+      <div style={{marginBottom:24,paddingLeft:18,borderLeft:'3px solid #ff9500'}}>
         <div style={{fontFamily:PF,fontSize:11,color:'#ff9500',textShadow:'0 0 16px #ff9500',marginBottom:10}}>PSYCHOLOGICAL MANIPULATION ANALYZER</div>
-        <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.9,maxWidth:780}}>Maps the <span style={{color:'#ff9500'}}>psychological architecture</span> of a manipulation attempt — not just what the scammer says, but <span style={{color:'#ff2d55'}}>how they are engineering your decisions</span> and <span style={{color:'#ff2d55'}}>where they are lying</span>.</div>
+        <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.9,maxWidth:780}}>Maps the <span style={{color:'#ff9500'}}>psychological architecture</span> of a manipulation attempt using <span style={{color:'#ff2d55'}}>three analytical frameworks</span>:</div>
       </div>
-      <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:10}}>CALLER — Manipulation Vectors</div>
-      <div style={{marginBottom:24}}>{PSYCH_TACTICS.map(t=><VectorBar key={t.id} tac={t} score={psychScores[t.id]||0}/>)}</div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:28}}>
+        {[
+          {title:'Cialdini\'s 6 Principles',desc:'Influence psychology framework (1984). Maps which persuasion vectors the caller is deploying.',color:'#ff9500',icon:'🧠'},
+          {title:'FBI CBCA Method',desc:'Criteria-Based Content Analysis. Behavioral lie detection from interrogation research.',color:'#ff2d55',icon:'🔍'},
+          {title:'Victim Vulnerability',desc:'Derived susceptibility model. How the manipulation is affecting YOUR decision-making.',color:'#00d4ff',icon:'🛡'},
+        ].map(m=>(
+          <PBox key={m.title} color={m.color+'40'} style={{padding:14,background:m.color+'06'}}>
+            <div style={{fontSize:20,marginBottom:6}}>{m.icon}</div>
+            <div style={{fontFamily:PF,fontSize:6,color:m.color,marginBottom:6}}>{m.title}</div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)',lineHeight:1.6}}>{m.desc}</div>
+          </PBox>
+        ))}
+      </div>
 
-      <div style={{marginBottom:28,paddingLeft:18,borderLeft:'3px solid #ff2d55'}}>
-        <div style={{fontFamily:PF,fontSize:11,color:'#ff2d55',textShadow:'0 0 16px #ff2d55',marginBottom:10}}>LIE DETECTION ANALYSIS</div>
-        <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.9,maxWidth:780}}>FBI behavioral deception indicators. Detects <span style={{color:'#ff2d55'}}>patterns of dishonesty</span> — inconsistencies, deflections, and pressure tactics.</div>
+      {/* Scoring rubric */}
+      <div style={{marginBottom:24,padding:'12px 16px',border:'1px solid rgba(255,255,255,0.06)',background:'rgba(255,255,255,0.015)'}}>
+        <div style={{fontFamily:PF,fontSize:6,color:'rgba(255,255,255,0.4)',marginBottom:8,letterSpacing:1}}>SCORING RUBRIC</div>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          {[{l:'0%',c:'rgba(255,255,255,0.25)',t:'Inactive'},{l:'1-20%',c:'#30d158',t:'Low'},{l:'21-40%',c:'#ffd60a',t:'Moderate'},{l:'41-60%',c:'#ff9500',t:'Elevated'},{l:'61-80%',c:'#ff2d55',t:'High'},{l:'81-100%',c:'#ff2d55',t:'Critical'}].map(r=>(
+            <div key={r.l} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 8px',border:`1px solid ${r.c}33`,background:`${r.c}08`}}>
+              <div style={{width:8,height:8,background:r.c,flexShrink:0}}/>
+              <span style={{fontFamily:MF,fontSize:8,color:r.c}}>{r.l}</span>
+              <span style={{fontFamily:MF,fontSize:7,color:'rgba(255,255,255,0.4)'}}>{r.t}</span>
+            </div>
+          ))}
+        </div>
       </div>
-      <div style={{fontFamily:PF,fontSize:8,color:'#ff2d55',marginBottom:10}}>CALLER — Lie Indicators</div>
-      <div style={{marginBottom:24}}>{(LIE_INDICATORS||[]).map(l=><VectorBar key={l.id} tac={l} score={lieScores[l.id]||0}/>)}</div>
 
-      <div style={{marginBottom:28,paddingLeft:18,borderLeft:'3px solid #00d4ff'}}>
-        <div style={{fontFamily:PF,fontSize:11,color:'#00d4ff',textShadow:'0 0 16px #00d4ff',marginBottom:10}}>USER VULNERABILITY STATE</div>
-        <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.9}}>Your estimated susceptibility based on caller's manipulation intensity.</div>
-      </div>
-      <div style={{marginBottom:20}}>
-        {[{id:'PANIC',icon:'😰',label:'Panic Level',desc:'Elevated stress may impair decision-making',color:'#ff2d55'},
+      {/* ── SECTION 1: Caller Manipulation Vectors ── */}
+      <PBox color="#ff950044" style={{padding:20,marginBottom:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div style={{flex:1,minWidth:280}}>
+            <div style={{fontFamily:PF,fontSize:9,color:'#ff9500',textShadow:'0 0 10px #ff9500',marginBottom:4}}>CALLER — MANIPULATION VECTORS</div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)',marginBottom:14}}>Cialdini's 6 influence principles detected from scammer</div>
+            {PSYCH_TACTICS.map(t=><VectorBar key={t.id} tac={t} score={psychScores[t.id]||0}/>)}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+            <MiniPie data={psychData} size={110}/>
+            <div style={{fontFamily:MF,fontSize:8,color:'rgba(255,255,255,0.3)'}}>Distribution</div>
+          </div>
+        </div>
+      </PBox>
+
+      {/* ── SECTION 2: Lie Detection ── */}
+      <PBox color="#ff2d5544" style={{padding:20,marginBottom:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div style={{flex:1,minWidth:280}}>
+            <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',textShadow:'0 0 10px #ff2d55',marginBottom:4}}>LIE DETECTION ANALYSIS</div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)',marginBottom:14}}>FBI CBCA behavioral deception indicators</div>
+            {(LIE_INDICATORS||[]).map(l=><VectorBar key={l.id} tac={l} score={lieScores[l.id]||0}/>)}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+            <MiniPie data={lieData} size={110}/>
+            <div style={{fontFamily:MF,fontSize:8,color:'rgba(255,255,255,0.3)'}}>Distribution</div>
+          </div>
+        </div>
+      </PBox>
+
+      {/* ── SECTION 3: User Vulnerability ── */}
+      <PBox color="#00d4ff44" style={{padding:20,marginBottom:16}}>
+        <div style={{fontFamily:PF,fontSize:9,color:'#00d4ff',textShadow:'0 0 10px #00d4ff',marginBottom:4}}>USER VULNERABILITY STATE</div>
+        <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)',marginBottom:14}}>Your estimated susceptibility based on caller's manipulation intensity</div>
+        {[
+          {id:'PANIC',icon:'😰',label:'Panic Level',desc:'Elevated stress may impair decision-making',color:'#ff2d55'},
           {id:'COMPLIANCE',icon:'🫡',label:'Compliance Risk',desc:'Willingness to follow instructions without questioning',color:'#ff9500'},
           {id:'TRUST',icon:'🤝',label:'Misplaced Trust',desc:'False credibility established by caller',color:'#ffd60a'},
         ].map(item=>{const s=Math.min(100,Math.round(item.id==='PANIC'?(psychScores.FEAR||0)*0.8+(psychScores.SCARCITY||0)*0.3:item.id==='COMPLIANCE'?(psychScores.AUTHORITY||0)*0.6+(psychScores.COMMITMENT||0)*0.5:(psychScores.RECIPROCITY||0)*0.7+(psychScores.AUTHORITY||0)*0.4));return<VectorBar key={item.id} tac={item} score={s}/>})}
-      </div>
+      </PBox>
 
       <PBox color="#ff9500" style={{padding:'22px 28px',background:'rgba(255,149,0,0.03)',position:'relative',overflow:'hidden'}}>
         <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:12}}>WHY THIS IS UNPRECEDENTED</div>
@@ -278,6 +378,7 @@ export function PsychTab({psychScores,lieScores={}}){
 ══════════════════════════════════════════════════════════ */
 export function PatternsTab({detectedIds=[]}){
   const[search,setSearch]=useState('');const[filter,setFilter]=useState('all')
+  const[selected,setSelected]=useState(null)
   const filtered=SCAM_PATTERNS.filter(p=>(!search||p.category.toLowerCase().includes(search.toLowerCase())||p.description.toLowerCase().includes(search.toLowerCase()))&&(filter==='all'||p.severity===filter))
   return(<div>
     <div style={{marginBottom:20,paddingLeft:16,borderLeft:'3px solid #00d4ff'}}><div style={{fontFamily:PF,fontSize:11,color:'#00d4ff',marginBottom:6}}>PATTERN LIBRARY</div><div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,0.55)'}}>50+ verified patterns — FTC · FBI IC3 · GASA · MAS · ACCC</div></div>
@@ -285,11 +386,48 @@ export function PatternsTab({detectedIds=[]}){
       <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{flex:1,minWidth:200,padding:'9px 14px',background:'rgba(0,212,255,0.04)',border:'1px solid rgba(0,212,255,0.18)',color:'#e0e0e0',fontFamily:MF,fontSize:11,outline:'none'}}/>
       <div style={{display:'flex',gap:6}}>{['all','critical','high','medium','low'].map(f=>{const fc=f==='all'?'#00d4ff':SEV[f]?.text||'#00d4ff';return<button key={f} onClick={()=>setFilter(f)} style={{padding:'9px 14px',fontFamily:PF,fontSize:6,border:`1px solid ${filter===f?fc:fc+'44'}`,background:filter===f?fc+'18':'transparent',color:filter===f?fc:'rgba(255,255,255,0.5)',cursor:'pointer'}}>{f.toUpperCase()}</button>})}</div>
     </div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(330px,1fr))',gap:14}}>{filtered.map(p=>{const c=SEV[p.severity];return<PatternCard key={p.id} p={p} c={c} hit={detectedIds.includes(p.category)}/>})}</div>
+    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(330px,1fr))',gap:14}}>{filtered.map(p=>{const c=SEV[p.severity];return<PatternCard key={p.id} p={p} c={c} hit={detectedIds.includes(p.category)} onClick={()=>setSelected(p)}/>})}</div>
+
+    {/* Fullscreen Pattern Detail */}
+    {selected&&(()=>{
+      const c=SEV[selected.severity]
+      return(
+        <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,0.95)',backdropFilter:'blur(10px)',display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setSelected(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{maxWidth:700,width:'100%',maxHeight:'90vh',overflowY:'auto',padding:32,border:`1px solid ${c.border}55`,background:'rgba(2,4,8,0.98)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}}>
+              <div>
+                <div style={{fontFamily:PF,fontSize:6,padding:'4px 10px',border:`1px solid ${c.border}`,color:c.text,background:c.bg,display:'inline-block',marginBottom:8}}>{selected.severity.toUpperCase()}</div>
+                <div style={{fontFamily:PF,fontSize:12,color:c.text,textShadow:`0 0 10px ${c.border}`}}>{selected.category}</div>
+              </div>
+              <button onClick={()=>setSelected(null)} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.3)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
+            </div>
+            <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.75)',lineHeight:1.8,marginBottom:20}}>{selected.description}</div>
+
+            <div style={{fontFamily:PF,fontSize:7,color:'#ff9500',marginBottom:10}}>MECHANISM</div>
+            <div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,0.6)',marginBottom:20,padding:'10px 14px',borderLeft:`3px solid #ff9500`,background:'rgba(255,149,0,0.04)'}}>⚙ {selected.mechanism}</div>
+
+            <div style={{fontFamily:PF,fontSize:7,color:'#00d4ff',marginBottom:10}}>LINGUISTIC MARKERS</div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:20}}>{selected.markers.map((m,i)=><span key={i} style={{fontFamily:MF,fontSize:10,padding:'5px 10px',border:'1px solid rgba(0,212,255,0.25)',color:'#00d4ff',background:'rgba(0,212,255,0.06)'}}>"{m}"</span>)}</div>
+
+            <div style={{fontFamily:PF,fontSize:7,color:'#7b61ff',marginBottom:10}}>INTERPRETATION</div>
+            <div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,0.6)',lineHeight:1.8,padding:'12px 14px',borderLeft:'3px solid #7b61ff',background:'rgba(123,97,255,0.04)'}}>
+              When this pattern is detected, it means the caller is employing a <strong style={{color:c.text}}>{selected.severity}-severity</strong> manipulation technique.
+              The mechanism combines <strong style={{color:'#ff9500'}}>{selected.mechanism.toLowerCase()}</strong> to override the victim's rational decision-making.
+              Common in scams reported to <strong style={{color:'#00d4ff'}}>{selected.source}</strong>.
+              {selected.severity==='critical'&&' This pattern alone is sufficient to classify the call as a scam with high confidence.'}
+              {selected.severity==='high'&&' This pattern is a strong indicator — combined with other signals, it confirms a scam.'}
+              {selected.severity==='medium'&&' This pattern warrants caution — monitor for additional indicators before concluding.'}
+            </div>
+
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.3)',marginTop:20}}>Source: {selected.source} · Pattern ID: {selected.id}</div>
+          </div>
+        </div>
+      )
+    })()}
   </div>)
 }
-function PatternCard({p,c,hit}){const[h,setH]=useState(false);return(
-  <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{padding:16,border:`1px solid ${h?c.border:c.border+'50'}`,background:h?c.bg:'rgba(0,0,0,0.22)',boxShadow:h?`0 0 20px ${c.border}28`:'none',transition:'all 0.2s',position:'relative'}}>
+function PatternCard({p,c,hit,onClick}){const[h,setH]=useState(false);return(
+  <div onClick={onClick} onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{padding:16,border:`1px solid ${h?c.border:c.border+'50'}`,background:h?c.bg:'rgba(0,0,0,0.22)',boxShadow:h?`0 0 20px ${c.border}28`:'none',transition:'all 0.2s',position:'relative',cursor:'pointer'}}>
     <div style={{position:'absolute',top:-1,left:-1,width:16,height:2,background:c.border+'88'}}/><div style={{position:'absolute',top:-1,left:-1,width:2,height:16,background:c.border+'88'}}/>
     <div style={{position:'absolute',bottom:-1,right:-1,width:16,height:2,background:c.border+'88'}}/><div style={{position:'absolute',bottom:-1,right:-1,width:2,height:16,background:c.border+'88'}}/>
     <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}><div style={{fontFamily:PF,fontSize:7,color:h?c.text:'rgba(255,255,255,0.82)',flex:1,paddingRight:8,lineHeight:1.6}}>{p.category}</div><div style={{display:'flex',gap:6,alignItems:'center',flexShrink:0}}>{hit&&<div style={{fontFamily:PF,fontSize:6,color:c.text,animation:'blink 1s step-end infinite'}}>► HIT</div>}<div style={{fontFamily:PF,fontSize:6,padding:'3px 8px',border:`1px solid ${c.border}`,color:c.text,background:c.bg}}>{p.severity.toUpperCase()}</div></div></div>
@@ -333,7 +471,10 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
         </PBox>
         <PBox color="#30d158" style={{padding:20}}>
           <div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:6}}>RECOMMENDED ACTIONS</div>
-          <div style={{fontFamily:MF,fontSize:9,color:'rgba(48,209,88,0.5)',marginBottom:14}}>📍 {actionsData.country}</div>
+          <div style={{fontFamily:MF,fontSize:11,color:'rgba(48,209,88,0.7)',marginBottom:14,padding:'8px 12px',border:'1px solid rgba(48,209,88,0.2)',background:'rgba(48,209,88,0.04)',display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:18}}>{getFlag(language)}</span>
+            <span>📍 {actionsData.country}</span>
+          </div>
           {actionsData.actions.map((a,i)=><ActionItem key={i} action={a}/>)}
         </PBox>
         <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
@@ -382,7 +523,7 @@ export function AboutTab(){
         </div>
       </div>
     </PBox>
-    <PBox color="#30d15840" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES</div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
+    <PBox color="#30d158" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES</div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
       <DataSourceCard name="FBI IC3 2024" url="ic3.gov" href="https://www.ic3.gov/AnnualReport" c="#ff2d55"/>
       <DataSourceCard name="FTC Sentinel" url="ftc.gov" href="https://www.ftc.gov/enforcement/consumer-sentinel-network" c="#00d4ff"/>
       <DataSourceCard name="GASA Global" url="gasa.org" href="https://www.gasa.org" c="#ffd60a"/>
