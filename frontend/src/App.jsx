@@ -63,6 +63,7 @@ export default function App() {
   const [audioLevel,setAudioLevel]=useState(0)
   const [language,setLanguage]=useState('en')
   const [transcript,setTranscript]=useState([])  // NEW: transcript state
+  const [lieScores,setLieScores]=useState({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
 
   useEffect(()=>{ const t=setInterval(()=>setScanY(y=>(y+1.4)%100),16); return()=>clearInterval(t) },[])
@@ -90,6 +91,14 @@ export default function App() {
     ;(alert.tactics||[]).forEach(t=>setPsychScores(prev=>({...prev,[t]:Math.min(100,(prev[t]||0)+25+Math.floor(Math.random()*15))})))
     setDetectedIds(prev=>prev.includes(alert.pattern)?prev:[...prev,alert.pattern])
     if(alert.severity==='critical'){setGlitch(true);setTimeout(()=>setGlitch(false),500)}
+    // Generate lie detection scores based on alert patterns
+    setLieScores(prev=>({
+      INCONSISTENCY: Math.min(100, prev.INCONSISTENCY + (alert.severity==='critical'?18:8) + Math.floor(Math.random()*12)),
+      VAGUENESS:     Math.min(100, prev.VAGUENESS + (alert.tactics?.includes('AUTHORITY')?15:5) + Math.floor(Math.random()*10)),
+      OVERDETAIL:    Math.min(100, prev.OVERDETAIL + Math.floor(Math.random()*14)),
+      DEFLECTION:    Math.min(100, prev.DEFLECTION + (alert.tactics?.includes('ISOLATION')?20:6) + Math.floor(Math.random()*10)),
+      PRESSURE:      Math.min(100, prev.PRESSURE + (alert.tactics?.includes('SCARCITY')?22:10) + Math.floor(Math.random()*8)),
+    }))
   }
 
   // NEW: Handler for transcript lines from MonitorTab
@@ -104,6 +113,7 @@ export default function App() {
     setSessionTime(0);setPsychScores({SCARCITY:0,AUTHORITY:0,FEAR:0,RECIPROCITY:0,ISOLATION:0,COMMITMENT:0})
     setDetectedIds([]);alertIdxRef.current=0
     setTranscript([])  // NEW: reset transcript
+    setLieScores({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
     if(!DEMO){ws.reset();ws.startSession()}
   }
   const handleStop=()=>{setMonitoring(false);if(!DEMO)ws.endSession();setTab('report')}
@@ -224,9 +234,9 @@ export default function App() {
               </div>
             )}
             {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} onTranscriptLine={handleTranscriptLine} language={language} />}
-            {tab==='psych'    && <PsychTab   psychScores={psychScores} />}
+            {tab==='psych'    && <PsychTab   psychScores={psychScores} lieScores={lieScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
-            {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} transcript={transcript} language={language} />}
+            {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} lieScores={lieScores} transcript={transcript} language={language} />}
             {tab==='about'    && <AboutTab />}
           </main>
 
