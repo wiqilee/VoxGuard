@@ -102,7 +102,22 @@ h2{color:#00d4ff;margin:28px 0 14px;font-size:12px;letter-spacing:2px;text-trans
 .action .pri{font-size:8px;font-weight:bold;margin-left:8px}
 .footer{margin-top:40px;padding:20px 0;border-top:2px solid #111;text-align:center;color:#666;font-size:10px}
 .footer .brand{color:#00d4ff;font-size:12px;font-weight:bold;letter-spacing:2px}
-@media print{body{background:#fff!important;color:#111!important}.page{padding:20px}h1{color:#cc0000}h2{color:#005599}.metric{border-color:#ddd}.metric .v{color:#cc0000}.bar .bl{color:#555}.bt{background:#eee;border-color:#ddd}.tline{color:#333}.tline.flagged{background:#fff5f5}.action{background:#f0fff4;border-color:#007700}.footer{border-color:#eee}.footer .brand{color:#005599}}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+  body{background:#fff!important;color:#222!important}
+  .page{padding:20px}
+  h1{color:#cc0000!important}
+  h2{color:#005599!important}
+  .metric{border-color:#ddd}.metric .v{color:#cc0000!important}
+  .bar .bl{color:#444!important}
+  .bt{background:#eee!important;border-color:#ddd!important}
+  .bf{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .tline{color:#333!important}.tline.flagged{background:#fff0f0!important}
+  .action{background:#f0fff4!important;border-color:#007700!important}
+  .footer{border-color:#eee!important}.footer .brand{color:#005599!important}
+  .speaker{-webkit-print-color-adjust:exact!important}
+  .badge{-webkit-print-color-adjust:exact!important}
+}
 </style></head><body><div class="page">
 <h1>🛡 VOXGUARD — FORENSIC REPORT</h1>
 <div class="meta">
@@ -143,8 +158,31 @@ ${actionsData.actions.map(a=>`<div class="action">${a.icon} ${a.text}<span class
 </div></body></html>`
 }
 
-function exportHTML(report){const b=new Blob([genHTML(report)],{type:'text/html'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`voxguard-${report.id}.html`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)}
-function exportPDF(report){const w=window.open('','_blank');if(!w)return;w.document.write(genHTML(report)+'<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>');w.document.close()}
+function getFilename(report) {
+  const d = new Date(report.savedAt||Date.now())
+  const ds = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`
+  return `VoxGuard_Report_${ds}_${(report.language||'en').toUpperCase()}`
+}
+
+function exportHTML(report){
+  let html = genHTML(report)
+  // Add audio player if recording exists
+  if(report.audioUrl) {
+    html = html.replace('</div></body>',`<h2>SESSION RECORDING</h2><audio controls src="${report.audioUrl}" style="width:100%;margin:10px 0"></audio></div></body>`)
+  }
+  const b=new Blob([html],{type:'text/html'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`${getFilename(report)}.html`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)
+}
+
+function exportPDF(report){
+  const html = genHTML(report)
+  const w=window.open('','_blank','width=900,height=700')
+  if(!w)return
+  w.document.write(html)
+  w.document.title = `VoxGuard Report — ${getFilename(report)}`
+  w.document.close()
+  // Wait for render then print
+  w.onload = () => setTimeout(()=>w.print(),600)
+}
 
 /* ═══ Vector Bar — with interpretation ═══ */
 function VectorBar({tac,score}){

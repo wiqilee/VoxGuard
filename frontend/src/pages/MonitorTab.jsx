@@ -40,24 +40,56 @@ function getVoiceForLang(lang) {
   return voices.find(v => v.lang.startsWith('en')) || voices[0]
 }
 
-/* ━━━ Caller Visual — improved silhouette with cybersec HUD ━━━ */
+/* ━━━ Caller Visual — DISTINCT per mode: phone=icon, video=person, rec=dot ━━━ */
 function CallerVisual({ mode='phone', active, screenWatchOn }) {
   if (!active) return null
+  const borderCol = screenWatchOn ? 'rgba(123,97,255,0.3)' : 'rgba(255,45,85,0.15)'
   return (
-    <div style={{ position:'relative',width:'100%',height:90,marginBottom:12,overflow:'hidden',border:`1px solid ${screenWatchOn?'rgba(123,97,255,0.3)':'rgba(255,45,85,0.15)'}`,background:'linear-gradient(135deg,rgba(0,0,0,0.8),rgba(10,10,18,0.9))',transition:'border-color 0.3s' }}>
+    <div style={{ position:'relative',width:'100%',height:90,marginBottom:12,overflow:'hidden',border:`1px solid ${borderCol}`,background:'linear-gradient(135deg,rgba(0,0,0,0.8),rgba(10,10,18,0.9))' }}>
       <svg width="100%" height="90" viewBox="0 0 400 90" preserveAspectRatio="xMidYMid meet">
-        {/* Background grid */}
-        <defs>
-          <pattern id="bgGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M20,0L0,0L0,20" fill="none" stroke="rgba(0,212,255,0.04)" strokeWidth="0.5"/>
-          </pattern>
-          <radialGradient id="headGlow" cx="50%" cy="40%" r="40%">
-            <stop offset="0%" stopColor="rgba(255,45,85,0.15)"/>
-            <stop offset="100%" stopColor="transparent"/>
-          </radialGradient>
-        </defs>
+        <defs><pattern id="bgGrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20,0L0,0L0,20" fill="none" stroke="rgba(0,212,255,0.04)" strokeWidth="0.5"/></pattern></defs>
         <rect width="400" height="90" fill="url(#bgGrid)"/>
-        <rect width="400" height="90" fill="url(#headGlow)"/>
+
+        {/* MODE: PHONE — phone icon only, no person */}
+        {mode==='phone'&&<>
+          <rect x="12" y="8" width="50" height="16" rx="2" fill="rgba(255,45,85,0.15)" stroke="#ff2d55" strokeWidth="0.8"/>
+          <text x="37" y="19" textAnchor="middle" fill="#ff2d55" fontSize="7" fontFamily="monospace">📞 CALL</text>
+          <g transform="translate(175,18)"><rect x="0" y="0" width="50" height="54" rx="8" fill="none" stroke="#ff2d5522" strokeWidth="1"/><text x="25" y="38" textAnchor="middle" fontSize="30" fill="#ff2d5533">📞</text></g>
+          <circle cx="68" cy="16" r="3" fill="#ff2d55" opacity="0.5"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/></circle>
+          <text x="388" y="18" textAnchor="end" fill="#ff2d55" fontSize="6" fontFamily="monospace" opacity="0.6">◉ VOICE ONLY</text>
+          <text x="388" y="30" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">AUDIO ANALYSIS</text>
+        </>}
+
+        {/* MODE: VIDEO/ZOOM — person silhouette */}
+        {mode==='zoom'&&<>
+          <rect x="12" y="8" width="50" height="16" rx="2" fill="rgba(45,140,255,0.15)" stroke="#2d8cff" strokeWidth="0.8"/>
+          <text x="37" y="19" textAnchor="middle" fill="#2d8cff" fontSize="7" fontFamily="monospace">🖥 VIDEO</text>
+          <g opacity="0.5"><path d="M155,88 Q155,70 170,62 Q185,55 200,52 Q215,55 230,62 Q245,70 245,88" fill="none" stroke="#2d8cff55" strokeWidth="1.5"/><ellipse cx="200" cy="36" rx="18" ry="22" fill="none" stroke="#2d8cff77" strokeWidth="1.5"/><line x1="188" y1="30" x2="195" y2="30" stroke="#2d8cff44" strokeWidth="1"/><line x1="205" y1="30" x2="212" y2="30" stroke="#2d8cff44" strokeWidth="1"/></g>
+          <line x1="170" y1="0" x2="170" y2="90" stroke="#2d8cff" strokeWidth="0.5" opacity="0.2"><animate attributeName="x1" values="170;230;170" dur="2s" repeatCount="indefinite"/><animate attributeName="x2" values="170;230;170" dur="2s" repeatCount="indefinite"/></line>
+          <rect x="340" y="55" width="48" height="28" rx="3" fill="none" stroke="#30d15833" strokeWidth="1"/><text x="364" y="72" textAnchor="middle" fill="#30d158" fontSize="6" fontFamily="monospace" opacity="0.5">YOU</text>
+          <text x="388" y="18" textAnchor="end" fill="#2d8cff" fontSize="6" fontFamily="monospace" opacity="0.6">◉ VIDEO CALL</text>
+          <text x="388" y="30" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">AUDIO + VISUAL</text>
+        </>}
+
+        {/* MODE: REC — recording indicator */}
+        {mode==='video'&&<>
+          <rect x="12" y="8" width="44" height="16" rx="2" fill="rgba(255,45,85,0.2)" stroke="#ff2d55" strokeWidth="0.8"/>
+          <text x="34" y="19" textAnchor="middle" fill="#ff2d55" fontSize="7" fontFamily="monospace">🎥 REC</text>
+          <circle cx="200" cy="45" r="16" fill="none" stroke="#ff2d5544" strokeWidth="1.5"/><circle cx="200" cy="45" r="8" fill="#ff2d55" opacity="0.4"><animate attributeName="opacity" values="0.2;0.7;0.2" dur="1.2s" repeatCount="indefinite"/></circle>
+          <text x="388" y="18" textAnchor="end" fill="#ff2d55" fontSize="6" fontFamily="monospace" opacity="0.6">● RECORDING</text>
+          <text x="388" y="30" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">SESSION CAPTURE</text>
+        </>}
+
+        {/* Corner brackets */}
+        <path d="M6,6 L6,20 M6,6 L20,6" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
+        <path d="M394,6 L394,20 M394,6 L380,6" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
+        <path d="M6,84 L6,70 M6,84 L20,84" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
+        <path d="M394,84 L394,70 M394,84 L380,84" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
+        {screenWatchOn&&<text x="388" y="50" textAnchor="end" fill="#7b61ff" fontSize="5" fontFamily="monospace">◈ SCREEN WATCH</text>}
+      </svg>
+    </div>
+  )
+}
 
         {/* Silhouette — head & shoulders outline only (no blur mess) */}
         <g opacity="0.6">
