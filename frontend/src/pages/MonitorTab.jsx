@@ -33,22 +33,10 @@ function getVoiceForLang(lang) {
   const voices = window.speechSynthesis.getVoices()
   if (!voices.length) return null
   const prefs = VOICE_PREFS[lang] || VOICE_PREFS['en']
-
-  // Prefer Google/premium voices (they sound more natural)
   for (const prefix of prefs.langPrefix) {
-    // First try Google voices
-    const google = voices.find(v => v.lang.startsWith(prefix) && v.name.includes('Google'))
-    if (google) return google
-    // Then try any non-compact voice
-    const premium = voices.find(v => v.lang.startsWith(prefix) && !v.name.includes('Compact') && !v.name.includes('compact'))
-    if (premium) return premium
-    // Fallback to any matching voice
-    const any = voices.find(v => v.lang.startsWith(prefix))
-    if (any) return any
+    const match = voices.find(v => v.lang.startsWith(prefix))
+    if (match) return match
   }
-  // Final fallback: English Google voice
-  const enGoogle = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'))
-  if (enGoogle) return enGoogle
   return voices.find(v => v.lang.startsWith('en')) || voices[0]
 }
 
@@ -404,6 +392,8 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
   const [voiceDemo,setVoiceDemo]=useState(false)
   const [demoProgress,setDemoProgress]=useState(0)
   const [voiceMuted,setVoiceMuted]=useState(false)
+  const [volume,setVolume]=useState(1.0)
+  const [callMode,setCallMode]=useState('phone') // phone, zoom, video — auto or manual
   const speechTimers=useRef([])
   const startTimeRef=useRef(null)
   const pendingCount=useRef(0)
@@ -452,7 +442,7 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
           if(!voiceMuted){
             const u=new SpeechSynthesisUtterance(s.text)
             if(voice) u.voice=voice
-            u.rate=1.0;u.pitch=1.0;u.volume=1.0
+            u.rate=1.0;u.pitch=1.0;u.volume=volume
             u.onstart=()=>setSpeaking(true)
             u.onend=()=>{
               setSpeaking(false)
@@ -486,7 +476,7 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
       window.speechSynthesis.addEventListener('voiceschanged',go,{once:true})
       setTimeout(go,300)
     } else go()
-  },[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted])
+  },[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted,volume])
 
   const handleStartWithVoice=()=>{onStart();if(script) setTimeout(()=>startVoiceDemo(script),500)}
   const handleStop=()=>{window.speechSynthesis?.cancel();speechTimers.current.forEach(t=>clearTimeout(t));onStop()}
@@ -508,14 +498,22 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
                 {monitoring ? voiceDemo ? `► VOICE DEMO — ${fmt(sessionTime)} — ${demoProgress}%` : `► ANALYZING — ${fmt(sessionTime)}` : '■ READY — SELECT DEMO → START'}
               </div>
             </div>
-            <div style={{ display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end' }}>
+            <div style={{ display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center' }}>
+              {/* Call mode selector */}
+              <div style={{ display:'flex',gap:0,border:'1px solid rgba(0,212,255,0.2)' }}>
+                {[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'},{m:'video',icon:'🎥',label:'REC'}].map(({m,icon,label})=>(
+                  <button key={m} onClick={()=>setCallMode(m)} style={{ fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,0.1)',background:callMode===m?'rgba(0,212,255,0.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,0.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all 0.15s' }}>
+                    <span style={{ fontSize:10 }}>{icon}</span>{label}
+                  </button>
+                ))}
+              </div>
               {voiceDemo&&<PBtn onClick={()=>{setVoiceMuted(m=>!m);if(!voiceMuted)window.speechSynthesis?.cancel()}} color={voiceMuted?'#ff9500':'#30d158'} style={{ padding:'10px 14px' }}>{voiceMuted?'🔇 UNMUTE':'🔊 MUTE'}</PBtn>}
               <PBtn onClick={onToggleScreen} color={screenOn?'#ffd60a':'#7b61ff'}>{screenOn?'■ SCREEN OFF':'◈ SCREEN WATCH'}</PBtn>
               {!monitoring ? <PBtn onClick={handleStartWithVoice} color="#30d158">{script?'▶ START VOICE DEMO':'▶ START'}</PBtn> : <PBtn onClick={handleStop} danger>■ STOP</PBtn>}
             </div>
           </div>
 
-          <CallerVisual mode="phone" active={voiceDemo&&monitoring} screenWatchOn={screenOn} />
+          <CallerVisual mode={callMode} active={voiceDemo&&monitoring} screenWatchOn={screenOn} />
 
           {/* Screen Watch active banner — only when screen is ON */}
           {screenOn&&monitoring&&(
@@ -533,6 +531,16 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
             {speaking&&!voiceMuted&&<div style={{ position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff2d55',textShadow:'0 0 8px #ff2d55',animation:'blink 0.6s step-end infinite' }}>🔊 VOICE</div>}
             {voiceMuted&&<div style={{ position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff9500',opacity:0.6 }}>🔇 MUTED</div>}
           </div>
+
+          {voiceDemo&&!voiceMuted&&(
+            <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:12,padding:'6px 12px',background:'rgba(0,0,0,0.3)',border:'1px solid rgba(0,212,255,0.08)' }}>
+              <span style={{ fontFamily:PF,fontSize:5,color:'rgba(0,212,255,0.5)',letterSpacing:1,flexShrink:0 }}>VOL</span>
+              <input type="range" min="0" max="1" step="0.1" value={volume}
+                onChange={e=>setVolume(parseFloat(e.target.value))}
+                style={{ flex:1,height:4,appearance:'none',WebkitAppearance:'none',background:`linear-gradient(90deg,#00d4ff ${volume*100}%,rgba(0,212,255,0.15) ${volume*100}%)`,outline:'none',cursor:'pointer',borderRadius:2 }} />
+              <span style={{ fontFamily:MF,fontSize:9,color:'#00d4ff',width:30,textAlign:'right' }}>{Math.round(volume*100)}%</span>
+            </div>
+          )}
 
           {voiceDemo&&<LiveTranscript lines={transcriptLines} speaking={speaking&&!voiceMuted} />}
           {voiceDemo&&<AnalysisProgressBar progress={demoProgress} threatColor={tColor} />}

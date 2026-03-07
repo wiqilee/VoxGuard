@@ -64,6 +64,7 @@ export default function App() {
   const [language,setLanguage]=useState('en')
   const [transcript,setTranscript]=useState([])  // NEW: transcript state
   const [lieScores,setLieScores]=useState({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
+  const [audioUrl,setAudioUrl]=useState(null)  // recording URL for gallery playback
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
 
   useEffect(()=>{ const t=setInterval(()=>setScanY(y=>(y+1.4)%100),16); return()=>clearInterval(t) },[])
@@ -114,9 +115,19 @@ export default function App() {
     setDetectedIds([]);alertIdxRef.current=0
     setTranscript([])  // NEW: reset transcript
     setLieScores({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
+    setAudioUrl(null)
     if(!DEMO){ws.reset();ws.startSession()}
   }
-  const handleStop=()=>{setMonitoring(false);if(!DEMO)ws.endSession();setTab('report')}
+  const handleStop=()=>{
+    setMonitoring(false)
+    // Save audio recording if available
+    if(audio.recordingBlob) {
+      const url = URL.createObjectURL(audio.recordingBlob)
+      setAudioUrl(url)
+    }
+    if(!DEMO)ws.endSession()
+    setTab('report')
+  }
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const tColor=threatLevel==='critical'?'#ff2d55':threatLevel==='high'?'#ff9500':'#30d158'
 
@@ -236,7 +247,7 @@ export default function App() {
             {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} onTranscriptLine={handleTranscriptLine} language={language} />}
             {tab==='psych'    && <PsychTab   psychScores={psychScores} lieScores={lieScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
-            {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} lieScores={lieScores} transcript={transcript} language={language} />}
+            {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} lieScores={lieScores} transcript={transcript} language={language} audioUrl={audioUrl} />}
             {tab==='about'    && <AboutTab />}
           </main>
 

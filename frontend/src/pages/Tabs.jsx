@@ -157,6 +157,10 @@ function GalleryFullscreen({report,onClose,onDelete}){
           </div>
           <div style={{display:'flex',gap:12,alignItems:'center'}}>
             <span style={{fontFamily:PF,fontSize:22,color:sc,textShadow:`0 0 14px ${sc}`}}>{report.threatScore}/100</span>
+            {/* Audio playback if recording exists */}
+            {report.audioUrl&&(
+              <audio controls src={report.audioUrl} style={{ height:28,maxWidth:180,opacity:0.8 }} />
+            )}
             <button onClick={e=>{e.stopPropagation();onDelete?.()}} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid #ff2d5555',color:'#ff2d55',background:'rgba(255,45,85,0.08)',cursor:'pointer'}}>🗑 DELETE</button>
             <button onClick={onClose} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.3)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
           </div>
@@ -223,7 +227,7 @@ function GalleryCard({r,sc,fmt,onOpen,onDel}){
       </div>
       <div style={{display:'flex',gap:1,marginBottom:6}}>{Array.from({length:10}).map((_,i)=><div key={i} style={{flex:1,height:4,background:i<Math.round(r.threatScore/10)?sc:sc+'22'}}/>)}</div>
       <div style={{display:'flex',justifyContent:'space-between'}}>
-        <span style={{fontFamily:MF,fontSize:8,color:h?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.2)'}}>Click for full report</span>
+        <span style={{fontFamily:MF,fontSize:8,color:h?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.2)'}}>{r.audioUrl?'🎙 Has recording · ':''} Click for full report</span>
         <button onClick={e=>{e.stopPropagation();onDel()}} style={{fontFamily:PF,fontSize:5,padding:'3px 8px',border:'1px solid #ff2d5544',color:'#ff2d55',background:'rgba(255,45,85,0.06)',cursor:'pointer',opacity:h?1:0.3}}>✕</button>
       </div>
     </div>
@@ -298,13 +302,13 @@ function PatternCard({p,c,hit}){const[h,setH]=useState(false);return(
 /* ══════════════════════════════════════════════════════════
    REPORT TAB — lie detect under psych, not separate
 ══════════════════════════════════════════════════════════ */
-export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en'}){
+export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null}){
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const[saved,setSaved]=useState([]);const[msg,setMsg]=useState('')
   useEffect(()=>setSaved(loadReports()),[])
   const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,id:Date.now().toString(),savedAt:new Date().toISOString()}
   const actionsData=getActionsForLang(language)
-  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
+  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,audioUrl});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
 
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
     <div style={{marginBottom:20,paddingLeft:16,borderLeft:'3px solid #00d4ff'}}><div style={{fontFamily:PF,fontSize:11,color:'#00d4ff'}}>SESSION FORENSIC REPORT</div></div>
