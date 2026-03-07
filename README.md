@@ -177,8 +177,8 @@ Lie detection scores are displayed in the PSYCH tab alongside manipulation vecto
 ### 7. 💬 Two-Way Communication Transcript
 
 Both sides of the conversation are transcribed in real-time:
-- **ME** (user) — displayed in green
-- **CALLER** (scammer) — displayed in orange with flag markers
+- **ME** (user), displayed in green
+- **CALLER** (scammer), displayed in orange with flag markers
 
 Flagged statements trigger real-time alerts. Full 2-way transcript is preserved in session reports and gallery.
 
