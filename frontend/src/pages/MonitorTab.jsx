@@ -40,53 +40,369 @@ function getVoiceForLang(lang) {
   return voices.find(v => v.lang.startsWith('en')) || voices[0]
 }
 
-/* ━━━ Caller Visual — DISTINCT per mode: phone=icon, video=person, rec=dot ━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   3D HOLOGRAPHIC CALLER VISUAL — phone / video / rec
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const callerVisualCSS = `
+@keyframes cv-rotate { 0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)} }
+@keyframes cv-rotateR { 0%{transform:rotateY(360deg)}100%{transform:rotateY(0deg)} }
+@keyframes cv-float { 0%,100%{transform:translateY(0px)}50%{transform:translateY(-6px)} }
+@keyframes cv-pulse { 0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:0.8;transform:scale(1.05)} }
+@keyframes cv-scan { 0%{top:0%}100%{top:100%} }
+@keyframes cv-ripple { 0%{transform:scale(0.8);opacity:0.6}100%{transform:scale(2.2);opacity:0} }
+@keyframes cv-glow { 0%,100%{box-shadow:0 0 15px rgba(0,212,255,0.3),0 0 30px rgba(0,212,255,0.1)}50%{box-shadow:0 0 25px rgba(0,212,255,0.5),0 0 50px rgba(0,212,255,0.2)} }
+@keyframes cv-dash { 0%{stroke-dashoffset:0}100%{stroke-dashoffset:-60} }
+@keyframes cv-fadeInUp { 0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)} }
+@keyframes cv-particleFloat {
+  0%{transform:translateY(0) translateX(0);opacity:0}
+  20%{opacity:1}
+  80%{opacity:0.6}
+  100%{transform:translateY(-60px) translateX(var(--dx));opacity:0}
+}
+@keyframes cv-ringPulse { 0%,100%{opacity:0.15;transform:scale(1)}50%{opacity:0.4;transform:scale(1.08)} }
+@keyframes cv-orbit { 0%{transform:rotate(0deg) translateX(52px) rotate(0deg)}100%{transform:rotate(360deg) translateX(52px) rotate(-360deg)} }
+@keyframes cv-orbit2 { 0%{transform:rotate(120deg) translateX(58px) rotate(-120deg)}100%{transform:rotate(480deg) translateX(58px) rotate(-480deg)} }
+@keyframes cv-orbit3 { 0%{transform:rotate(240deg) translateX(48px) rotate(-240deg)}100%{transform:rotate(600deg) translateX(48px) rotate(-600deg)} }
+@keyframes cv-recPulse { 0%,100%{transform:scale(1);box-shadow:0 0 20px #ff2d55,0 0 40px rgba(255,45,85,0.3)}50%{transform:scale(1.15);box-shadow:0 0 35px #ff2d55,0 0 70px rgba(255,45,85,0.4)} }
+@keyframes cv-waveExpand { 0%{transform:scale(0.5);opacity:0.8;border-color:rgba(255,45,85,0.6)}100%{transform:scale(2.8);opacity:0;border-color:rgba(255,45,85,0)} }
+@keyframes cv-dataStream {
+  0%{background-position:0 0}100%{background-position:0 200px}
+}
+@keyframes cv-hexSpin { 0%{transform:rotate(0deg)}100%{transform:rotate(60deg)} }
+`
+
 function CallerVisual({ mode='phone', active, screenWatchOn }) {
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    const t = setInterval(() => setTick(v => v + 1), 100)
+    return () => clearInterval(t)
+  }, [active])
+
   if (!active) return null
-  const borderCol = screenWatchOn ? 'rgba(123,97,255,0.3)' : 'rgba(255,45,85,0.15)'
+  const accentCall = '#00d4ff'
+  const accentVideo = '#2d8cff'
+  const accentRec = '#ff2d55'
+
   return (
-    <div style={{ position:'relative',width:'100%',height:90,marginBottom:12,overflow:'hidden',border:`1px solid ${borderCol}`,background:'linear-gradient(135deg,rgba(0,0,0,0.8),rgba(10,10,18,0.9))' }}>
-      <svg width="100%" height="90" viewBox="0 0 400 90" preserveAspectRatio="xMidYMid meet">
-        <defs><pattern id="bgGrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20,0L0,0L0,20" fill="none" stroke="rgba(0,212,255,0.04)" strokeWidth="0.5"/></pattern></defs>
-        <rect width="400" height="90" fill="url(#bgGrid)"/>
+    <div style={{ position:'relative', width:'100%', height:170, marginBottom:14, overflow:'hidden',
+      border:`1px solid ${screenWatchOn ? 'rgba(123,97,255,0.3)' : mode==='phone' ? 'rgba(0,212,255,0.15)' : mode==='zoom' ? 'rgba(45,140,255,0.15)' : 'rgba(255,45,85,0.15)'}`,
+      background:'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(5,8,18,0.95) 50%, rgba(0,0,0,0.9) 100%)',
+      borderRadius:0
+    }}>
+      <style>{callerVisualCSS}</style>
 
-        {/* MODE: PHONE — phone icon only, no person */}
-        {mode==='phone'&&<>
-          <rect x="12" y="8" width="50" height="16" rx="2" fill="rgba(255,45,85,0.15)" stroke="#ff2d55" strokeWidth="0.8"/>
-          <text x="37" y="19" textAnchor="middle" fill="#ff2d55" fontSize="7" fontFamily="monospace">📞 CALL</text>
-          <g transform="translate(175,18)"><rect x="0" y="0" width="50" height="54" rx="8" fill="none" stroke="#ff2d5522" strokeWidth="1"/><text x="25" y="38" textAnchor="middle" fontSize="30" fill="#ff2d5533">📞</text></g>
-          <circle cx="68" cy="16" r="3" fill="#ff2d55" opacity="0.5"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/></circle>
-          <text x="388" y="18" textAnchor="end" fill="#ff2d55" fontSize="6" fontFamily="monospace" opacity="0.6">◉ VOICE ONLY</text>
-          <text x="388" y="30" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">AUDIO ANALYSIS</text>
-        </>}
+      {/* Background grid */}
+      <div style={{ position:'absolute', inset:0, opacity:0.04,
+        backgroundImage:'linear-gradient(rgba(0,212,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,1) 1px, transparent 1px)',
+        backgroundSize:'24px 24px', pointerEvents:'none' }} />
 
-        {/* MODE: VIDEO/ZOOM — person silhouette */}
-        {mode==='zoom'&&<>
-          <rect x="12" y="8" width="50" height="16" rx="2" fill="rgba(45,140,255,0.15)" stroke="#2d8cff" strokeWidth="0.8"/>
-          <text x="37" y="19" textAnchor="middle" fill="#2d8cff" fontSize="7" fontFamily="monospace">🖥 VIDEO</text>
-          <g opacity="0.5"><path d="M155,88 Q155,70 170,62 Q185,55 200,52 Q215,55 230,62 Q245,70 245,88" fill="none" stroke="#2d8cff55" strokeWidth="1.5"/><ellipse cx="200" cy="36" rx="18" ry="22" fill="none" stroke="#2d8cff77" strokeWidth="1.5"/><line x1="188" y1="30" x2="195" y2="30" stroke="#2d8cff44" strokeWidth="1"/><line x1="205" y1="30" x2="212" y2="30" stroke="#2d8cff44" strokeWidth="1"/></g>
-          <line x1="170" y1="0" x2="170" y2="90" stroke="#2d8cff" strokeWidth="0.5" opacity="0.2"><animate attributeName="x1" values="170;230;170" dur="2s" repeatCount="indefinite"/><animate attributeName="x2" values="170;230;170" dur="2s" repeatCount="indefinite"/></line>
-          <rect x="340" y="55" width="48" height="28" rx="3" fill="none" stroke="#30d15833" strokeWidth="1"/><text x="364" y="72" textAnchor="middle" fill="#30d158" fontSize="6" fontFamily="monospace" opacity="0.5">YOU</text>
-          <text x="388" y="18" textAnchor="end" fill="#2d8cff" fontSize="6" fontFamily="monospace" opacity="0.6">◉ VIDEO CALL</text>
-          <text x="388" y="30" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">AUDIO + VISUAL</text>
-        </>}
+      {/* Horizontal scan line */}
+      <div style={{ position:'absolute', left:0, right:0, height:1, opacity:0.15,
+        background:`linear-gradient(90deg, transparent, ${mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec}, transparent)`,
+        animation:'cv-scan 3s linear infinite', pointerEvents:'none' }} />
 
-        {/* MODE: REC — recording indicator */}
-        {mode==='video'&&<>
-          <rect x="12" y="8" width="44" height="16" rx="2" fill="rgba(255,45,85,0.2)" stroke="#ff2d55" strokeWidth="0.8"/>
-          <text x="34" y="19" textAnchor="middle" fill="#ff2d55" fontSize="7" fontFamily="monospace">🎥 REC</text>
-          <circle cx="200" cy="45" r="16" fill="none" stroke="#ff2d5544" strokeWidth="1.5"/><circle cx="200" cy="45" r="8" fill="#ff2d55" opacity="0.4"><animate attributeName="opacity" values="0.2;0.7;0.2" dur="1.2s" repeatCount="indefinite"/></circle>
-          <text x="388" y="18" textAnchor="end" fill="#ff2d55" fontSize="6" fontFamily="monospace" opacity="0.6">● RECORDING</text>
-          <text x="388" y="30" textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="monospace">SESSION CAPTURE</text>
-        </>}
+      {/* Data streams on sides */}
+      <div style={{ position:'absolute', left:8, top:0, bottom:0, width:40, opacity:0.06, pointerEvents:'none',
+        backgroundImage:`repeating-linear-gradient(0deg, transparent 0px, transparent 8px, ${accentCall} 8px, ${accentCall} 9px)`,
+        backgroundSize:'100% 20px', animation:'cv-dataStream 4s linear infinite' }} />
+      <div style={{ position:'absolute', right:8, top:0, bottom:0, width:40, opacity:0.06, pointerEvents:'none',
+        backgroundImage:`repeating-linear-gradient(0deg, transparent 0px, transparent 8px, ${accentCall} 8px, ${accentCall} 9px)`,
+        backgroundSize:'100% 20px', animation:'cv-dataStream 3s linear infinite reverse' }} />
 
-        {/* Corner brackets */}
-        <path d="M6,6 L6,20 M6,6 L20,6" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-        <path d="M394,6 L394,20 M394,6 L380,6" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-        <path d="M6,84 L6,70 M6,84 L20,84" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-        <path d="M394,84 L394,70 M394,84 L380,84" stroke={screenWatchOn?'#7b61ff':'#ff2d55'} strokeWidth="1.2" fill="none" opacity="0.5"/>
-        {screenWatchOn&&<text x="388" y="50" textAnchor="end" fill="#7b61ff" fontSize="5" fontFamily="monospace">◈ SCREEN WATCH</text>}
-      </svg>
+      {/* ═══ MODE: PHONE — 3D Holographic Phone ═══ */}
+      {mode==='phone' && (
+        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {/* Ambient radial glow */}
+          <div style={{ position:'absolute', width:160, height:160, borderRadius:'50%',
+            background:`radial-gradient(circle, ${accentCall}18 0%, transparent 70%)`,
+            animation:'cv-pulse 3s ease-in-out infinite' }} />
+
+          {/* Outer rotating ring */}
+          <div style={{ position:'absolute', width:130, height:130, borderRadius:'50%',
+            border:`1px dashed ${accentCall}33`,
+            animation:'cv-rotate 12s linear infinite' }}>
+            <div style={{ position:'absolute', top:-3, left:'50%', marginLeft:-3, width:6, height:6,
+              background:accentCall, borderRadius:'50%', boxShadow:`0 0 8px ${accentCall}` }} />
+          </div>
+
+          {/* Middle rotating ring (reverse) */}
+          <div style={{ position:'absolute', width:105, height:105, borderRadius:'50%',
+            border:`1px solid ${accentCall}22`,
+            animation:'cv-rotateR 8s linear infinite' }}>
+            <div style={{ position:'absolute', bottom:-2, right:10, width:4, height:4,
+              background:accentCall, borderRadius:'50%', boxShadow:`0 0 6px ${accentCall}`, opacity:0.7 }} />
+          </div>
+
+          {/* Inner glow ring */}
+          <div style={{ position:'absolute', width:80, height:80, borderRadius:'50%',
+            border:`2px solid ${accentCall}44`,
+            animation:'cv-ringPulse 2s ease-in-out infinite',
+            boxShadow:`inset 0 0 20px ${accentCall}11` }} />
+
+          {/* 3D Phone Icon — center */}
+          <div style={{ position:'relative', animation:'cv-float 3s ease-in-out infinite', zIndex:2 }}>
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <defs>
+                <linearGradient id="phoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor={accentCall} stopOpacity="0.9"/>
+                  <stop offset="100%" stopColor="#7b61ff" stopOpacity="0.7"/>
+                </linearGradient>
+                <filter id="phoneGlow">
+                  <feGaussianBlur stdDeviation="2" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <g filter="url(#phoneGlow)">
+                <path d="M15,8 C13,8 11,10 11,12 L11,38 C11,40 13,42 15,42 L35,42 C37,42 39,40 39,38 L39,12 C39,10 37,8 35,8 Z"
+                  fill="none" stroke="url(#phoneGrad)" strokeWidth="1.8"/>
+                <rect x="18" y="13" width="14" height="20" rx="1" fill={`${accentCall}15`} stroke={`${accentCall}44`} strokeWidth="0.8"/>
+                <circle cx="25" cy="38" r="2.5" fill="none" stroke={`${accentCall}66`} strokeWidth="0.8"/>
+                {/* Signal waves */}
+                <path d="M32,6 Q36,4 38,6" fill="none" stroke={accentCall} strokeWidth="0.6" opacity="0.5">
+                  <animate attributeName="opacity" values="0.2;0.7;0.2" dur="1.5s" repeatCount="indefinite"/>
+                </path>
+                <path d="M34,4 Q39,1 42,4" fill="none" stroke={accentCall} strokeWidth="0.5" opacity="0.3">
+                  <animate attributeName="opacity" values="0.1;0.5;0.1" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+                </path>
+              </g>
+            </svg>
+          </div>
+
+          {/* Orbiting particles */}
+          <div style={{ position:'absolute', width:6, height:6, borderRadius:'50%',
+            background:accentCall, boxShadow:`0 0 8px ${accentCall}`,
+            animation:'cv-orbit 6s linear infinite' }} />
+          <div style={{ position:'absolute', width:4, height:4, borderRadius:'50%',
+            background:'#7b61ff', boxShadow:'0 0 6px #7b61ff',
+            animation:'cv-orbit2 8s linear infinite' }} />
+          <div style={{ position:'absolute', width:3, height:3, borderRadius:'50%',
+            background:'#30d158', boxShadow:'0 0 5px #30d158',
+            animation:'cv-orbit3 10s linear infinite' }} />
+
+          {/* Labels */}
+          <div style={{ position:'absolute', top:12, left:16, animation:'cv-fadeInUp 0.5s ease' }}>
+            <div style={{ fontFamily:"'Press Start 2P', monospace", fontSize:6, color:accentCall, letterSpacing:1,
+              padding:'4px 10px', border:`1px solid ${accentCall}44`, background:`${accentCall}0a`,
+              display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ fontSize:10 }}>📞</span> CALL
+              <span style={{ width:5, height:5, borderRadius:'50%', background:accentCall,
+                animation:'blink 1.2s step-end infinite', boxShadow:`0 0 4px ${accentCall}` }} />
+            </div>
+          </div>
+
+          <div style={{ position:'absolute', top:12, right:16, textAlign:'right', animation:'cv-fadeInUp 0.5s ease 0.1s both' }}>
+            <div style={{ fontFamily:"monospace", fontSize:7, color:accentCall, opacity:0.7, letterSpacing:1 }}>◉ VOICE ONLY</div>
+            <div style={{ fontFamily:"monospace", fontSize:6, color:'rgba(255,255,255,0.3)', marginTop:3 }}>AUDIO ANALYSIS</div>
+          </div>
+
+          <div style={{ position:'absolute', bottom:12, left:'50%', transform:'translateX(-50%)',
+            fontFamily:"monospace", fontSize:6, color:`${accentCall}44`, letterSpacing:3 }}>
+            ── SECURE CHANNEL ──
+          </div>
+        </div>
+      )}
+
+      {/* ═══ MODE: VIDEO — 3D Holographic Person ═══ */}
+      {mode==='zoom' && (
+        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {/* Ambient glow */}
+          <div style={{ position:'absolute', width:180, height:180, borderRadius:'50%',
+            background:`radial-gradient(circle, ${accentVideo}14 0%, transparent 70%)`,
+            animation:'cv-pulse 3s ease-in-out infinite' }} />
+
+          {/* Hexagonal frame */}
+          <svg style={{ position:'absolute', width:140, height:140, animation:'cv-hexSpin 20s linear infinite' }} viewBox="0 0 140 140">
+            <polygon points="70,5 130,35 130,105 70,135 10,105 10,35"
+              fill="none" stroke={`${accentVideo}22`} strokeWidth="1"
+              strokeDasharray="8 4" style={{ animation:'cv-dash 3s linear infinite' }}/>
+          </svg>
+
+          {/* Rotating scan ring */}
+          <div style={{ position:'absolute', width:120, height:120, borderRadius:'50%',
+            border:`1px solid ${accentVideo}20`,
+            animation:'cv-rotate 10s linear infinite' }}>
+            <div style={{ position:'absolute', top:-2, left:'50%', marginLeft:-4, width:8, height:4,
+              background:accentVideo, borderRadius:2, boxShadow:`0 0 8px ${accentVideo}` }} />
+          </div>
+
+          {/* 3D Person silhouette */}
+          <div style={{ position:'relative', animation:'cv-float 4s ease-in-out infinite', zIndex:2 }}>
+            <svg width="70" height="90" viewBox="0 0 70 90">
+              <defs>
+                <linearGradient id="personGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={accentVideo} stopOpacity="0.8"/>
+                  <stop offset="50%" stopColor="#7b61ff" stopOpacity="0.5"/>
+                  <stop offset="100%" stopColor={accentVideo} stopOpacity="0.2"/>
+                </linearGradient>
+                <filter id="personGlow">
+                  <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <clipPath id="personClip">
+                  <ellipse cx="35" cy="28" rx="16" ry="20"/>
+                  <path d="M8,88 Q8,65 20,56 Q30,50 35,48 Q40,50 50,56 Q62,65 62,88 Z"/>
+                </clipPath>
+              </defs>
+
+              <g filter="url(#personGlow)">
+                {/* Head */}
+                <ellipse cx="35" cy="28" rx="16" ry="20" fill="none" stroke="url(#personGrad)" strokeWidth="1.5"/>
+                {/* Face scan grid */}
+                <line x1="22" y1="22" x2="48" y2="22" stroke={`${accentVideo}30`} strokeWidth="0.5"/>
+                <line x1="22" y1="28" x2="48" y2="28" stroke={`${accentVideo}30`} strokeWidth="0.5"/>
+                <line x1="22" y1="34" x2="48" y2="34" stroke={`${accentVideo}30`} strokeWidth="0.5"/>
+                <line x1="29" y1="10" x2="29" y2="46" stroke={`${accentVideo}20`} strokeWidth="0.5"/>
+                <line x1="35" y1="10" x2="35" y2="46" stroke={`${accentVideo}20`} strokeWidth="0.5"/>
+                <line x1="41" y1="10" x2="41" y2="46" stroke={`${accentVideo}20`} strokeWidth="0.5"/>
+
+                {/* Eyes */}
+                <rect x="26" y="24" width="6" height="3" rx="1" fill={`${accentVideo}55`}/>
+                <rect x="38" y="24" width="6" height="3" rx="1" fill={`${accentVideo}55`}/>
+                <circle cx="29" cy="25.5" r="1" fill={accentVideo} opacity="0.8">
+                  <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="41" cy="25.5" r="1" fill={accentVideo} opacity="0.8">
+                  <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.2s"/>
+                </circle>
+
+                {/* Body */}
+                <path d="M8,88 Q8,65 20,56 Q30,50 35,48 Q40,50 50,56 Q62,65 62,88"
+                  fill="none" stroke="url(#personGrad)" strokeWidth="1.5"/>
+
+                {/* Body fill with scan effect */}
+                <path d="M8,88 Q8,65 20,56 Q30,50 35,48 Q40,50 50,56 Q62,65 62,88"
+                  fill={`${accentVideo}08`}/>
+              </g>
+
+              {/* Face scan moving line */}
+              <line x1="20" y1="10" x2="50" y2="10" stroke={accentVideo} strokeWidth="1" opacity="0.4">
+                <animate attributeName="y1" values="10;46;10" dur="2.5s" repeatCount="indefinite"/>
+                <animate attributeName="y2" values="10;46;10" dur="2.5s" repeatCount="indefinite"/>
+              </line>
+            </svg>
+          </div>
+
+          {/* YOU box (bottom right) */}
+          <div style={{ position:'absolute', bottom:16, right:20, width:56, height:36,
+            border:`1px solid rgba(48,209,88,0.3)`, background:'rgba(48,209,88,0.04)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            boxShadow:'0 0 12px rgba(48,209,88,0.08)' }}>
+            <span style={{ fontFamily:"monospace", fontSize:7, color:'#30d158', opacity:0.6, letterSpacing:1 }}>YOU</span>
+          </div>
+
+          {/* Labels */}
+          <div style={{ position:'absolute', top:12, left:16, animation:'cv-fadeInUp 0.5s ease' }}>
+            <div style={{ fontFamily:"'Press Start 2P', monospace", fontSize:6, color:accentVideo, letterSpacing:1,
+              padding:'4px 10px', border:`1px solid ${accentVideo}44`, background:`${accentVideo}0a`,
+              display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ fontSize:10 }}>🖥</span> VIDEO
+            </div>
+          </div>
+
+          <div style={{ position:'absolute', top:12, right:16, textAlign:'right', animation:'cv-fadeInUp 0.5s ease 0.1s both' }}>
+            <div style={{ fontFamily:"monospace", fontSize:7, color:accentVideo, opacity:0.7, letterSpacing:1 }}>◉ VIDEO CALL</div>
+            <div style={{ fontFamily:"monospace", fontSize:6, color:'rgba(255,255,255,0.3)', marginTop:3 }}>AUDIO + VISUAL</div>
+          </div>
+
+          <div style={{ position:'absolute', bottom:12, left:20,
+            fontFamily:"monospace", fontSize:6, color:`${accentVideo}33`, letterSpacing:2 }}>
+            FACE ANALYSIS ACTIVE
+          </div>
+        </div>
+      )}
+
+      {/* ═══ MODE: REC — 3D Recording Orb ═══ */}
+      {mode==='video' && (
+        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {/* Ambient glow */}
+          <div style={{ position:'absolute', width:160, height:160, borderRadius:'50%',
+            background:`radial-gradient(circle, ${accentRec}18 0%, transparent 70%)`,
+            animation:'cv-pulse 2s ease-in-out infinite' }} />
+
+          {/* Ripple waves */}
+          {[0,1,2].map(i => (
+            <div key={i} style={{ position:'absolute', width:60, height:60, borderRadius:'50%',
+              border:`1.5px solid ${accentRec}`,
+              animation:`cv-waveExpand 3s ease-out infinite ${i * 1}s`,
+              pointerEvents:'none' }} />
+          ))}
+
+          {/* Outer ring */}
+          <div style={{ position:'absolute', width:110, height:110, borderRadius:'50%',
+            border:`1px solid ${accentRec}22`,
+            animation:'cv-rotate 15s linear infinite' }}>
+            <div style={{ position:'absolute', top:-2, left:'50%', marginLeft:-2, width:4, height:4,
+              background:accentRec, borderRadius:'50%', boxShadow:`0 0 6px ${accentRec}` }} />
+            <div style={{ position:'absolute', bottom:-2, left:'50%', marginLeft:-2, width:4, height:4,
+              background:accentRec, borderRadius:'50%', boxShadow:`0 0 6px ${accentRec}`, opacity:0.5 }} />
+          </div>
+
+          {/* Center recording orb */}
+          <div style={{ position:'relative', zIndex:2, animation:'cv-float 2.5s ease-in-out infinite' }}>
+            <div style={{ width:44, height:44, borderRadius:'50%',
+              background:`radial-gradient(circle at 35% 35%, ${accentRec}cc, ${accentRec}88, #881133)`,
+              animation:'cv-recPulse 1.5s ease-in-out infinite',
+              display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <div style={{ width:16, height:16, borderRadius:'50%',
+                background:`radial-gradient(circle at 40% 40%, #ff6688, ${accentRec})`,
+                boxShadow:`inset 0 0 8px rgba(0,0,0,0.3)` }} />
+            </div>
+          </div>
+
+          {/* Timer circle */}
+          <svg style={{ position:'absolute', width:90, height:90 }} viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="40" fill="none" stroke={`${accentRec}15`} strokeWidth="1"/>
+            <circle cx="45" cy="45" r="40" fill="none" stroke={accentRec} strokeWidth="1.5"
+              strokeDasharray="251" strokeDashoffset={251 - (tick % 100) * 2.51}
+              strokeLinecap="round" transform="rotate(-90 45 45)" opacity="0.4"/>
+          </svg>
+
+          {/* Labels */}
+          <div style={{ position:'absolute', top:12, left:16, animation:'cv-fadeInUp 0.5s ease' }}>
+            <div style={{ fontFamily:"'Press Start 2P', monospace", fontSize:6, color:accentRec, letterSpacing:1,
+              padding:'4px 10px', border:`1px solid ${accentRec}44`, background:`${accentRec}0a`,
+              display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ fontSize:10 }}>🎥</span> REC
+              <span style={{ width:5, height:5, borderRadius:'50%', background:accentRec,
+                animation:'blink 0.8s step-end infinite', boxShadow:`0 0 6px ${accentRec}` }} />
+            </div>
+          </div>
+
+          <div style={{ position:'absolute', top:12, right:16, textAlign:'right', animation:'cv-fadeInUp 0.5s ease 0.1s both' }}>
+            <div style={{ fontFamily:"monospace", fontSize:7, color:accentRec, opacity:0.7, letterSpacing:1 }}>● RECORDING</div>
+            <div style={{ fontFamily:"monospace", fontSize:6, color:'rgba(255,255,255,0.3)', marginTop:3 }}>SESSION CAPTURE</div>
+          </div>
+
+          <div style={{ position:'absolute', bottom:12, left:'50%', transform:'translateX(-50%)',
+            fontFamily:"monospace", fontSize:6, color:`${accentRec}44`, letterSpacing:3 }}>
+            ── RECORDING ACTIVE ──
+          </div>
+        </div>
+      )}
+
+      {/* Screen Watch overlay indicator */}
+      {screenWatchOn && (
+        <div style={{ position:'absolute', bottom:10, right:16,
+          fontFamily:"monospace", fontSize:6, color:'#7b61ff', letterSpacing:1, opacity:0.6 }}>
+          ◈ SCREEN WATCH
+        </div>
+      )}
+
+      {/* Corner brackets */}
+      {[
+        { top:4,left:4,paths:'M4,16 L4,4 L16,4' },
+        { top:4,right:4,paths:'M-4,4 L8,4 M4,4 L4,16', isRight:true },
+        { bottom:4,left:4,paths:'M4,-4 L4,8 M4,4 L16,4', isBottom:true },
+        { bottom:4,right:4,paths:'M4,4 L4,-8 M4,4 L-8,4', isCorner:true },
+      ].map((c, i) => (
+        <svg key={i} style={{ position:'absolute', ...(c.top!==undefined?{top:0}:{}), ...(c.bottom!==undefined?{bottom:0}:{}), ...(c.left!==undefined?{left:0}:{}), ...(c.right!==undefined?{right:0}:{}), width:20, height:20, overflow:'visible', pointerEvents:'none' }} viewBox="0 0 20 20">
+          {i===0 && <><line x1="2" y1="18" x2="2" y2="2" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/><line x1="2" y1="2" x2="18" y2="2" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/></>}
+          {i===1 && <><line x1="18" y1="18" x2="18" y2="2" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/><line x1="18" y1="2" x2="2" y2="2" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/></>}
+          {i===2 && <><line x1="2" y1="2" x2="2" y2="18" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/><line x1="2" y1="18" x2="18" y2="18" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/></>}
+          {i===3 && <><line x1="18" y1="2" x2="18" y2="18" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/><line x1="18" y1="18" x2="2" y2="18" stroke={screenWatchOn?'#7b61ff':mode==='phone'?accentCall:mode==='zoom'?accentVideo:accentRec} strokeWidth="1.2" opacity="0.5"/></>}
+        </svg>
+      ))}
     </div>
   )
 }
@@ -381,13 +697,7 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
   const [voiceMuted,setVoiceMuted]=useState(false)
   const [volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
-  const handleVolume=(v)=>{setVolume(v);volumeRef.current=v;
-    // Apply to any currently speaking utterance via speechSynthesis
-    if(window.speechSynthesis?.speaking){
-      // Cancel and let next utterance pick up new volume
-      // SpeechSynthesis doesn't support live volume change, so we store in ref
-    }
-  }
+  const handleVolume=(v)=>{setVolume(v);volumeRef.current=v;}
   const [callMode,setCallMode]=useState('phone') // phone, zoom, video — auto or manual
   const speechTimers=useRef([])
   const startTimeRef=useRef(null)
@@ -451,7 +761,6 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
             }
             window.speechSynthesis.speak(u)
           } else {
-            // Muted: just progress without speaking
             const callerDone=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length
             setDemoProgress(Math.round((callerDone/totalCaller)*100))
             pendingCount.current-=1
@@ -510,7 +819,7 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
 
           <CallerVisual mode={callMode} active={voiceDemo&&monitoring} screenWatchOn={screenOn} />
 
-          {/* Screen Watch active banner — only when screen is ON */}
+          {/* Screen Watch active banner */}
           {screenOn&&monitoring&&(
             <div style={{ padding:'8px 12px',marginBottom:12,border:'1px solid rgba(123,97,255,0.3)',background:'rgba(123,97,255,0.08)',display:'flex',alignItems:'center',gap:8 }}>
               <div style={{ width:6,height:6,background:'#7b61ff',animation:'blink 1.5s step-end infinite',boxShadow:'0 0 6px #7b61ff' }}/>
