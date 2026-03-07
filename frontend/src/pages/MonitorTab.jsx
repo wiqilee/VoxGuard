@@ -425,6 +425,14 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
   const [demoProgress,setDemoProgress]=useState(0)
   const [voiceMuted,setVoiceMuted]=useState(false)
   const [volume,setVolume]=useState(1.0)
+  const volumeRef=useRef(1.0)
+  const handleVolume=(v)=>{setVolume(v);volumeRef.current=v;
+    // Apply to any currently speaking utterance via speechSynthesis
+    if(window.speechSynthesis?.speaking){
+      // Cancel and let next utterance pick up new volume
+      // SpeechSynthesis doesn't support live volume change, so we store in ref
+    }
+  }
   const [callMode,setCallMode]=useState('phone') // phone, zoom, video — auto or manual
   const speechTimers=useRef([])
   const startTimeRef=useRef(null)
@@ -474,7 +482,7 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
           if(!voiceMuted){
             const u=new SpeechSynthesisUtterance(s.text)
             if(voice) u.voice=voice
-            u.rate=1.0;u.pitch=1.0;u.volume=volume
+            u.rate=1.0;u.pitch=1.0;u.volume=volumeRef.current
             u.onstart=()=>setSpeaking(true)
             u.onend=()=>{
               setSpeaking(false)
@@ -567,8 +575,8 @@ export function MonitorTab({ monitoring,threatLevel,sessionTime,alerts,threatSco
           {voiceDemo&&!voiceMuted&&(
             <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:12,padding:'6px 12px',background:'rgba(0,0,0,0.3)',border:'1px solid rgba(0,212,255,0.08)' }}>
               <span style={{ fontFamily:PF,fontSize:5,color:'rgba(0,212,255,0.5)',letterSpacing:1,flexShrink:0 }}>VOL</span>
-              <input type="range" min="0" max="1" step="0.1" value={volume}
-                onChange={e=>setVolume(parseFloat(e.target.value))}
+              <input type="range" min="0" max="1" step="0.05" value={volume}
+                onChange={e=>handleVolume(parseFloat(e.target.value))}
                 style={{ flex:1,height:4,appearance:'none',WebkitAppearance:'none',background:`linear-gradient(90deg,#00d4ff ${volume*100}%,rgba(0,212,255,0.15) ${volume*100}%)`,outline:'none',cursor:'pointer',borderRadius:2 }} />
               <span style={{ fontFamily:MF,fontSize:9,color:'#00d4ff',width:30,textAlign:'right' }}>{Math.round(volume*100)}%</span>
             </div>

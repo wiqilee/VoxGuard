@@ -14,17 +14,18 @@ function getInterpretation(score) {
   return { level:'CRITICAL', color:'#ff2d55', text:'Maximum intensity. This is a confirmed manipulation tactic — disengage immediately.' }
 }
 
-/* ── Mini Pie Chart ── */
-function MiniPie({ data, size=100 }) {
+/* ── Pie Chart — pseudo-3D with labels ── */
+function PieChart({ data, size=120, title }) {
   const total = data.reduce((s,d)=>s+d.value,0) || 1
   let cum = 0
   const slices = data.filter(d=>d.value>0).map(d => {
     const start = cum / total * 360
     cum += d.value
     const end = cum / total * 360
-    return { ...d, start, end }
+    const mid = (start+end)/2
+    return { ...d, start, end, mid, pct: Math.round(d.value/total*100) }
   })
-  const r = size/2 - 4
+  const r = size/2 - 16
   const cx = size/2, cy = size/2
   const arc = (startAngle, endAngle) => {
     const s = (startAngle-90)*Math.PI/180, e = (endAngle-90)*Math.PI/180
@@ -32,12 +33,36 @@ function MiniPie({ data, size=100 }) {
     const large = endAngle-startAngle > 180 ? 1 : 0
     return `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`
   }
+  const labelPos = (angle) => {
+    const rad = (angle-90)*Math.PI/180
+    return { x: cx+(r*0.65)*Math.cos(rad), y: cy+(r*0.65)*Math.sin(rad) }
+  }
+
   return (
-    <svg width={size} height={size} style={{ flexShrink:0 }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
-      {slices.map((s,i)=><path key={i} d={arc(s.start,s.end)} fill={s.color+'cc'} stroke="#020408" strokeWidth="1" style={{ filter:`drop-shadow(0 0 3px ${s.color}44)` }}/>)}
-      {total===0&&<circle cx={cx} cy={cy} r={r} fill="rgba(255,255,255,0.03)"/>}
-    </svg>
+    <div style={{ display:'flex',flexDirection:'column',alignItems:'center',gap:6 }}>
+      <svg width={size} height={size} style={{ flexShrink:0, transform:'perspective(200px) rotateX(12deg)', filter:'drop-shadow(0 4px 8px rgba(0,0,0,0.5))' }}>
+        {/* Shadow ellipse for 3D effect */}
+        <ellipse cx={cx} cy={cy+4} rx={r} ry={r*0.2} fill="rgba(0,0,0,0.3)"/>
+        <circle cx={cx} cy={cy} r={r} fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+        {slices.map((s,i)=>{
+          const p = labelPos(s.mid)
+          return <g key={i}>
+            <path d={arc(s.start,s.end)} fill={s.color+'cc'} stroke="#020408" strokeWidth="1.5" style={{ filter:`drop-shadow(0 0 4px ${s.color}44)` }}/>
+            {s.pct >= 8 && <text x={p.x} y={p.y+3} textAnchor="middle" fill="#fff" fontSize="8" fontFamily="monospace" fontWeight="bold" style={{ textShadow:'0 1px 2px rgba(0,0,0,0.8)' }}>{s.pct}%</text>}
+          </g>
+        })}
+        {total===0&&<text x={cx} y={cy+3} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">N/A</text>}
+      </svg>
+      {/* Legend */}
+      <div style={{ display:'flex',flexWrap:'wrap',gap:4,justifyContent:'center',maxWidth:size+40 }}>
+        {data.filter(d=>d.value>0).map((d,i)=>(
+          <div key={i} style={{ display:'flex',alignItems:'center',gap:3,padding:'2px 5px' }}>
+            <div style={{ width:6,height:6,background:d.color,flexShrink:0,boxShadow:`0 0 4px ${d.color}44` }}/>
+            <span style={{ fontFamily:MF,fontSize:7,color:d.color+'cc' }}>{d.label?.split(' ')[0]||''}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -49,7 +74,7 @@ function getFlag(lang) { return FLAGS[lang] || FLAGS[lang?.split('-')[0]] || '�
 const XIcon=({size=12,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{flexShrink:0,display:'block'}}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2.25 2.25h6.422l4.256 5.624 5.316-5.624Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
 const DiscordIcon=({size=13,color='#7b8cde'})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{flexShrink:0,display:'block'}}><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.36-.698.772-1.362 1.225-1.993a.077.077 0 0 0-.041-.107 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.12-.094.246-.194.373-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419s.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419s.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
 const GitHubIcon=({size=13,color='currentColor'})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{flexShrink:0,display:'block'}}><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-function SLink({href,icon,label,c='rgba(255,255,255,0.7)',bc='rgba(255,255,255,0.14)',bg='rgba(255,255,255,0.04)',hc,hbg}){const[h,setH]=useState(false);return<a href={href} target="_blank" rel="noreferrer" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'flex',alignItems:'center',gap:7,padding:'8px 14px',fontFamily:MF,fontSize:10,color:h?(hc||'#fff'):c,textDecoration:'none',border:`1px solid ${h?(hc||'rgba(255,255,255,0.3)'):bc}`,background:h?(hbg||'rgba(255,255,255,0.08)'):bg,transition:'all 0.16s ease'}}>{icon}{label}</a>}
+function SLink({href,icon,label,c='rgba(255,255,255,0.7)',bc='rgba(255,255,255,0.14)',bg='rgba(255,255,255,0.04)',hc,hbg}){const[h,setH]=useState(false);return<a href={href} target="_blank" rel="noreferrer" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'flex',alignItems:'center',gap:7,padding:'8px 14px',fontFamily:MF,fontSize:10,color:h?(hc||'#fff'):c,textDecoration:'none',border:`1px solid ${h?(hc||'rgba(255,255,255,0.5)'):bc}`,background:h?(hbg||'rgba(255,255,255,0.08)'):bg,transition:'all 0.16s ease'}}>{icon}{label}</a>}
 
 /* ── Storage ── */
 const saveReport=r=>{try{const l=JSON.parse(localStorage.getItem('vg_reports')||'[]');const e={...r,id:Date.now().toString(),savedAt:new Date().toISOString()};l.unshift(e);localStorage.setItem('vg_reports',JSON.stringify(l.slice(0,50)));return e.id}catch{return null}}
@@ -248,13 +273,13 @@ function GalleryFullscreen({report,onClose,onDelete}){
               <audio controls src={report.audioUrl} style={{ height:28,maxWidth:180,opacity:0.8 }} />
             )}
             <button onClick={e=>{e.stopPropagation();onDelete?.()}} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid #ff2d5555',color:'#ff2d55',background:'rgba(255,45,85,0.08)',cursor:'pointer'}}>🗑 DELETE</button>
-            <button onClick={onClose} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.3)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
+            <button onClick={onClose} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.5)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
           </div>
         </div>
         {/* Tabs */}
         <div style={{display:'flex',borderBottom:'1px solid rgba(0,212,255,0.1)',flexShrink:0}}>
           {['transcript','alerts','psych','actions'].map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:tab===t?'#00d4ff':'rgba(255,255,255,0.4)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1}}>{t}</button>
+            <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:tab===t?'#00d4ff':'rgba(255,255,255,0.55)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1}}>{t}</button>
           ))}
         </div>
         {/* Content */}
@@ -307,7 +332,7 @@ function GalleryCard({r,sc,fmt,onOpen,onDel}){
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
         <div>
           <div style={{fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.55)'}}>{new Date(r.savedAt).toLocaleString('en-US',{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}</div>
-          <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.35)',marginTop:2}}>{(r.language||'en').toUpperCase()} · {ad.country} · {r.alerts?.length||0} alerts · {fmt(r.sessionTime)}</div>
+          <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)',marginTop:2}}>{(r.language||'en').toUpperCase()} · {ad.country} · {r.alerts?.length||0} alerts · {fmt(r.sessionTime)}</div>
         </div>
         <span style={{fontFamily:PF,fontSize:14,color:sc,textShadow:`0 0 8px ${sc}`}}>{r.threatScore}</span>
       </div>
@@ -350,13 +375,13 @@ export function PsychTab({psychScores,lieScores={}}){
 
       {/* Scoring rubric */}
       <div style={{marginBottom:24,padding:'12px 16px',border:'1px solid rgba(255,255,255,0.06)',background:'rgba(255,255,255,0.015)'}}>
-        <div style={{fontFamily:PF,fontSize:6,color:'rgba(255,255,255,0.4)',marginBottom:8,letterSpacing:1}}>SCORING RUBRIC</div>
+        <div style={{fontFamily:PF,fontSize:6,color:'rgba(255,255,255,0.55)',marginBottom:8,letterSpacing:1}}>SCORING RUBRIC</div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
           {[{l:'0%',c:'rgba(255,255,255,0.25)',t:'Inactive'},{l:'1-20%',c:'#30d158',t:'Low'},{l:'21-40%',c:'#ffd60a',t:'Moderate'},{l:'41-60%',c:'#ff9500',t:'Elevated'},{l:'61-80%',c:'#ff2d55',t:'High'},{l:'81-100%',c:'#ff2d55',t:'Critical'}].map(r=>(
             <div key={r.l} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 8px',border:`1px solid ${r.c}33`,background:`${r.c}08`}}>
               <div style={{width:8,height:8,background:r.c,flexShrink:0}}/>
               <span style={{fontFamily:MF,fontSize:8,color:r.c}}>{r.l}</span>
-              <span style={{fontFamily:MF,fontSize:7,color:'rgba(255,255,255,0.4)'}}>{r.t}</span>
+              <span style={{fontFamily:MF,fontSize:7,color:'rgba(255,255,255,0.55)'}}>{r.t}</span>
             </div>
           ))}
         </div>
@@ -367,12 +392,12 @@ export function PsychTab({psychScores,lieScores={}}){
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#ff9500',textShadow:'0 0 10px #ff9500',marginBottom:4}}>CALLER — MANIPULATION VECTORS</div>
-            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)',marginBottom:14}}>Cialdini's 6 influence principles detected from scammer</div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.55)',marginBottom:14}}>Cialdini's 6 influence principles detected from scammer</div>
             {PSYCH_TACTICS.map(t=><VectorBar key={t.id} tac={t} score={psychScores[t.id]||0}/>)}
           </div>
           <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-            <MiniPie data={psychData} size={110}/>
-            <div style={{fontFamily:MF,fontSize:8,color:'rgba(255,255,255,0.3)'}}>Distribution</div>
+            <PieChart data={psychData} size={110}/>
+            <div style={{fontFamily:MF,fontSize:8,color:'rgba(255,255,255,0.5)'}}>Distribution</div>
           </div>
         </div>
       </PBox>
@@ -382,25 +407,39 @@ export function PsychTab({psychScores,lieScores={}}){
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',textShadow:'0 0 10px #ff2d55',marginBottom:4}}>LIE DETECTION ANALYSIS</div>
-            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)',marginBottom:14}}>FBI CBCA behavioral deception indicators</div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.55)',marginBottom:14}}>FBI CBCA behavioral deception indicators</div>
             {(LIE_INDICATORS||[]).map(l=><VectorBar key={l.id} tac={l} score={lieScores[l.id]||0}/>)}
           </div>
           <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-            <MiniPie data={lieData} size={110}/>
-            <div style={{fontFamily:MF,fontSize:8,color:'rgba(255,255,255,0.3)'}}>Distribution</div>
+            <PieChart data={lieData} size={110}/>
+            <div style={{fontFamily:MF,fontSize:8,color:'rgba(255,255,255,0.5)'}}>Distribution</div>
           </div>
         </div>
       </PBox>
 
       {/* ── SECTION 3: User Vulnerability ── */}
       <PBox color="#00d4ff44" style={{padding:20,marginBottom:16}}>
-        <div style={{fontFamily:PF,fontSize:9,color:'#00d4ff',textShadow:'0 0 10px #00d4ff',marginBottom:4}}>USER VULNERABILITY STATE</div>
-        <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)',marginBottom:14}}>Your estimated susceptibility based on caller's manipulation intensity</div>
-        {[
-          {id:'PANIC',icon:'😰',label:'Panic Level',desc:'Elevated stress may impair decision-making',color:'#ff2d55'},
-          {id:'COMPLIANCE',icon:'🫡',label:'Compliance Risk',desc:'Willingness to follow instructions without questioning',color:'#ff9500'},
-          {id:'TRUST',icon:'🤝',label:'Misplaced Trust',desc:'False credibility established by caller',color:'#ffd60a'},
-        ].map(item=>{const s=Math.min(100,Math.round(item.id==='PANIC'?(psychScores.FEAR||0)*0.8+(psychScores.SCARCITY||0)*0.3:item.id==='COMPLIANCE'?(psychScores.AUTHORITY||0)*0.6+(psychScores.COMMITMENT||0)*0.5:(psychScores.RECIPROCITY||0)*0.7+(psychScores.AUTHORITY||0)*0.4));return<VectorBar key={item.id} tac={item} score={s}/>})}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div style={{flex:1,minWidth:280}}>
+            <div style={{fontFamily:PF,fontSize:9,color:'#00d4ff',textShadow:'0 0 10px #00d4ff',marginBottom:4}}>USER VULNERABILITY STATE</div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.55)',marginBottom:14}}>Your estimated susceptibility based on caller's manipulation intensity</div>
+            {(()=>{
+              const items=[
+                {id:'PANIC',icon:'😰',label:'Panic Level',desc:'Elevated stress may impair decision-making',color:'#ff2d55'},
+                {id:'COMPLIANCE',icon:'🫡',label:'Compliance Risk',desc:'Willingness to follow instructions without questioning',color:'#ff9500'},
+                {id:'TRUST',icon:'🤝',label:'Misplaced Trust',desc:'False credibility established by caller',color:'#ffd60a'},
+              ]
+              return items.map(item=>{const s=Math.min(100,Math.round(item.id==='PANIC'?(psychScores.FEAR||0)*0.8+(psychScores.SCARCITY||0)*0.3:item.id==='COMPLIANCE'?(psychScores.AUTHORITY||0)*0.6+(psychScores.COMMITMENT||0)*0.5:(psychScores.RECIPROCITY||0)*0.7+(psychScores.AUTHORITY||0)*0.4));return<VectorBar key={item.id} tac={item} score={s}/>})
+            })()}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+            <PieChart data={[
+              {label:'Panic',value:Math.min(100,Math.round((psychScores.FEAR||0)*0.8+(psychScores.SCARCITY||0)*0.3)),color:'#ff2d55'},
+              {label:'Compliance',value:Math.min(100,Math.round((psychScores.AUTHORITY||0)*0.6+(psychScores.COMMITMENT||0)*0.5)),color:'#ff9500'},
+              {label:'Trust',value:Math.min(100,Math.round((psychScores.RECIPROCITY||0)*0.7+(psychScores.AUTHORITY||0)*0.4)),color:'#ffd60a'},
+            ]} size={110}/>
+          </div>
+        </div>
       </PBox>
 
       <PBox color="#ff9500" style={{padding:'22px 28px',background:'rgba(255,149,0,0.03)',position:'relative',overflow:'hidden'}}>
@@ -437,7 +476,7 @@ export function PatternsTab({detectedIds=[]}){
                 <div style={{fontFamily:PF,fontSize:6,padding:'4px 10px',border:`1px solid ${c.border}`,color:c.text,background:c.bg,display:'inline-block',marginBottom:8}}>{selected.severity.toUpperCase()}</div>
                 <div style={{fontFamily:PF,fontSize:12,color:c.text,textShadow:`0 0 10px ${c.border}`}}>{selected.category}</div>
               </div>
-              <button onClick={()=>setSelected(null)} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.3)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
+              <button onClick={()=>setSelected(null)} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.5)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
             </div>
             <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.75)',lineHeight:1.8,marginBottom:20}}>{selected.description}</div>
 
@@ -457,7 +496,7 @@ export function PatternsTab({detectedIds=[]}){
               {selected.severity==='medium'&&' This pattern warrants caution — monitor for additional indicators before concluding.'}
             </div>
 
-            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.3)',marginTop:20}}>Source: {selected.source} · Pattern ID: {selected.id}</div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)',marginTop:20}}>Source: {selected.source} · Pattern ID: {selected.id}</div>
           </div>
         </div>
       )
@@ -471,7 +510,7 @@ function PatternCard({p,c,hit,onClick}){const[h,setH]=useState(false);return(
     <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}><div style={{fontFamily:PF,fontSize:7,color:h?c.text:'rgba(255,255,255,0.82)',flex:1,paddingRight:8,lineHeight:1.6}}>{p.category}</div><div style={{display:'flex',gap:6,alignItems:'center',flexShrink:0}}>{hit&&<div style={{fontFamily:PF,fontSize:6,color:c.text,animation:'blink 1s step-end infinite'}}>► HIT</div>}<div style={{fontFamily:PF,fontSize:6,padding:'3px 8px',border:`1px solid ${c.border}`,color:c.text,background:c.bg}}>{p.severity.toUpperCase()}</div></div></div>
     <div style={{fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.58)',marginBottom:10,lineHeight:1.65}}>{p.description}</div>
     <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>{p.markers.map((m,i)=><span key={i} style={{fontFamily:MF,fontSize:9,padding:'3px 7px',border:'1px solid rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.52)',background:'rgba(255,255,255,0.03)'}}>"{m}"</span>)}</div>
-    <div style={{display:'flex',justifyContent:'space-between'}}><span style={{fontFamily:MF,fontSize:9,color:'#ff9500'}}>⚙ {p.mechanism}</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)'}}>{p.source}</span></div>
+    <div style={{display:'flex',justifyContent:'space-between'}}><span style={{fontFamily:MF,fontSize:9,color:'#ff9500'}}>⚙ {p.mechanism}</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.55)'}}>{p.source}</span></div>
   </div>
 )}
 
@@ -530,7 +569,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
 /* ══════════════════════════════════════════════════════════
    ABOUT TAB
 ══════════════════════════════════════════════════════════ */
-function DataSourceCard({name,url,href,c}){const[h,setH]=useState(false);return<a href={href} target="_blank" rel="noreferrer" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{padding:'12px 14px',border:`1px solid ${h?c+'88':c+'22'}`,borderLeft:`2px solid ${h?c:c+'55'}`,background:h?c+'0f':'rgba(255,255,255,0.015)',transition:'all 0.18s',textDecoration:'none',display:'block'}}><div style={{fontFamily:MF,fontSize:11,color:h?c:c+'cc',marginBottom:3}}>{name}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.35)'}}>{url}</div></a>}
+function DataSourceCard({name,url,href,c}){const[h,setH]=useState(false);return<a href={href} target="_blank" rel="noreferrer" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{padding:'12px 14px',border:`1px solid ${h?c+'88':c+'22'}`,borderLeft:`2px solid ${h?c:c+'55'}`,background:h?c+'0f':'rgba(255,255,255,0.015)',transition:'all 0.18s',textDecoration:'none',display:'block'}}><div style={{fontFamily:MF,fontSize:11,color:h?c:c+'cc',marginBottom:3}}>{name}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)'}}>{url}</div></a>}
 function Tag({label,c}){const[h,setH]=useState(false);return<span onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'inline-block',padding:'5px 12px',fontFamily:MF,fontSize:10,color:h?c:'rgba(255,255,255,0.7)',border:`1px solid ${h?c:c+'44'}`,background:h?c+'12':'rgba(255,255,255,0.03)',transition:'all 0.16s',whiteSpace:'nowrap'}}>{label}</span>}
 
 export function AboutTab(){
