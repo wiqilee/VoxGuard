@@ -1,5 +1,6 @@
 # VoxGuard 🛡️
-### Real-Time Multimodal AI Scam Detection + Live Intervention. During Your Call, Not After. If a scammer asks for your OTP, VoxGuard steps in before you can share it.
+### Real-Time Multimodal AI Scam Detection + Live Intervention. 
+### During Your Call, Not After. If a scammer asks for your OTP, VoxGuard steps in before you can share it.
 
 <div align="center">
 
