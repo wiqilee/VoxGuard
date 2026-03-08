@@ -104,7 +104,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 ## 🚨 Live Scam Intervention (Killer Feature)
 
 <div align="center">
-<img src="docs/svgs/intervention-demo.svg" alt="Live Scam Intervention Demo" width="100%"/>
+<img src="docs/svgs/intervention.svg" alt="Live Scam Intervention Demo" width="100%"/>
 </div>
 
 This is the feature no other tool has. This is why VoxGuard wins.
