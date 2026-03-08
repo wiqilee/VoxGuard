@@ -367,7 +367,7 @@ voxguard/
 ├── docs/svgs/
 │   ├── architecture-badge.svg             # Animated pipeline badge for README header
 │   ├── features-badge.svg                 # Animated capabilities overview
-│   ├── intervention.svg              # Animated intervention tiers (WARN/BLOCK/LOCKDOWN)
+│   ├── intervention.svg                   # Animated intervention tiers (WARN/BLOCK/LOCKDOWN)
 │   ├── threat-demo.svg                    # Threat score gauge demo graphic
 │   ├── psych-vectors.svg                  # Psychological vector bar chart
 │   └── audio-stream.svg                   # Animated audio waveform graphic
