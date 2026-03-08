@@ -103,6 +103,10 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 
 ## 🚨 Live Scam Intervention (Killer Feature)
 
+<div align="center">
+<img src="docs/svgs/intervention-demo.svg" alt="Live Scam Intervention Demo" width="100%"/>
+</div>
+
 This is the feature no other tool has. This is why VoxGuard wins.
 
 When VoxGuard's threat engine determines you are about to take a fatal action, the system **does not wait for you to check a dashboard**. It takes over your screen and forces a decision point.
@@ -363,6 +367,7 @@ voxguard/
 ├── docs/svgs/
 │   ├── architecture-badge.svg             # Animated pipeline badge for README header
 │   ├── features-badge.svg                 # Animated capabilities overview
+│   ├── intervention-demo.svg              # Animated intervention tiers (WARN/BLOCK/LOCKDOWN)
 │   ├── threat-demo.svg                    # Threat score gauge demo graphic
 │   ├── psych-vectors.svg                  # Psychological vector bar chart
 │   └── audio-stream.svg                   # Animated audio waveform graphic
