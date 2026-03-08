@@ -2,6 +2,8 @@
 app.api.websocket
 ─────────────────
 WebSocket endpoint for real-time scam detection sessions.
+Now emits 'intervention' events when the threat engine determines
+the user is about to take a fatal action (share OTP, transfer funds, etc).
 """
 
 import json
@@ -41,9 +43,20 @@ async def session_ws(ws: WebSocket):
             if msg_type == "audio_chunk":
                 result = await audio.process_chunk(msg.get("data", ""))
                 if result:
-                    alert_msg = engine.ingest_audio_result(result)
-                    if alert_msg:
-                        await ws.send_json(alert_msg)
+                    response = engine.ingest_audio_result(result)
+
+                    # Send alert if detected
+                    if response["alert"]:
+                        await ws.send_json(response["alert"])
+
+                    # Send intervention if triggered
+                    if response["intervention"]:
+                        await ws.send_json(response["intervention"])
+                        logger.warning(
+                            f"[WS] INTERVENTION fired: {response['intervention']['intervention']['level']} "
+                            f"— pattern: {response['intervention']['intervention']['pattern']}"
+                        )
+
                 # Periodic score update
                 await ws.send_json(engine.score_update())
 
@@ -53,6 +66,24 @@ async def session_ws(ws: WebSocket):
                     vis_msg = engine.ingest_vision_result(result)
                     if vis_msg:
                         await ws.send_json(vis_msg)
+
+            elif msg_type == "intervention_response":
+                # User responded to an intervention (dismissed, challenge result, safe exit)
+                intervention_id = msg.get("intervention_id", "")
+                user_action = msg.get("user_action", "dismissed")
+                engine.record_intervention_action(intervention_id, user_action)
+                logger.info(f"[WS] Intervention {intervention_id} response: {user_action}")
+
+                # If user chose safe_exit, end the session
+                if user_action == "safe_exit":
+                    summary = engine.session_summary()
+                    await ws.send_json(summary)
+                    await ws.send_json({
+                        "type": "session_end",
+                        "reason": "safe_exit_intervention",
+                        "threat_score": engine.session.threat_score,
+                        "alerts_count": len(engine.session.alerts),
+                    })
 
             elif msg_type == "start_session":
                 engine = ThreatEngine()
@@ -66,13 +97,21 @@ async def session_ws(ws: WebSocket):
             elif msg_type == "end_session":
                 flush = await audio.force_flush()
                 if flush:
-                    alert_msg = engine.ingest_audio_result(flush)
-                    if alert_msg:
-                        await ws.send_json(alert_msg)
+                    response = engine.ingest_audio_result(flush)
+                    if response["alert"]:
+                        await ws.send_json(response["alert"])
+                    if response["intervention"]:
+                        await ws.send_json(response["intervention"])
+
+                # Send full session summary with intervention history
+                summary = engine.session_summary()
+                await ws.send_json(summary)
+
                 await ws.send_json({
                     "type": "session_end",
                     "threat_score": engine.session.threat_score,
                     "alerts_count": len(engine.session.alerts),
+                    "interventions_count": len(engine.session.interventions),
                 })
 
     except WebSocketDisconnect:
@@ -81,5 +120,5 @@ async def session_ws(ws: WebSocket):
         logger.error(f"[WS] Error: {e}")
         try:
             await ws.send_json({"type": "error", "message": str(e)})
-        except:
+        except Exception:
             pass

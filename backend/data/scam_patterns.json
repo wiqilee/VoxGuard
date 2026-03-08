@@ -1,22 +1,30 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "sources": ["FTC Consumer Sentinel", "FBI IC3 2024", "GASA 2024", "MAS ScamShield", "ACCC ScamWatch"],
   "count": 50,
+  "intervention_system": {
+    "description": "intervention_level indicates which Live Scam Intervention tier fires when this pattern is detected",
+    "levels": {
+      "BLOCK": "Instant overlay with verification challenge — for credential/money extraction patterns",
+      "WARN": "Warning banner — for manipulation patterns that may escalate",
+      "null": "No automatic intervention — monitored and scored only"
+    }
+  },
   "patterns": [
-    { "id": 1,  "category": "Bank Impersonation",          "severity": "critical", "mechanism": "AUTHORITY + FEAR",             "source": "FBI IC3 2024",  "markers": ["suspicious activity detected", "account will be frozen", "verify your identity", "fraud alert", "fraud department"] },
-    { "id": 2,  "category": "OTP / Credential Extraction", "severity": "critical", "mechanism": "AUTHORITY + COMPLIANCE",       "source": "FTC Sentinel",  "markers": ["read me the code", "verification number", "confirm your PIN", "security code", "one-time password"] },
-    { "id": 3,  "category": "Artificial Urgency",          "severity": "critical", "mechanism": "SCARCITY + PANIC",             "source": "GASA 2024",     "markers": ["act now", "expires in minutes", "last chance", "within the hour", "immediately"] },
-    { "id": 4,  "category": "Safe Account Transfer",       "severity": "critical", "mechanism": "AUTHORITY + FEAR",             "source": "FTC Sentinel",  "markers": ["safe account", "protection account", "transfer your funds", "secure your money"] },
-    { "id": 5,  "category": "Investment Fraud",            "severity": "high",     "mechanism": "GREED + SCARCITY",             "source": "FBI IC3 2024",  "markers": ["guaranteed returns", "zero risk", "300% profit", "insider opportunity"] },
-    { "id": 6,  "category": "Romance Manipulation",        "severity": "high",     "mechanism": "RECIPROCITY + EMOTIONAL BOND", "source": "FTC Sentinel",  "markers": ["I need your help", "emergency situation", "I thought you cared", "just this once"] },
-    { "id": 7,  "category": "Tech Support Impersonation",  "severity": "high",     "mechanism": "AUTHORITY + FEAR",             "source": "FBI IC3 2024",  "markers": ["virus detected", "your computer is compromised", "download this tool", "remote access"] },
-    { "id": 8,  "category": "Isolation Tactic",            "severity": "high",     "mechanism": "ISOLATION + CONTROL",          "source": "GASA 2024",     "markers": ["don't tell anyone", "keep this confidential", "your family won't understand", "between us"] },
-    { "id": 9,  "category": "Gift Card Demand",            "severity": "high",     "mechanism": "AUTHORITY + URGENCY",          "source": "FTC Sentinel",  "markers": ["buy Google Play cards", "iTunes gift card", "Steam cards", "scratch the back"] },
-    { "id": 10, "category": "Government Impersonation",    "severity": "critical", "mechanism": "AUTHORITY + FEAR",             "source": "FBI IC3 2024",  "markers": ["IRS", "Social Security", "arrest warrant", "legal action", "deportation"] },
-    { "id": 11, "category": "Crypto Transfer Scam",        "severity": "critical", "mechanism": "AUTHORITY + GREED",            "source": "FTC Sentinel",  "markers": ["send Bitcoin", "crypto wallet", "blockchain recovery", "USDT transfer"] },
-    { "id": 12, "category": "Fake Prize / Lottery",        "severity": "medium",   "mechanism": "GREED + RECIPROCITY",          "source": "FTC Sentinel",  "markers": ["you've been selected", "claim your prize", "processing fee", "release your winnings"] },
-    { "id": 13, "category": "Grandparent Scam",            "severity": "critical", "mechanism": "FEAR + RECIPROCITY",           "source": "FBI IC3 2024",  "markers": ["grandma it's me", "don't tell mom", "I'm in trouble", "I need bail money"] },
-    { "id": 14, "category": "Utility Shutoff Threat",      "severity": "high",     "mechanism": "FEAR + URGENCY",               "source": "FTC Sentinel",  "markers": ["electricity will be cut", "final notice", "shutoff today", "pay immediately"] },
-    { "id": 15, "category": "Fake Debt Collection",        "severity": "high",     "mechanism": "AUTHORITY + FEAR",             "source": "FTC Sentinel",  "markers": ["you owe money", "legal proceedings", "court summons", "pay now to avoid"] }
+    { "id": 1,  "category": "Bank Impersonation",          "severity": "critical", "mechanism": "AUTHORITY + FEAR",             "source": "FBI IC3 2024",  "intervention_level": "WARN",  "markers": ["suspicious activity detected", "account will be frozen", "verify your identity", "fraud alert", "fraud department"] },
+    { "id": 2,  "category": "OTP / Credential Extraction", "severity": "critical", "mechanism": "AUTHORITY + COMPLIANCE",       "source": "FTC Sentinel",  "intervention_level": "BLOCK", "markers": ["read me the code", "verification number", "confirm your PIN", "security code", "one-time password"] },
+    { "id": 3,  "category": "Artificial Urgency",          "severity": "critical", "mechanism": "SCARCITY + PANIC",             "source": "GASA 2024",     "intervention_level": "WARN",  "markers": ["act now", "expires in minutes", "last chance", "within the hour", "immediately"] },
+    { "id": 4,  "category": "Safe Account Transfer",       "severity": "critical", "mechanism": "AUTHORITY + FEAR",             "source": "FTC Sentinel",  "intervention_level": "BLOCK", "markers": ["safe account", "protection account", "transfer your funds", "secure your money"] },
+    { "id": 5,  "category": "Investment Fraud",            "severity": "high",     "mechanism": "GREED + SCARCITY",             "source": "FBI IC3 2024",  "intervention_level": "WARN",  "markers": ["guaranteed returns", "zero risk", "300% profit", "insider opportunity"] },
+    { "id": 6,  "category": "Romance Manipulation",        "severity": "high",     "mechanism": "RECIPROCITY + EMOTIONAL BOND", "source": "FTC Sentinel",  "intervention_level": null,    "markers": ["I need your help", "emergency situation", "I thought you cared", "just this once"] },
+    { "id": 7,  "category": "Tech Support Impersonation",  "severity": "high",     "mechanism": "AUTHORITY + FEAR",             "source": "FBI IC3 2024",  "intervention_level": "WARN",  "markers": ["virus detected", "your computer is compromised", "download this tool", "remote access"] },
+    { "id": 8,  "category": "Isolation Tactic",            "severity": "high",     "mechanism": "ISOLATION + CONTROL",          "source": "GASA 2024",     "intervention_level": null,    "markers": ["don't tell anyone", "keep this confidential", "your family won't understand", "between us"] },
+    { "id": 9,  "category": "Gift Card Demand",            "severity": "high",     "mechanism": "AUTHORITY + URGENCY",          "source": "FTC Sentinel",  "intervention_level": "BLOCK", "markers": ["buy Google Play cards", "iTunes gift card", "Steam cards", "scratch the back"] },
+    { "id": 10, "category": "Government Impersonation",    "severity": "critical", "mechanism": "AUTHORITY + FEAR",             "source": "FBI IC3 2024",  "intervention_level": "WARN",  "markers": ["IRS", "Social Security", "arrest warrant", "legal action", "deportation"] },
+    { "id": 11, "category": "Crypto Transfer Scam",        "severity": "critical", "mechanism": "AUTHORITY + GREED",            "source": "FTC Sentinel",  "intervention_level": "BLOCK", "markers": ["send Bitcoin", "crypto wallet", "blockchain recovery", "USDT transfer"] },
+    { "id": 12, "category": "Fake Prize / Lottery",        "severity": "medium",   "mechanism": "GREED + RECIPROCITY",          "source": "FTC Sentinel",  "intervention_level": null,    "markers": ["you've been selected", "claim your prize", "processing fee", "release your winnings"] },
+    { "id": 13, "category": "Grandparent Scam",            "severity": "critical", "mechanism": "FEAR + RECIPROCITY",           "source": "FBI IC3 2024",  "intervention_level": "WARN",  "markers": ["grandma it's me", "don't tell mom", "I'm in trouble", "I need bail money"] },
+    { "id": 14, "category": "Utility Shutoff Threat",      "severity": "high",     "mechanism": "FEAR + URGENCY",               "source": "FTC Sentinel",  "intervention_level": null,    "markers": ["electricity will be cut", "final notice", "shutoff today", "pay immediately"] },
+    { "id": 15, "category": "Fake Debt Collection",        "severity": "high",     "mechanism": "AUTHORITY + FEAR",             "source": "FTC Sentinel",  "intervention_level": "WARN",  "markers": ["you owe money", "legal proceedings", "court summons", "pay now to avoid"] }
   ]
 }

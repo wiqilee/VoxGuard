@@ -27,7 +27,7 @@ export const PSYCH_TACTICS = [
   { id:"COMMITMENT",  label:"Commitment",  icon:"📌", desc:"Traps victims in escalating compliance — each small agreement makes refusal harder.",                  color:"#30d158" },
 ]
 
-// ── Lie Detection Metrics — NEW ───────────────────────────────
+// ── Lie Detection Metrics ───────────────────────────────
 export const LIE_INDICATORS = [
   { id:"INCONSISTENCY",  label:"Statement Inconsistency", icon:"🔀", desc:"Contradictions between claims made at different points in the conversation.", color:"#ff2d55" },
   { id:"VAGUENESS",      label:"Strategic Vagueness",      icon:"🌫", desc:"Deliberately avoids specifics when challenged — a hallmark of fabricated stories.", color:"#ff9500" },
@@ -47,6 +47,242 @@ export const SEV = {
 // ── Fonts ──────────────────────────────────────────────────────
 export const PF = "'Press Start 2P', monospace"
 export const MF = "'Share Tech Mono', 'Courier New', monospace"
+
+// ══════════════════════════════════════════════════════════════════
+// ── LIVE SCAM INTERVENTION SYSTEM ────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+
+// Intervention escalation levels — maps threat score ranges to response intensity
+export const INTERVENTION_LEVELS = {
+  WARN:     { threshold: 55, color: '#ff9500', label: 'WARNING',           icon: '⚠️',  pulse: false },
+  BLOCK:    { threshold: 75, color: '#ff2d55', label: 'DANGER — BLOCK',    icon: '🛑',  pulse: true  },
+  LOCKDOWN: { threshold: 90, color: '#ff2d55', label: 'LOCKDOWN',          icon: '🚨',  pulse: true  },
+}
+
+// Which alert patterns trigger immediate intervention regardless of cumulative score
+export const INSTANT_INTERVENTION_PATTERNS = [
+  'OTP / Credential Extraction',
+  'Safe Account Transfer',
+  'Gift Card Demand',
+  'Crypto Transfer Scam',
+  'Pencurian OTP / Kredensial',   // ID
+  'OTP チョリ',                    // JA
+  'OTP 도용',                      // KO
+  'سرقة بيانات',                  // AR
+  'OTP चोरी',                     // HI
+  'Robo de Credenciales',         // ES
+]
+
+// Sensitive action keywords that trigger intervention in transcript
+export const SENSITIVE_ACTION_KEYWORDS = {
+  en: ['transfer','wire','send money','gift card','OTP','passcode','PIN','password','account number','routing number','social security','crypto','bitcoin','remote access','download','install'],
+  id: ['transfer','kirim uang','pulsa','OTP','PIN','password','rekening','kartu','kripto','download'],
+  zh: ['转账','汇款','验证码','密码','银行卡','比特币','下载','安装'],
+  ja: ['振込','送金','暗証番号','パスワード','ビットコイン','ダウンロード'],
+  ko: ['송금','이체','비밀번호','인증번호','비트코인','다운로드'],
+  es: ['transferir','enviar dinero','contraseña','código','tarjeta','cripto','descargar'],
+  fr: ['transférer','envoyer','mot de passe','code','carte','crypto','télécharger'],
+  hi: ['ट्रांसफर','भेजें','OTP','पासवर्ड','बिटकॉइन','डाउनलोड'],
+  ar: ['تحويل','إرسال','كلمة المرور','رمز','بيتكوين','تحميل'],
+}
+
+// Verification challenge prompts — forces user to pause and think
+export const VERIFICATION_CHALLENGES = {
+  en: {
+    title: 'VERIFICATION CHALLENGE',
+    question: 'Before you continue, answer this:',
+    challenges: [
+      { q: 'Did YOU initiate this call, or did they call you?', safe: 'They called me', unsafe: 'I called them' },
+      { q: 'Has this caller asked for your OTP, PIN, or password?', safe: 'Yes', unsafe: 'No' },
+      { q: 'Are they pressuring you to act RIGHT NOW?', safe: 'Yes', unsafe: 'No' },
+      { q: 'Did they tell you NOT to contact your bank or family?', safe: 'Yes', unsafe: 'No' },
+    ],
+    result_scam: 'This matches confirmed scam behavior. Do NOT proceed.',
+    result_safe: 'Proceed with caution. Stay alert for further red flags.',
+  },
+  id: {
+    title: 'TANTANGAN VERIFIKASI',
+    question: 'Sebelum melanjutkan, jawab ini:',
+    challenges: [
+      { q: 'Apakah ANDA yang menelepon, atau mereka yang menelepon Anda?', safe: 'Mereka menelepon saya', unsafe: 'Saya yang menelepon' },
+      { q: 'Apakah mereka meminta OTP, PIN, atau password Anda?', safe: 'Ya', unsafe: 'Tidak' },
+      { q: 'Apakah mereka menekan Anda untuk bertindak SEKARANG JUGA?', safe: 'Ya', unsafe: 'Tidak' },
+      { q: 'Apakah mereka bilang jangan hubungi bank atau keluarga?', safe: 'Ya', unsafe: 'Tidak' },
+    ],
+    result_scam: 'Ini cocok dengan perilaku penipuan. JANGAN lanjutkan.',
+    result_safe: 'Lanjutkan dengan hati-hati. Tetap waspada.',
+  },
+  zh: {
+    title: '安全验证',
+    question: '继续之前请回答：',
+    challenges: [
+      { q: '是您主动拨打的电话，还是对方打给您的？', safe: '对方打给我的', unsafe: '我打给他们的' },
+      { q: '对方是否要求您提供验证码、密码或PIN？', safe: '是', unsafe: '否' },
+      { q: '对方是否在催促您立即行动？', safe: '是', unsafe: '否' },
+      { q: '对方是否要求您不要联系银行或家人？', safe: '是', unsafe: '否' },
+    ],
+    result_scam: '这符合诈骗行为特征。请勿继续操作。',
+    result_safe: '请谨慎继续。保持警惕。',
+  },
+  ja: {
+    title: '安全確認チャレンジ',
+    question: '続ける前にお答えください：',
+    challenges: [
+      { q: 'この電話はあなたからかけましたか？それとも相手から？', safe: '相手からです', unsafe: '自分からです' },
+      { q: '相手はOTP・暗証番号・パスワードを聞きましたか？', safe: 'はい', unsafe: 'いいえ' },
+      { q: '「今すぐ」行動するよう迫られていますか？', safe: 'はい', unsafe: 'いいえ' },
+      { q: '銀行や家族に相談しないよう言われましたか？', safe: 'はい', unsafe: 'いいえ' },
+    ],
+    result_scam: 'これは詐欺の特徴と一致します。絶対に続けないでください。',
+    result_safe: '慎重に進めてください。引き続き警戒してください。',
+  },
+  ko: {
+    title: '보안 확인 질문',
+    question: '계속하기 전에 답해주세요:',
+    challenges: [
+      { q: '이 전화를 당신이 걸었습니까, 상대방이 걸었습니까?', safe: '상대방이 걸었습니다', unsafe: '제가 걸었습니다' },
+      { q: '상대방이 OTP, 비밀번호를 요구했습니까?', safe: '예', unsafe: '아니오' },
+      { q: '지금 당장 행동하라고 압박하고 있습니까?', safe: '예', unsafe: '아니오' },
+      { q: '은행이나 가족에게 연락하지 말라고 했습니까?', safe: '예', unsafe: '아니오' },
+    ],
+    result_scam: '확인된 사기 행위와 일치합니다. 진행하지 마세요.',
+    result_safe: '주의하며 진행하세요. 계속 경계하세요.',
+  },
+  es: {
+    title: 'DESAFÍO DE VERIFICACIÓN',
+    question: 'Antes de continuar, responda:',
+    challenges: [
+      { q: '¿Usted inició esta llamada o le llamaron a usted?', safe: 'Me llamaron a mí', unsafe: 'Yo llamé' },
+      { q: '¿Le pidieron OTP, PIN o contraseña?', safe: 'Sí', unsafe: 'No' },
+      { q: '¿Le presionan para actuar AHORA MISMO?', safe: 'Sí', unsafe: 'No' },
+      { q: '¿Le dijeron que no contacte a su banco o familia?', safe: 'Sí', unsafe: 'No' },
+    ],
+    result_scam: 'Esto coincide con un fraude confirmado. NO continúe.',
+    result_safe: 'Proceda con precaución. Manténgase alerta.',
+  },
+  fr: {
+    title: 'DÉFI DE VÉRIFICATION',
+    question: 'Avant de continuer, répondez :',
+    challenges: [
+      { q: 'Avez-VOUS initié cet appel, ou vous a-t-on appelé ?', safe: 'On m\'a appelé', unsafe: 'J\'ai appelé' },
+      { q: 'Vous a-t-on demandé un OTP, PIN ou mot de passe ?', safe: 'Oui', unsafe: 'Non' },
+      { q: 'Vous presse-t-on d\'agir MAINTENANT ?', safe: 'Oui', unsafe: 'Non' },
+      { q: 'Vous a-t-on dit de ne pas contacter votre banque ?', safe: 'Oui', unsafe: 'Non' },
+    ],
+    result_scam: 'Cela correspond à un comportement frauduleux. Ne continuez PAS.',
+    result_safe: 'Continuez avec prudence. Restez vigilant.',
+  },
+  hi: {
+    title: 'सत्यापन चुनौती',
+    question: 'आगे बढ़ने से पहले जवाब दें:',
+    challenges: [
+      { q: 'क्या आपने कॉल किया या उन्होंने कॉल किया?', safe: 'उन्होंने कॉल किया', unsafe: 'मैंने कॉल किया' },
+      { q: 'क्या उन्होंने OTP, PIN या पासवर्ड माँगा?', safe: 'हाँ', unsafe: 'नहीं' },
+      { q: 'क्या वे अभी तुरंत कार्रवाई के लिए दबाव बना रहे हैं?', safe: 'हाँ', unsafe: 'नहीं' },
+      { q: 'क्या उन्होंने कहा कि बैंक या परिवार को न बताएं?', safe: 'हाँ', unsafe: 'नहीं' },
+    ],
+    result_scam: 'यह धोखाधड़ी के व्यवहार से मेल खाता है। आगे न बढ़ें।',
+    result_safe: 'सावधानी से आगे बढ़ें। सतर्क रहें।',
+  },
+  ar: {
+    title: 'تحدي التحقق',
+    question: 'قبل المتابعة، أجب على هذا:',
+    challenges: [
+      { q: 'هل أنت من بدأ المكالمة أم هم من اتصلوا بك؟', safe: 'هم من اتصلوا', unsafe: 'أنا من اتصلت' },
+      { q: 'هل طلبوا منك رمز OTP أو كلمة المرور؟', safe: 'نعم', unsafe: 'لا' },
+      { q: 'هل يضغطون عليك للتصرف الآن؟', safe: 'نعم', unsafe: 'لا' },
+      { q: 'هل قالوا لك لا تتصل بالبنك أو العائلة؟', safe: 'نعم', unsafe: 'لا' },
+    ],
+    result_scam: 'هذا يتطابق مع سلوك احتيالي مؤكد. لا تتابع.',
+    result_safe: 'تابع بحذر. ابق متيقظاً.',
+  },
+}
+
+// Safe exit actions — what to show when intervention fires
+export const SAFE_EXIT_ACTIONS = {
+  en: [
+    { icon: '📵', text: 'HANG UP NOW', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: 'Call your bank\'s REAL number (on back of card)', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: 'Call a trusted family member before doing anything', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: 'NEVER share OTP / PIN / password on a call', action: 'never_share', priority: 'critical' },
+  ],
+  id: [
+    { icon: '📵', text: 'TUTUP TELEPON SEKARANG', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: 'Hubungi nomor RESMI bank (di belakang kartu)', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: 'Hubungi keluarga sebelum melakukan apapun', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: 'JANGAN PERNAH bagi OTP / PIN / password di telepon', action: 'never_share', priority: 'critical' },
+  ],
+  zh: [
+    { icon: '📵', text: '立即挂断电话', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: '拨打银行卡背面的官方电话', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: '先联系家人再做任何决定', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: '绝不在电话中透露验证码/密码', action: 'never_share', priority: 'critical' },
+  ],
+  ja: [
+    { icon: '📵', text: '今すぐ電話を切ってください', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: 'カード裏面の公式番号に電話', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: '何かする前に家族に相談', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: '電話で暗証番号を絶対に教えない', action: 'never_share', priority: 'critical' },
+  ],
+  ko: [
+    { icon: '📵', text: '지금 당장 전화를 끊으세요', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: '카드 뒷면의 공식 번호로 전화', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: '행동 전 가족에게 먼저 연락', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: '전화로 비밀번호를 절대 알려주지 마세요', action: 'never_share', priority: 'critical' },
+  ],
+  es: [
+    { icon: '📵', text: 'CUELGUE AHORA', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: 'Llame al número REAL de su banco', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: 'Llame a un familiar antes de hacer algo', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: 'NUNCA comparta OTP / PIN por teléfono', action: 'never_share', priority: 'critical' },
+  ],
+  fr: [
+    { icon: '📵', text: 'RACCROCHEZ MAINTENANT', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: 'Appelez le VRAI numéro de votre banque', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: 'Appelez un proche avant toute action', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: 'Ne JAMAIS partager OTP / PIN par téléphone', action: 'never_share', priority: 'critical' },
+  ],
+  hi: [
+    { icon: '📵', text: 'अभी फोन काटें', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: 'बैंक का असली नंबर (कार्ड पर) पर कॉल करें', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: 'कुछ भी करने से पहले परिवार को कॉल करें', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: 'कॉल पर OTP / PIN कभी न बताएं', action: 'never_share', priority: 'critical' },
+  ],
+  ar: [
+    { icon: '📵', text: 'أغلق المكالمة الآن', action: 'hangup', priority: 'critical' },
+    { icon: '🏦', text: 'اتصل بالرقم الرسمي لبنكك', action: 'call_bank', priority: 'critical' },
+    { icon: '👥', text: 'اتصل بفرد من العائلة قبل أي إجراء', action: 'call_family', priority: 'high' },
+    { icon: '🚫', text: 'لا تشارك أبداً كلمة المرور عبر الهاتف', action: 'never_share', priority: 'critical' },
+  ],
+}
+
+// Helper to get intervention text for a language
+export function getInterventionForLang(langCode) {
+  const base = langCode?.split('-')[0] || 'en'
+  return {
+    challenges: VERIFICATION_CHALLENGES[base] || VERIFICATION_CHALLENGES['en'],
+    safeExits: SAFE_EXIT_ACTIONS[base] || SAFE_EXIT_ACTIONS['en'],
+  }
+}
+
+// Check if a pattern name should trigger instant intervention
+export function isInstantInterventionPattern(patternName) {
+  return INSTANT_INTERVENTION_PATTERNS.some(p =>
+    patternName?.toLowerCase().includes(p.toLowerCase())
+  )
+}
+
+// Get intervention level from threat score
+export function getInterventionLevel(threatScore, latestAlert) {
+  // Instant intervention for dangerous patterns regardless of score
+  if (latestAlert && isInstantInterventionPattern(latestAlert.pattern)) {
+    return INTERVENTION_LEVELS.BLOCK
+  }
+  if (threatScore >= INTERVENTION_LEVELS.LOCKDOWN.threshold) return INTERVENTION_LEVELS.LOCKDOWN
+  if (threatScore >= INTERVENTION_LEVELS.BLOCK.threshold) return INTERVENTION_LEVELS.BLOCK
+  if (threatScore >= INTERVENTION_LEVELS.WARN.threshold) return INTERVENTION_LEVELS.WARN
+  return null
+}
 
 // ── Recommended Actions per Language/Country — ALL IN LOCAL LANGUAGE ──
 export const RECOMMENDED_ACTIONS = {

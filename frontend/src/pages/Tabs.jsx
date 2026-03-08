@@ -2,7 +2,7 @@ import { useState, useEffect }  from 'react'
 import { PBox, PBtn }            from '../components/Primitives'
 import { AlertCard }             from '../components/AlertCard'
 import { PixelLogo }             from '../components/PixelLogo'
-import { SCAM_PATTERNS, PSYCH_TACTICS, SEV, PF, MF, LIE_INDICATORS, getActionsForLang } from '../utils/constants'
+import { SCAM_PATTERNS, PSYCH_TACTICS, SEV, PF, MF, LIE_INDICATORS, getActionsForLang, getInterventionForLang } from '../utils/constants'
 
 /* ── Score Interpretation ── */
 function getInterpretation(score) {
@@ -81,6 +81,65 @@ const saveReport=r=>{try{const l=JSON.parse(localStorage.getItem('vg_reports')||
 const loadReports=()=>{try{return JSON.parse(localStorage.getItem('vg_reports')||'[]')}catch{return[]}}
 const delReport=id=>{try{localStorage.setItem('vg_reports',JSON.stringify(loadReports().filter(r=>r.id!==id)))}catch{}}
 
+/* ── Intervention History Section ── */
+function InterventionHistorySection({ interventions, language }) {
+  if (!interventions || interventions.length === 0) return null
+  const levelColors = { LOCKDOWN: '#ff2d55', BLOCK: '#ff9500', WARN: '#ffd60a' }
+  const actionLabels = {
+    safe_exit: '📵 Safe Exit',
+    dismissed: '✕ Dismissed',
+    challenge_passed: '✓ Challenge Passed',
+    challenge_failed: '⚠ Challenge Failed (Scam Confirmed)',
+  }
+
+  return (
+    <PBox color="#ff2d55" style={{ padding: 20, background: 'rgba(255,45,85,0.03)' }}>
+      <div style={{ fontFamily: PF, fontSize: 8, color: '#ff2d55', marginBottom: 14, textShadow: '0 0 10px #ff2d55' }}>
+        🛑 LIVE INTERVENTIONS ({interventions.length})
+      </div>
+      <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.5)', marginBottom: 14 }}>
+        VoxGuard actively intervened {interventions.length} time{interventions.length > 1 ? 's' : ''} during this session to protect you from potential harm.
+      </div>
+      {interventions.map((e, i) => {
+        const c = levelColors[e.level] || '#ff9500'
+        return (
+          <div key={i} style={{
+            padding: '12px 14px', marginBottom: 6,
+            borderLeft: `3px solid ${c}`,
+            background: `${c}08`,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{
+                  fontFamily: PF, fontSize: 6, padding: '3px 8px',
+                  border: `1px solid ${c}`, color: c, background: `${c}15`,
+                }}>
+                  {e.level}
+                </span>
+                <span style={{ fontFamily: MF, fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>
+                  {e.pattern}
+                </span>
+              </div>
+              <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>
+                Trigger: {e.trigger === 'instant_pattern' ? '⚡ Instant Pattern' : '📊 Score Threshold'} · Score at time: {e.threatScore}
+              </div>
+            </div>
+            <div style={{
+              fontFamily: MF, fontSize: 9,
+              color: e.userAction === 'safe_exit' ? '#30d158'
+                : e.userAction === 'challenge_failed' ? '#ff2d55'
+                : 'rgba(255,255,255,0.5)',
+            }}>
+              {actionLabels[e.userAction] || e.userAction || '—'}
+            </div>
+          </div>
+        )
+      })}
+    </PBox>
+  )
+}
+
 /* ══════════════════════════════════════════════════════════
    PREMIUM HTML/PDF EXPORT — colored bars, all sections, footer
 ══════════════════════════════════════════════════════════ */
@@ -125,6 +184,8 @@ h2{color:#00d4ff;margin:28px 0 14px;font-size:12px;letter-spacing:2px;text-trans
 .flag{color:#ff2d55;font-size:9px;margin-left:8px}
 .action{padding:10px 14px;border-left:3px solid #30d158;margin:6px 0;font-size:11px;color:#ccc;background:rgba(48,209,88,0.04)}
 .action .pri{font-size:8px;font-weight:bold;margin-left:8px}
+.intv{padding:12px 16px;border-left:4px solid;margin:8px 0;background:rgba(255,255,255,0.02)}
+.intv .lvl{display:inline-block;font-size:8px;padding:3px 8px;font-weight:bold;margin-right:8px;text-transform:uppercase;border:1px solid}
 .footer{margin-top:40px;padding:20px 0;border-top:2px solid #111;text-align:center;color:#666;font-size:10px}
 .footer .brand{color:#00d4ff;font-size:12px;font-weight:bold;letter-spacing:2px}
 @media print{
@@ -158,7 +219,7 @@ h2{color:#00d4ff;margin:28px 0 14px;font-size:12px;letter-spacing:2px;text-trans
   <div class="metric"><div class="v">${report.threatScore}</div><div class="l">Risk Score</div></div>
   <div class="metric"><div class="v">${report.alerts?.length||0}</div><div class="l">Alerts</div></div>
   <div class="metric"><div class="v">${fmt(report.sessionTime)}</div><div class="l">Duration</div></div>
-  <div class="metric"><div class="v">${Object.values(report.psychScores||{}).filter(x=>x>0).length}</div><div class="l">Tactics</div></div>
+  <div class="metric"><div class="v">${(report.interventionHistory||[]).length}</div><div class="l">Interventions</div></div>
 </div>
 
 ${(report.transcript||[]).length>0?`<h2>FULL TRANSCRIPT</h2>${(report.transcript||[]).map(l=>{
@@ -166,8 +227,20 @@ ${(report.transcript||[]).length>0?`<h2>FULL TRANSCRIPT</h2>${(report.transcript
   return `<div class="tline${l.flagged?' flagged':''}${isMe?' me':''}"><span class="ts">[${l.time}]</span><span class="speaker" style="color:${isMe?'#30d158':'#ff9500'}">${isMe?'ME':'CALLER'}</span>${l.text}${l.flagged?'<span class="flag">⚠ FLAGGED</span>':''}</div>`
 }).join('')}`:''}
 
+${(report.interventionHistory||[]).length>0?`<h2>LIVE INTERVENTIONS (${report.interventionHistory.length})</h2>
+<p style="color:#999;font-size:11px;margin-bottom:12px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
+${report.interventionHistory.map(e=>{
+  const c=e.level==='LOCKDOWN'?'#ff2d55':e.level==='BLOCK'?'#ff9500':'#ffd60a'
+  const cls=e.level==='LOCKDOWN'?'critical':'high'
+  return `<div class="intv" style="border-color:${c}">
+    <span class="lvl" style="color:${c};border-color:${c}">${e.level}</span>
+    <strong>${e.pattern}</strong> <span style="color:#888;font-size:10px">Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span>
+    <div class="quote">User action: ${e.userAction||'—'}</div>
+  </div>`
+}).join('')}`:''}
+
 <h2>ALERT TIMELINE</h2>
-${(report.alerts||[]).map(a=>`<div class="alert ${a.severity}"><span class="badge ${a.severity}">${a.severity}</span><strong>${a.pattern}</strong> <span style="color:#888;font-size:10px">${a.time} · ${a.confidence}%</span><div class="quote">"${a.quote.replace(/"/g,'')}"</div></div>`).join('')}
+${(report.alerts||[]).map(a=>`<div class="alert ${a.severity}"><span class="badge ${a.severity}">${a.severity}</span><strong>${a.pattern}</strong> <span style="color:#888;font-size:10px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span style="color:#ff2d55;font-size:9px;margin-left:8px">🛑 INTERVENED</span>':''}<div class="quote">"${a.quote.replace(/"/g,'')}"</div></div>`).join('')}
 
 ${barHTML(Object.entries(report.psychScores||{}),'PSYCHOLOGICAL VECTORS')}
 ${barHTML(Object.entries(report.lieScores||{}),'LIE DETECTION ANALYSIS')}
@@ -247,13 +320,14 @@ function ActionItem({action}){const[h,setH]=useState(false);const pc=PC[action.p
   </div>
 )}
 
-/* ═══ Fullscreen Gallery — lie detect under psych, not separate tab ═══ */
+/* ═══ Fullscreen Gallery ═══ */
 function GalleryFullscreen({report,onClose,onDelete}){
   if(!report) return null
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
   const sc=report.threatScore>75?'#ff2d55':report.threatScore>45?'#ff9500':'#30d158'
   const[tab,setTab]=useState('transcript')
   const actionsData=getActionsForLang(report.language||'en')
+  const hasInterventions=(report.interventionHistory||[]).length>0
 
   return(
     <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,0.95)',backdropFilter:'blur(10px)',display:'flex',flexDirection:'column'}} onClick={onClose}>
@@ -264,6 +338,7 @@ function GalleryFullscreen({report,onClose,onDelete}){
             <div style={{fontFamily:PF,fontSize:11,color:'#00d4ff',textShadow:'0 0 10px #00d4ff'}}>SESSION DETAIL</div>
             <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.6)',marginTop:6}}>
               {new Date(report.savedAt).toLocaleString()} · Duration: <strong style={{color:'#00d4ff'}}>{fmt(report.sessionTime)}</strong> · {(report.language||'en').toUpperCase()} · {actionsData.country}
+              {hasInterventions&&<span style={{color:'#ff2d55',marginLeft:8}}>· 🛑 {report.interventionHistory.length} intervention{report.interventionHistory.length>1?'s':''}</span>}
             </div>
           </div>
           <div style={{display:'flex',gap:12,alignItems:'center'}}>
@@ -278,14 +353,15 @@ function GalleryFullscreen({report,onClose,onDelete}){
         </div>
         {/* Tabs */}
         <div style={{display:'flex',borderBottom:'1px solid rgba(0,212,255,0.1)',flexShrink:0}}>
-          {['transcript','alerts','psych','actions'].map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:tab===t?'#00d4ff':'rgba(255,255,255,0.55)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1}}>{t}</button>
+          {['transcript','alerts',hasInterventions?'interventions':null,'psych','actions'].filter(Boolean).map(t=>(
+            <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:tab===t?'#00d4ff':t==='interventions'?'#ff2d55aa':'rgba(255,255,255,0.55)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1}}>{t}{t==='interventions'?` (${(report.interventionHistory||[]).length})`:''}</button>
           ))}
         </div>
         {/* Content */}
         <div style={{flex:1,overflowY:'auto',padding:'20px 28px'}}>
           {tab==='transcript'&&((report.transcript||[]).length>0?(report.transcript||[]).map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} style={{fontFamily:MF,fontSize:12,color:isMe?'#30d158':'rgba(255,255,255,0.75)',padding:'6px 0',borderLeft:l.flagged?'3px solid #ff2d55':isMe?'3px solid #30d15844':'3px solid transparent',paddingLeft:12,lineHeight:1.8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:10,marginRight:10}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:6,color:isMe?'#30d158':'#ff9500',marginRight:6}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:9,marginLeft:6}}>⚠</span>}</div>}):<div style={{textAlign:'center',padding:40,color:'rgba(255,255,255,0.25)',fontFamily:MF}}>No transcript</div>)}
           {tab==='alerts'&&(report.alerts||[]).map((a,i)=><AlertCard key={i} alert={a} index={i}/>)}
+          {tab==='interventions'&&<InterventionHistorySection interventions={report.interventionHistory||[]} language={report.language||'en'}/>}
           {tab==='psych'&&<>
             <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:12}}>PSYCHOLOGICAL VECTORS</div>
             {PSYCH_TACTICS.map(t=><VectorBar key={t.id} tac={t} score={report.psychScores?.[t.id]||0}/>)}
@@ -325,6 +401,7 @@ function SessionGallery({saved,onRefresh}){
 }
 function GalleryCard({r,sc,fmt,onOpen,onDel}){
   const[h,setH]=useState(false);const ad=getActionsForLang(r.language||'en')
+  const intCount=(r.interventionHistory||[]).length
   return(
     <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} onClick={onOpen} style={{padding:'14px 16px',cursor:'pointer',border:`1px solid ${h?sc+'66':'rgba(0,212,255,0.18)'}`,background:h?`linear-gradient(135deg,${sc}0c,transparent)`:'rgba(0,0,0,0.2)',boxShadow:h?`0 0 16px ${sc}22`:'none',transform:h?'translateY(-2px)':'none',transition:'all 0.2s',position:'relative'}}>
       <div style={{position:'absolute',top:-1,left:-1,width:12,height:2,background:h?sc:sc+'55'}}/><div style={{position:'absolute',top:-1,left:-1,width:2,height:12,background:h?sc:sc+'55'}}/>
@@ -332,13 +409,13 @@ function GalleryCard({r,sc,fmt,onOpen,onDel}){
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
         <div>
           <div style={{fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.55)'}}>{new Date(r.savedAt).toLocaleString('en-US',{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}</div>
-          <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)',marginTop:2}}>{(r.language||'en').toUpperCase()} · {ad.country} · {r.alerts?.length||0} alerts · {fmt(r.sessionTime)}</div>
+          <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)',marginTop:2}}>{(r.language||'en').toUpperCase()} · {ad.country} · {r.alerts?.length||0} alerts · {fmt(r.sessionTime)}{intCount>0?` · 🛑 ${intCount}`:''}</div>
         </div>
         <span style={{fontFamily:PF,fontSize:14,color:sc,textShadow:`0 0 8px ${sc}`}}>{r.threatScore}</span>
       </div>
       <div style={{display:'flex',gap:1,marginBottom:6}}>{Array.from({length:10}).map((_,i)=><div key={i} style={{flex:1,height:4,background:i<Math.round(r.threatScore/10)?sc:sc+'22'}}/>)}</div>
       <div style={{display:'flex',justifyContent:'space-between'}}>
-        <span style={{fontFamily:MF,fontSize:8,color:h?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.2)'}}>{r.audioUrl?'🎙 Has recording · ':''} Click for full report</span>
+        <span style={{fontFamily:MF,fontSize:8,color:h?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.2)'}}>{r.audioUrl?'🎙 Has recording · ':''}{intCount>0?`🛑 ${intCount} intervention${intCount>1?'s':''} · `:''}Click for full report</span>
         <button onClick={e=>{e.stopPropagation();onDel()}} style={{fontFamily:PF,fontSize:5,padding:'3px 8px',border:'1px solid #ff2d5544',color:'#ff2d55',background:'rgba(255,45,85,0.06)',cursor:'pointer',opacity:h?1:0.3}}>✕</button>
       </div>
     </div>
@@ -515,15 +592,15 @@ function PatternCard({p,c,hit,onClick}){const[h,setH]=useState(false);return(
 )}
 
 /* ══════════════════════════════════════════════════════════
-   REPORT TAB — lie detect under psych, not separate
+   REPORT TAB
 ══════════════════════════════════════════════════════════ */
-export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null}){
+export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null,interventionHistory=[]}){
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const[saved,setSaved]=useState([]);const[msg,setMsg]=useState('')
   useEffect(()=>setSaved(loadReports()),[])
-  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,id:Date.now().toString(),savedAt:new Date().toISOString()}
+  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,id:Date.now().toString(),savedAt:new Date().toISOString()}
   const actionsData=getActionsForLang(language)
-  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,audioUrl});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
+  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,audioUrl});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
 
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
     <div style={{marginBottom:20,paddingLeft:16,borderLeft:'3px solid #00d4ff'}}><div style={{fontFamily:PF,fontSize:11,color:'#00d4ff'}}>SESSION FORENSIC REPORT</div></div>
@@ -532,12 +609,16 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
         <PBox color="#ff2d55" style={{padding:24,background:'rgba(255,45,85,0.04)'}}>
           <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',marginBottom:16}}>⚠ HIGH RISK — SCAM DETECTED</div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
-            {[{l:'DURATION',v:fmt(sessionTime),c:'#00d4ff'},{l:'THREATS',v:alerts.length,c:'#ff2d55'},{l:'RISK SCORE',v:`${threatScore}/100`,c:'#ff2d55'},{l:'TACTICS',v:Object.values(psychScores).filter(x=>x>0).length,c:'#ff9500'}].map(item=>(
+            {[{l:'DURATION',v:fmt(sessionTime),c:'#00d4ff'},{l:'THREATS',v:alerts.length,c:'#ff2d55'},{l:'RISK SCORE',v:`${threatScore}/100`,c:'#ff2d55'},{l:'INTERVENTIONS',v:interventionHistory.length,c:interventionHistory.length>0?'#ff9500':'#30d158'}].map(item=>(
               <div key={item.l}><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.45)',marginBottom:5}}>{item.l}</div><div style={{fontFamily:PF,fontSize:15,color:item.c,textShadow:`0 0 12px ${item.c}`}}>{item.v}</div></div>
             ))}
           </div>
         </PBox>
         {transcript.length>0&&(<PBox color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>FULL TRANSCRIPT ({transcript.length})</div><div style={{maxHeight:200,overflowY:'auto'}}>{transcript.map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} style={{fontFamily:MF,fontSize:10,color:isMe?'#30d158':'rgba(255,255,255,0.65)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':isMe?'2px solid #30d15844':'2px solid transparent',paddingLeft:8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:isMe?'#30d158':'#ff9500',marginRight:4}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>})}</div></PBox>)}
+        {/* Intervention History */}
+        {interventionHistory.length>0&&(
+          <InterventionHistorySection interventions={interventionHistory} language={language}/>
+        )}
         <PBox color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>ALERT TIMELINE</div>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</PBox>
         {/* Psych + Lie together */}
         <PBox color="#ff950040" style={{padding:20}}>

@@ -44,6 +44,19 @@ export function AlertCard({ alert, index = 0 }) {
             <span style={{ fontFamily: PF, fontSize: 7, color: c.text, letterSpacing: 1 }}>
               {alert.pattern}
             </span>
+            {/* Intervention badge */}
+            {alert.triggered_intervention && (
+              <span style={{
+                fontFamily: PF, fontSize: 5, padding: '2px 6px',
+                border: '1px solid #ff2d55',
+                background: 'rgba(255,45,85,0.2)',
+                color: '#ff2d55',
+                letterSpacing: 1,
+                animation: 'blink 1.5s step-end infinite',
+              }}>
+                🛑 INTERVENED
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <span style={{ fontFamily: MF, fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
@@ -66,7 +79,7 @@ export function AlertCard({ alert, index = 0 }) {
         {/* Expanded: psych tactics */}
         {expanded && (
           <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${c.border}40` }}>
-            <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 8, letterSpacing: 1 }}>
+            <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.65)', marginBottom: 8, letterSpacing: 1 }}>
               PSYCHOLOGICAL TACTICS DETECTED:
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
@@ -84,15 +97,25 @@ export function AlertCard({ alert, index = 0 }) {
                 )
               })}
             </div>
-            <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.22)' }}>
+            {alert.triggered_intervention && (
+              <div style={{
+                fontFamily: MF, fontSize: 9, color: '#ff2d55',
+                padding: '6px 10px', marginBottom: 8,
+                border: '1px solid #ff2d5544',
+                background: 'rgba(255,45,85,0.06)',
+              }}>
+                🛑 This alert triggered a Live Intervention
+              </div>
+            )}
+            <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.55)' }}>
               SOURCE: {alert.source} &nbsp;·&nbsp; CLICK TO COLLAPSE
             </div>
           </div>
         )}
 
         {!expanded && (
-          <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.2)', marginTop: 6 }}>
-            ▼ click to expand tactics
+          <div style={{ fontFamily: MF, fontSize: 9, color: c.text+'99', marginTop: 6, display:'flex', alignItems:'center', gap:4 }}>
+            <span style={{ fontSize:8, opacity:0.7 }}>▼</span> click to expand tactics
           </div>
         )}
       </div>
