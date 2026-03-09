@@ -4,6 +4,22 @@ import { AlertCard }             from '../components/AlertCard'
 import { PixelLogo }             from '../components/PixelLogo'
 import { SCAM_PATTERNS, PSYCH_TACTICS, SEV, PF, MF, LIE_INDICATORS, getActionsForLang, getInterventionForLang } from '../utils/constants'
 
+/* ── Global polish CSS ── */
+const tabsCSS = `
+@keyframes vbar-shimmer {
+  0% { left: -40%; }
+  100% { left: 140%; }
+}
+@keyframes intv-section-glow {
+  0%, 100% { box-shadow: inset 0 0 12px rgba(255,45,85,0.02); }
+  50% { box-shadow: inset 0 0 20px rgba(255,45,85,0.08), 0 0 12px rgba(255,45,85,0.04); }
+}
+@keyframes intv-badge-pulse {
+  0%, 100% { text-shadow: none; }
+  50% { text-shadow: 0 0 8px currentColor; }
+}
+`
+
 /* ── Score Interpretation ── */
 function getInterpretation(score) {
   if(score===0) return { level:'INACTIVE', color:'rgba(255,255,255,0.25)', text:'No activity detected in this vector.' }
@@ -81,7 +97,7 @@ const saveReport=r=>{try{const l=JSON.parse(localStorage.getItem('vg_reports')||
 const loadReports=()=>{try{return JSON.parse(localStorage.getItem('vg_reports')||'[]')}catch{return[]}}
 const delReport=id=>{try{localStorage.setItem('vg_reports',JSON.stringify(loadReports().filter(r=>r.id!==id)))}catch{}}
 
-/* ── Intervention History Section ── */
+/* ── Intervention History Section (POLISHED) ── */
 function InterventionHistorySection({ interventions, language }) {
   if (!interventions || interventions.length === 0) return null
   const levelColors = { LOCKDOWN: '#ff2d55', BLOCK: '#ff9500', WARN: '#ffd60a' }
@@ -93,7 +109,8 @@ function InterventionHistorySection({ interventions, language }) {
   }
 
   return (
-    <PBox color="#ff2d55" style={{ padding: 20, background: 'rgba(255,45,85,0.03)' }}>
+    <PBox color="#ff2d55" style={{ padding: 20, background: 'rgba(255,45,85,0.03)', animation: 'intv-section-glow 4s ease-in-out infinite' }}>
+      <style>{tabsCSS}</style>
       <div style={{ fontFamily: PF, fontSize: 8, color: '#ff2d55', marginBottom: 14, textShadow: '0 0 10px #ff2d55' }}>
         🛑 LIVE INTERVENTIONS ({interventions.length})
       </div>
@@ -114,6 +131,8 @@ function InterventionHistorySection({ interventions, language }) {
                 <span style={{
                   fontFamily: PF, fontSize: 6, padding: '3px 8px',
                   border: `1px solid ${c}`, color: c, background: `${c}15`,
+                  textShadow: `0 0 6px ${c}66`,
+                  animation: 'intv-badge-pulse 2.5s ease-in-out infinite',
                 }}>
                   {e.level}
                 </span>
@@ -282,11 +301,12 @@ function exportPDF(report){
   w.onload = () => setTimeout(()=>w.print(),600)
 }
 
-/* ═══ Vector Bar — with interpretation ═══ */
+/* ═══ Vector Bar — with interpretation + shimmer on active tip (POLISHED) ═══ */
 function VectorBar({tac,score}){
   const[h,setH]=useState(false);const active=score>0
   const barColors=[tac.color+'55',tac.color+'99',tac.color]
   const interp = getInterpretation(score)
+  const tipIdx = Math.max(0, Math.round(score/5) - 1)
   return(
     <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',marginBottom:4,border:`1px solid ${h?tac.color+'55':tac.color+'18'}`,background:h?tac.color+'0a':'transparent',transition:'all 0.2s ease'}}>
       <span style={{fontSize:16,filter:h||active?`drop-shadow(0 0 6px ${tac.color})`:'none',transition:'filter 0.3s',flexShrink:0}}>{tac.icon}</span>
@@ -299,7 +319,7 @@ function VectorBar({tac,score}){
           </div>
         </div>
         <div style={{display:'flex',gap:1,height:h?8:6,transition:'height 0.2s'}}>
-          {Array.from({length:20}).map((_,i)=>{const filled=i<Math.round(score/5);const ci=i<7?0:i<14?1:2;return<div key={i} style={{flex:1,background:filled?barColors[ci]:tac.color+'12',boxShadow:filled&&i>=14?`0 0 6px ${tac.color}`:'none',transition:'all 0.4s'}}/>})}
+          {Array.from({length:20}).map((_,i)=>{const filled=i<Math.round(score/5);const ci=i<7?0:i<14?1:2;return<div key={i} style={{flex:1,background:filled?barColors[ci]:tac.color+'12',boxShadow:filled&&i>=14?`0 0 6px ${tac.color}`:'none',transition:'all 0.4s',position:'relative',overflow:'hidden'}}>{filled&&i===tipIdx&&score>10&&<div style={{position:'absolute',inset:0,background:`linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)`,animation:'vbar-shimmer 2.5s ease-in-out infinite'}}/>}</div>})}
         </div>
         {h&&<div style={{marginTop:5}}>
           <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.6)',lineHeight:1.5}}>{tac.desc}</div>
@@ -431,6 +451,7 @@ export function PsychTab({psychScores,lieScores={}}){
 
   return(
     <div>
+      <style>{tabsCSS}</style>
       {/* Methodology info */}
       <div style={{marginBottom:24,paddingLeft:18,borderLeft:'3px solid #ff9500'}}>
         <div style={{fontFamily:PF,fontSize:11,color:'#ff9500',textShadow:'0 0 16px #ff9500',marginBottom:10}}>PSYCHOLOGICAL MANIPULATION ANALYZER</div>
@@ -603,6 +624,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
   const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,audioUrl});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
 
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
+    <style>{tabsCSS}</style>
     <div style={{marginBottom:20,paddingLeft:16,borderLeft:'3px solid #00d4ff'}}><div style={{fontFamily:PF,fontSize:11,color:'#00d4ff'}}>SESSION FORENSIC REPORT</div></div>
     {alerts.length===0?(<PBox color="#00d4ff20" style={{padding:60,textAlign:'center'}}><div style={{fontFamily:PF,fontSize:8,color:'rgba(255,255,255,0.25)',lineHeight:3}}>NO SESSION DATA<br/>START A SESSION FIRST</div></PBox>):(
       <div style={{display:'flex',flexDirection:'column',gap:14}}>

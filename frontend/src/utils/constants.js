@@ -36,12 +36,44 @@ export const LIE_INDICATORS = [
   { id:"PRESSURE",       label:"Pressure to Comply",       icon:"⏳", desc:"Uses urgency to prevent verification — liars need you to act before you think.", color:"#ff2d55" },
 ]
 
-// ── Severity config ────────────────────────────────────────────
+// ── Severity config with animation tokens ──────────────
 export const SEV = {
-  critical: { bg:"rgba(255,45,85,0.1)",  border:"#ff2d55", text:"#ff2d55", glow:"0 0 18px rgba(255,45,85,0.5)"  },
-  high:     { bg:"rgba(255,149,0,0.1)",  border:"#ff9500", text:"#ff9500", glow:"0 0 18px rgba(255,149,0,0.4)"  },
-  medium:   { bg:"rgba(255,214,10,0.08)",border:"#ffd60a", text:"#ffd60a", glow:"0 0 14px rgba(255,214,10,0.3)" },
-  low:      { bg:"rgba(48,209,88,0.08)", border:"#30d158", text:"#30d158", glow:"0 0 12px rgba(48,209,88,0.3)"  },
+  critical: {
+    bg:"rgba(255,45,85,0.1)",
+    border:"#ff2d55",
+    text:"#ff2d55",
+    glow:"0 0 18px rgba(255,45,85,0.5)",
+    pulse: true,
+    glowAnim: 'alert-glow-critical 3s ease-in-out infinite',
+    dotAnim: 'alert-dot-critical 1s ease-in-out infinite',
+  },
+  high: {
+    bg:"rgba(255,149,0,0.1)",
+    border:"#ff9500",
+    text:"#ff9500",
+    glow:"0 0 18px rgba(255,149,0,0.4)",
+    pulse: true,
+    glowAnim: 'alert-glow-high 4s ease-in-out infinite',
+    dotAnim: 'blink 1s step-end infinite',
+  },
+  medium: {
+    bg:"rgba(255,214,10,0.08)",
+    border:"#ffd60a",
+    text:"#ffd60a",
+    glow:"0 0 14px rgba(255,214,10,0.3)",
+    pulse: false,
+    glowAnim: 'none',
+    dotAnim: 'blink 1.5s step-end infinite',
+  },
+  low: {
+    bg:"rgba(48,209,88,0.08)",
+    border:"#30d158",
+    text:"#30d158",
+    glow:"0 0 12px rgba(48,209,88,0.3)",
+    pulse: false,
+    glowAnim: 'none',
+    dotAnim: 'blink 2s step-end infinite',
+  },
 }
 
 // ── Fonts ──────────────────────────────────────────────────────
