@@ -102,7 +102,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 
 ---
 
-## 🚨 Live Scam Intervention (Killer Feature)
+## 🚨 Live Scam Intervention
 
 <div align="center">
 <img src="docs/svgs/intervention.svg" alt="Live Scam Intervention Demo" width="100%"/>
