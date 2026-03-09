@@ -39,7 +39,6 @@ function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
   useEffect(()=>{if(!active)return;const t=setInterval(()=>setTick(v=>v+1),80);return()=>clearInterval(t)},[active])
   if(!active)return null
   const aC='#00d4ff',aV='#2d8cff',aR='#ff2d55',ac=mode==='phone'?aC:aV
-  // Screen Watch: override accent to purple when active
   const borderColor = screenWatchOn ? '#7b61ff' : ac+'22'
   return(
     <div style={{position:'relative',width:'100%',height:200,marginBottom:14,overflow:'hidden',border:`1px solid ${borderColor}`,background:'linear-gradient(180deg,rgba(0,0,0,.95),rgba(4,8,20,.98),rgba(0,0,0,.95))',transition:'border-color 0.4s ease',animation:screenWatchOn?'cv-sw-pulse 3s ease-in-out infinite':'none'}}>
@@ -53,20 +52,16 @@ function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
 
       {/* ── SCREEN WATCH OVERLAY ── */}
       {screenWatchOn&&(<>
-        {/* Purple scan line sweeping down */}
         <div style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:4}}>
           <div style={{position:'absolute',left:0,right:0,height:'50%',background:'linear-gradient(180deg,transparent,rgba(123,97,255,0.12),transparent)',animation:'cv-sw-scan 2.5s linear infinite'}}/>
         </div>
-        {/* Grid overlay with pulsing opacity */}
         <div style={{position:'absolute',inset:0,pointerEvents:'none',zIndex:3,backgroundImage:'linear-gradient(rgba(123,97,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(123,97,255,0.5) 1px,transparent 1px)',backgroundSize:'40px 40px',animation:'cv-sw-grid 2s ease-in-out infinite'}}/>
-        {/* Corner brackets in purple */}
         {[{top:8,left:8},{top:8,right:8},{bottom:8,left:8},{bottom:8,right:8}].map((pos,i)=>(
           <div key={i} style={{position:'absolute',...pos,width:24,height:24,pointerEvents:'none',zIndex:5}}>
             <div style={{position:'absolute',top:0,left:i%2===0?0:undefined,right:i%2===1?0:undefined,width:24,height:2,background:'#7b61ff',boxShadow:'0 0 8px #7b61ff'}}/>
             <div style={{position:'absolute',top:0,left:i%2===0?0:undefined,right:i%2===1?0:undefined,width:2,height:24,background:'#7b61ff',boxShadow:'0 0 8px #7b61ff'}}/>
           </div>
         ))}
-        {/* CAPTURING label */}
         <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',zIndex:6,fontFamily:PF,fontSize:7,color:'#7b61ff',letterSpacing:3,textShadow:'0 0 12px #7b61ff,0 0 24px rgba(123,97,255,0.4)',padding:'8px 20px',border:'1px solid rgba(123,97,255,0.4)',background:'rgba(0,0,0,0.7)',backdropFilter:'blur(4px)'}}>
           ◈ SCREEN CAPTURING
         </div>
@@ -158,59 +153,33 @@ function RecButton({ isRecording, onClick }) {
   const [hov, setHov] = useState(false)
   const [pressed, setPressed] = useState(false)
   const active = isRecording
-
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => { setHov(false); setPressed(false) }}
-      onMouseDown={() => setPressed(true)}
-      onMouseUp={() => setPressed(false)}
+    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => { setHov(false); setPressed(false) }} onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)}
       style={{
         fontFamily: PF, fontSize: 7, letterSpacing: 2, padding: '8px 16px',
-        border: active
-          ? '1px solid #ff2d55'
-          : `1px solid ${hov ? '#ff2d55cc' : '#ff2d5555'}`,
-        background: active
-          ? 'linear-gradient(135deg, rgba(255,45,85,0.25), rgba(255,45,85,0.12))'
-          : hov
-            ? 'linear-gradient(135deg, rgba(255,45,85,0.15), rgba(255,45,85,0.06))'
-            : 'linear-gradient(135deg, rgba(255,45,85,0.06), transparent)',
-        color: '#ff2d55',
-        cursor: 'pointer',
-        boxShadow: active
-          ? '0 0 16px rgba(255,45,85,0.4), 0 0 32px rgba(255,45,85,0.15), inset 0 0 12px rgba(255,45,85,0.1)'
-          : hov
-            ? '0 0 12px rgba(255,45,85,0.3), inset 0 0 8px rgba(255,45,85,0.06)'
-            : '0 0 6px rgba(255,45,85,0.1)',
+        border: active ? '1px solid #ff2d55' : `1px solid ${hov ? '#ff2d55cc' : '#ff2d5555'}`,
+        background: active ? 'linear-gradient(135deg, rgba(255,45,85,0.25), rgba(255,45,85,0.12))' : hov ? 'linear-gradient(135deg, rgba(255,45,85,0.15), rgba(255,45,85,0.06))' : 'linear-gradient(135deg, rgba(255,45,85,0.06), transparent)',
+        color: '#ff2d55', cursor: 'pointer',
+        boxShadow: active ? '0 0 16px rgba(255,45,85,0.4), 0 0 32px rgba(255,45,85,0.15), inset 0 0 12px rgba(255,45,85,0.1)' : hov ? '0 0 12px rgba(255,45,85,0.3), inset 0 0 8px rgba(255,45,85,0.06)' : '0 0 6px rgba(255,45,85,0.1)',
         transform: pressed ? 'scale(0.96) translateY(1px)' : hov ? 'translateY(-1px)' : 'none',
-        transition: 'all 0.14s ease',
-        textTransform: 'uppercase',
-        position: 'relative',
-        overflow: 'hidden',
+        transition: 'all 0.14s ease', textTransform: 'uppercase', position: 'relative', overflow: 'hidden',
         animation: active ? 'rec-pulse 2s ease-in-out infinite' : 'none',
         textShadow: active ? '0 0 8px rgba(255,45,85,0.6)' : hov ? '0 0 6px rgba(255,45,85,0.4)' : 'none',
         display: 'flex', alignItems: 'center', gap: 6,
-      }}
-    >
-      {/* Corner dots */}
+      }}>
       {[['0','0'],['calc(100% - 3px)','0'],['0','calc(100% - 3px)'],['calc(100% - 3px)','calc(100% - 3px)']].map(([l,t],i) => (
         <span key={i} style={{ position:'absolute',left:l,top:t,width:3,height:3,background:'#ff2d55',display:'block',opacity:active||hov?0.8:0.3,transition:'opacity 0.15s' }} />
       ))}
-      {/* Recording dot */}
-      <span style={{
-        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-        background: active ? '#ff2d55' : hov ? '#ff2d5588' : '#ff2d5544',
-        boxShadow: active ? '0 0 8px #ff2d55, 0 0 16px rgba(255,45,85,0.4)' : 'none',
-        animation: active ? 'rec-dot 1s ease-in-out infinite' : 'none',
-        transition: 'all 0.2s',
-      }} />
+      <span style={{ width:8,height:8,borderRadius:'50%',flexShrink:0, background:active?'#ff2d55':hov?'#ff2d5588':'#ff2d5544', boxShadow:active?'0 0 8px #ff2d55, 0 0 16px rgba(255,45,85,0.4)':'none', animation:active?'rec-dot 1s ease-in-out infinite':'none', transition:'all 0.2s' }} />
       <span>{active ? 'REC ON' : 'REC'}</span>
     </button>
   )
 }
 
-export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,language='en'}){
+// ══════════════════════════════════════════════════════════
+// ── MAIN COMPONENT — onSafeExit added ──
+// ══════════════════════════════════════════════════════════
+export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en'}){
   const[script,setScript]=useState(null),[now,setNow]=useState(getNow()),[speaking,setSpeaking]=useState(false),[transcriptLines,setTranscriptLines]=useState([]),[voiceDemo,setVoiceDemo]=useState(false),[demoProgress,setDemoProgress]=useState(0),[voiceMuted,setVoiceMuted]=useState(false),[volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
   const handleVolume=(v)=>{setVolume(v);volumeRef.current=v;if(window.speechSynthesis?.speaking){window.speechSynthesis.cancel();setSpeaking(false)}}
@@ -223,49 +192,69 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   const[interventionHistory,setInterventionHistory]=useState([])
   const lastInterventionLevel=useRef('')
 
-  // Evaluate intervention when threat score or alerts change
   useEffect(()=>{
     if(!monitoring) return
     const latestAlert=alerts[alerts.length-1]||null
     const level=getInterventionLevel(threatScore,latestAlert)
     if(!level) return
-
-    // Only escalate, never repeat same level
     const rank={WARN:1,BLOCK:2,LOCKDOWN:3}
     const lastRank=rank[lastInterventionLevel.current]||0
     const curRank=rank[level.label.split(' ')[0]]||0
-
-    // For instant patterns, always fire BLOCK+
     const isInstant=latestAlert&&isInstantInterventionPattern(latestAlert.pattern)
     if(!isInstant&&curRank<=lastRank) return
-
     const lvKey=level.label.split(' ')[0]
     lastInterventionLevel.current=lvKey
-
-    const event={
-      id:`INT-${Date.now()}`,
-      level:lvKey,
-      trigger:isInstant?'instant_pattern':'score_threshold',
-      pattern:latestAlert?.pattern||'Cumulative Risk',
-      threatScore,
-      timestamp:Date.now(),
-    }
-
+    const event={ id:`INT-${Date.now()}`, level:lvKey, trigger:isInstant?'instant_pattern':'score_threshold', pattern:latestAlert?.pattern||'Cumulative Risk', threatScore, timestamp:Date.now() }
     setActiveIntervention(event)
     setInterventionHistory(h=>[...h,event])
     if(onInterventionEvent) onInterventionEvent(event)
-
-    // Pause speech during intervention
     if(window.speechSynthesis?.speaking) window.speechSynthesis.pause()
   },[threatScore,alerts.length,monitoring])
 
-  const handleInterventionDismiss=(action)=>{
-    const updated={...activeIntervention,userAction:action}
-    setInterventionHistory(h=>h.map(e=>e.id===updated.id?updated:e))
+  // ══════════════════════════════════════════════════════════
+  // ── INTERVENTION DISMISS — proper flow separation ──
+  // ══════════════════════════════════════════════════════════
+  const handleInterventionDismiss = (action) => {
+    // Record user action in history
+    const updated = { ...activeIntervention, userAction: action }
+    setInterventionHistory(h => h.map(e => e.id === updated.id ? updated : e))
     setActiveIntervention(null)
-    // Resume speech
-    if(window.speechSynthesis?.paused) window.speechSynthesis.resume()
-    if(action==='safe_exit') handleStop()
+
+    if (action === 'safe_exit') {
+      // ── FULL SESSION TERMINATION ──
+      // 1. Kill all audio/speech
+      window.speechSynthesis?.cancel()
+      speechTimers.current.forEach(t => clearTimeout(t))
+      speechTimers.current = []
+      setSpeaking(false)
+      setVoiceDemo(false)
+      setIsRecording(false)
+
+      // 2. Signal parent to stop monitoring AND switch to Report tab
+      if (onSafeExit) {
+        onSafeExit()
+      } else {
+        // Fallback if onSafeExit not wired yet
+        handleStop()
+      }
+      return
+    }
+
+    if (action === 'challenge_passed') {
+      // User verified through challenge or chose "verify through official channel"
+      // Resume session with caution — they made an informed decision
+      if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
+      return
+    }
+
+    if (action === 'dismissed') {
+      // User chose "Continue With Caution" (only available on WARN)
+      if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
+      return
+    }
+
+    // Default fallback: resume
+    if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
   }
 
   useEffect(()=>{setScript(null)},[language]);useEffect(()=>{const t=setInterval(()=>setNow(getNow()),1000);return()=>clearInterval(t)},[]);useEffect(()=>{return()=>{speechTimers.current.forEach(t=>clearTimeout(t));window.speechSynthesis?.cancel()}},[])
@@ -288,14 +277,12 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
 
     <div style={{display:'flex',flexDirection:'column',gap:16}}>
       <PBox color={monitoring&&threatLevel==='critical'?'#ff2d55':'#00d4ff'} style={{padding:24,background:'rgba(0,212,255,.01)',transition:'all .5s',position:'relative',overflow:'hidden'}}>
-        {/* CRT scanline on monitor panel */}
         {monitoring&&<div style={{position:'absolute',left:0,right:0,height:2,background:'linear-gradient(90deg,transparent,rgba(0,212,255,0.06),transparent)',animation:'cv-crt-line 4s linear infinite',pointerEvents:'none',zIndex:1}}/>}
 
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:10,position:'relative',zIndex:2}}>
           <div><div style={{fontFamily:PF,fontSize:10,color:'#00d4ff',marginBottom:6,textShadow:'0 0 14px #00d4ff'}}>LIVE SESSION MONITOR</div><div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,.48)'}}>{monitoring?voiceDemo?`► VOICE DEMO — ${fmt(sessionTime)} — ${demoProgress}%`:`► ANALYZING — ${fmt(sessionTime)}`:'■ READY — SELECT DEMO → START'}</div></div>
           <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
             <div style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
-            {/* ── REC Button (custom component) ── */}
             <RecButton isRecording={isRecording} onClick={()=>setIsRecording(r=>!r)} />
             {voiceDemo&&<PBtn onClick={()=>{setVoiceMuted(m=>!m);if(!voiceMuted)window.speechSynthesis?.cancel()}} color={voiceMuted?'#ff9500':'#30d158'} style={{padding:'10px 14px'}}>{voiceMuted?'🔇 UNMUTE':'🔊 MUTE'}</PBtn>}
             <PBtn onClick={onToggleScreen} color={screenOn?'#7b61ff':'#7b61ff'}>{screenOn?'■ SCREEN OFF':'◈ SCREEN WATCH'}</PBtn>
@@ -306,7 +293,6 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         {screenOn&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(123,97,255,.3)',background:'rgba(123,97,255,.08)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,background:'#7b61ff',animation:'blink 1.5s step-end infinite',boxShadow:'0 0 6px #7b61ff'}}/><span style={{fontFamily:MF,fontSize:9,color:'#7b61ff'}}>◈ SCREEN WATCH ACTIVE — Capturing screen every 2s</span></div>)}
         {isRecording&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(255,45,85,.3)',background:'rgba(255,45,85,.06)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:'#ff2d55',animation:'blink .8s step-end infinite',boxShadow:'0 0 8px #ff2d55'}}/><span style={{fontFamily:MF,fontSize:9,color:'#ff2d55'}}>● RECORDING — Session audio captured for forensic export</span></div>)}
 
-        {/* ── Intervention Counter Banner ── */}
         {interventionHistory.length>0&&monitoring&&(
           <div style={{padding:'8px 12px',marginBottom:12,border:'2px solid #ff2d55',background:'rgba(255,45,85,.08)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>

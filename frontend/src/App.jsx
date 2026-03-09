@@ -11,7 +11,6 @@ import { LanguageSelector } from './components/LanguageSelector'
 const TABS = ['monitor','psych','patterns','report','about']
 const DEMO = import.meta.env.VITE_DEMO_MODE === 'true' || true
 
-// Languages where demo voice/alerts still use English (browser TTS limitation)
 const ENGLISH_FALLBACK_LANGS = {
   'ms':'Malay','tl':'Filipino','th':'Thai','vi':'Vietnamese',
   'de':'German','it':'Italian','nl':'Dutch','tr':'Turkish','pl':'Polish',
@@ -62,9 +61,10 @@ export default function App() {
   const [glitch,setGlitch]=useState(false)
   const [audioLevel,setAudioLevel]=useState(0)
   const [language,setLanguage]=useState('en')
-  const [transcript,setTranscript]=useState([])  // NEW: transcript state
+  const [transcript,setTranscript]=useState([])
   const [lieScores,setLieScores]=useState({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
-  const [audioUrl,setAudioUrl]=useState(null)  // recording URL for gallery playback
+  const [audioUrl,setAudioUrl]=useState(null)
+  const [interventionHistory,setInterventionHistory]=useState([])
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
 
   useEffect(()=>{ const t=setInterval(()=>setScanY(y=>(y+1.4)%100),16); return()=>clearInterval(t) },[])
@@ -75,7 +75,6 @@ export default function App() {
 
   useEffect(()=>{ if(DEMO)return; setAlerts(ws.alerts);setThreatScore(ws.threatScore);setPsychScores(ws.psychScores);setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe') },[ws.alerts,ws.threatScore,ws.psychScores])
 
-  // Voice demo: audio level simulation while monitoring
   useEffect(()=>{
     if(!monitoring){clearInterval(demoRef.current);return}
     demoRef.current=setInterval(()=>{
@@ -84,7 +83,6 @@ export default function App() {
     return()=>clearInterval(demoRef.current)
   },[monitoring])
 
-  // Handler for voice demo alerts (called by MonitorTab when TTS triggers an alert)
   const handleDemoAlert = (alert) => {
     setAlerts(prev=>[alert,...prev])
     const s=Math.min(95,threatScore+18+Math.floor(Math.random()*10))
@@ -92,7 +90,6 @@ export default function App() {
     ;(alert.tactics||[]).forEach(t=>setPsychScores(prev=>({...prev,[t]:Math.min(100,(prev[t]||0)+25+Math.floor(Math.random()*15))})))
     setDetectedIds(prev=>prev.includes(alert.pattern)?prev:[...prev,alert.pattern])
     if(alert.severity==='critical'){setGlitch(true);setTimeout(()=>setGlitch(false),500)}
-    // Generate lie detection scores based on alert patterns
     setLieScores(prev=>({
       INCONSISTENCY: Math.min(100, prev.INCONSISTENCY + (alert.severity==='critical'?18:8) + Math.floor(Math.random()*12)),
       VAGUENESS:     Math.min(100, prev.VAGUENESS + (alert.tactics?.includes('AUTHORITY')?15:5) + Math.floor(Math.random()*10)),
@@ -102,9 +99,24 @@ export default function App() {
     }))
   }
 
-  // NEW: Handler for transcript lines from MonitorTab
   const handleTranscriptLine = (line) => {
     setTranscript(prev=>[...prev,line])
+  }
+
+  // ── Intervention event handler — tracks history at App level ──
+  const handleInterventionEvent = (event) => {
+    setInterventionHistory(prev => [...prev, event])
+  }
+
+  // ── Safe Exit handler — full session termination + switch to Report ──
+  const handleSafeExit = () => {
+    setMonitoring(false)
+    if (audio.recordingBlob) {
+      const url = URL.createObjectURL(audio.recordingBlob)
+      setAudioUrl(url)
+    }
+    if (!DEMO) ws.endSession()
+    setTab('report')
   }
 
   useEffect(()=>{ if(monitoring)timerRef.current=setInterval(()=>setSessionTime(t=>t+1),1000); else clearInterval(timerRef.current); return()=>clearInterval(timerRef.current) },[monitoring])
@@ -113,14 +125,14 @@ export default function App() {
     setMonitoring(true);setAlerts([]);setThreatScore(8);setThreatLevel('safe')
     setSessionTime(0);setPsychScores({SCARCITY:0,AUTHORITY:0,FEAR:0,RECIPROCITY:0,ISOLATION:0,COMMITMENT:0})
     setDetectedIds([]);alertIdxRef.current=0
-    setTranscript([])  // NEW: reset transcript
+    setTranscript([])
     setLieScores({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
     setAudioUrl(null)
+    setInterventionHistory([])
     if(!DEMO){ws.reset();ws.startSession()}
   }
   const handleStop=()=>{
     setMonitoring(false)
-    // Save audio recording if available
     if(audio.recordingBlob) {
       const url = URL.createObjectURL(audio.recordingBlob)
       setAudioUrl(url)
@@ -155,7 +167,6 @@ export default function App() {
         .tab-btn:hover{color:rgba(255,255,255,0.95)!important;text-shadow:0 0 12px rgba(255,255,255,0.4)!important;background:rgba(255,255,255,0.04)!important}
         .tab-btn.active-tab{color:#00ffff!important;text-shadow:0 0 16px #00ffff,0 0 32px rgba(0,255,255,0.4)!important}
 
-        /* ── Responsive Phone View ── */
         @media(max-width:768px){
           .vg-header-inner{height:auto!important;flex-wrap:wrap!important;padding:10px 14px!important;gap:10px!important}
           .vg-header-inner .vg-marquee{display:none!important}
@@ -175,18 +186,10 @@ export default function App() {
       `}</style>
 
       <div style={{ minHeight:'100vh',background:'#020408',color:'#e0e0e0',fontFamily:MF,position:'relative',overflow:'hidden',filter:glitch?'hue-rotate(18deg) saturate(2.2)':'none',transition:'filter 0.08s' }}>
-        {/* Grid overlay */}
         <div style={{ position:'fixed',inset:0,zIndex:0,pointerEvents:'none',opacity:0.028,backgroundImage:'linear-gradient(rgba(0,212,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,1) 1px,transparent 1px)',backgroundSize:'8px 8px' }} />
-
         <div style={{ position:'fixed',inset:0,pointerEvents:'none',zIndex:999,background:'radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.55) 100%)' }} />
-
-        {/* Scanline */}
         <div style={{ position:'fixed',left:0,right:0,height:2,zIndex:998,pointerEvents:'none',background:'linear-gradient(transparent,rgba(0,212,255,0.07),transparent)',top:`${scanY}%`,transition:'top 0.016s linear' }} />
-
-        {/* Ambient glow */}
         <div style={{ position:'fixed',inset:0,zIndex:0,pointerEvents:'none',transition:'background 1.8s ease',background:monitoring?`radial-gradient(ellipse 55% 35% at 50% 0%,${tColor}14 0%,transparent 70%)`:'radial-gradient(ellipse 70% 50% at 50% 35%,rgba(0,212,255,0.025) 0%,transparent 70%)' }} />
-
-        {/* Side glow lines */}
         <div style={{ position:'fixed',top:0,left:0,bottom:0,width:2,zIndex:1,pointerEvents:'none',background:`linear-gradient(180deg,transparent,${tColor}55,${tColor}22,transparent)`,animation:'dataGlow 3s ease-in-out infinite',transition:'background 1s' }} />
         <div style={{ position:'fixed',top:0,right:0,bottom:0,width:2,zIndex:1,pointerEvents:'none',background:`linear-gradient(180deg,transparent,${tColor}55,${tColor}22,transparent)`,animation:'dataGlow 3s ease-in-out infinite 1.5s',transition:'background 1s' }} />
 
@@ -206,7 +209,6 @@ export default function App() {
               <div className="vg-divider" style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
               <LanguageSelector value={language} onChange={setLanguage} />
               <div className="vg-divider" style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 14px',flexShrink:0 }} />
-              {/* Status indicator */}
               <div className="vg-status" style={{ display:'flex',alignItems:'center',gap:12,padding:'10px 20px',border:`1px solid ${monitoring?tColor+'66':'rgba(255,255,255,0.15)'}`,background:monitoring?`linear-gradient(135deg,${tColor}14,${tColor}08)`:'rgba(255,255,255,0.04)',boxShadow:monitoring?`0 0 24px ${tColor}28`:'0 0 12px rgba(0,255,255,0.05)',transition:'all 0.5s ease',minWidth:150,flexShrink:0,animation:monitoring?'':'borderGlow 4s ease infinite' }}>
                 <div style={{ position:'relative',width:12,height:12,flexShrink:0 }}>
                   {monitoring&&<div style={{ position:'absolute',inset:-4,borderRadius:'50%',border:`1px solid ${tColor}88`,animation:'ppulse 1.6s ease-in-out infinite' }} />}
@@ -235,7 +237,6 @@ export default function App() {
 
           {/* CONTENT */}
           <main className="vg-content" style={{ flex:1,padding:'32px',maxWidth:1440,margin:'0 auto',width:'100%' }}>
-            {/* Language fallback notice */}
             {ENGLISH_FALLBACK_LANGS[language]&&(
               <div style={{ marginBottom:16,padding:'10px 16px',border:'1px solid rgba(255,214,10,0.25)',background:'rgba(255,214,10,0.04)',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' }}>
                 <span style={{ fontFamily:PF,fontSize:6,color:'#ffd60a',letterSpacing:1 }}>⚠ LANGUAGE NOTE</span>
@@ -244,10 +245,26 @@ export default function App() {
                 </span>
               </div>
             )}
-            {tab==='monitor'  && <MonitorTab monitoring={monitoring} threatLevel={threatLevel} sessionTime={sessionTime} alerts={alerts} threatScore={threatScore} audioLevel={audioLevel} screenOn={screenOn} onStart={handleStart} onStop={handleStop} onToggleScreen={()=>setScreenOn(x=>!x)} onDemoAlert={handleDemoAlert} onTranscriptLine={handleTranscriptLine} language={language} />}
-            {tab==='psych'    && <PsychTab   psychScores={psychScores} lieScores={lieScores} />}
+            {tab==='monitor'  && <MonitorTab
+              monitoring={monitoring}
+              threatLevel={threatLevel}
+              sessionTime={sessionTime}
+              alerts={alerts}
+              threatScore={threatScore}
+              audioLevel={audioLevel}
+              screenOn={screenOn}
+              onStart={handleStart}
+              onStop={handleStop}
+              onToggleScreen={()=>setScreenOn(x=>!x)}
+              onDemoAlert={handleDemoAlert}
+              onTranscriptLine={handleTranscriptLine}
+              onInterventionEvent={handleInterventionEvent}
+              onSafeExit={handleSafeExit}
+              language={language}
+            />}
+            {tab==='psych'    && <PsychTab psychScores={psychScores} lieScores={lieScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
-            {tab==='report'   && <ReportTab  alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} lieScores={lieScores} transcript={transcript} language={language} audioUrl={audioUrl} />}
+            {tab==='report'   && <ReportTab alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} lieScores={lieScores} transcript={transcript} language={language} audioUrl={audioUrl} interventionHistory={interventionHistory} />}
             {tab==='about'    && <AboutTab />}
           </main>
 

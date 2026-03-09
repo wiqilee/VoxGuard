@@ -38,42 +38,10 @@ export const LIE_INDICATORS = [
 
 // ── Severity config with animation tokens ──────────────
 export const SEV = {
-  critical: {
-    bg:"rgba(255,45,85,0.1)",
-    border:"#ff2d55",
-    text:"#ff2d55",
-    glow:"0 0 18px rgba(255,45,85,0.5)",
-    pulse: true,
-    glowAnim: 'alert-glow-critical 3s ease-in-out infinite',
-    dotAnim: 'alert-dot-critical 1s ease-in-out infinite',
-  },
-  high: {
-    bg:"rgba(255,149,0,0.1)",
-    border:"#ff9500",
-    text:"#ff9500",
-    glow:"0 0 18px rgba(255,149,0,0.4)",
-    pulse: true,
-    glowAnim: 'alert-glow-high 4s ease-in-out infinite',
-    dotAnim: 'blink 1s step-end infinite',
-  },
-  medium: {
-    bg:"rgba(255,214,10,0.08)",
-    border:"#ffd60a",
-    text:"#ffd60a",
-    glow:"0 0 14px rgba(255,214,10,0.3)",
-    pulse: false,
-    glowAnim: 'none',
-    dotAnim: 'blink 1.5s step-end infinite',
-  },
-  low: {
-    bg:"rgba(48,209,88,0.08)",
-    border:"#30d158",
-    text:"#30d158",
-    glow:"0 0 12px rgba(48,209,88,0.3)",
-    pulse: false,
-    glowAnim: 'none',
-    dotAnim: 'blink 2s step-end infinite',
-  },
+  critical: { bg:"rgba(255,45,85,0.1)",  border:"#ff2d55", text:"#ff2d55", glow:"0 0 18px rgba(255,45,85,0.5)",  pulse:true,  glowAnim:'alert-glow-critical 3s ease-in-out infinite', dotAnim:'alert-dot-critical 1s ease-in-out infinite' },
+  high:     { bg:"rgba(255,149,0,0.1)",  border:"#ff9500", text:"#ff9500", glow:"0 0 18px rgba(255,149,0,0.4)",  pulse:true,  glowAnim:'alert-glow-high 4s ease-in-out infinite',     dotAnim:'blink 1s step-end infinite' },
+  medium:   { bg:"rgba(255,214,10,0.08)",border:"#ffd60a", text:"#ffd60a", glow:"0 0 14px rgba(255,214,10,0.3)", pulse:false, glowAnim:'none', dotAnim:'blink 1.5s step-end infinite' },
+  low:      { bg:"rgba(48,209,88,0.08)", border:"#30d158", text:"#30d158", glow:"0 0 12px rgba(48,209,88,0.3)",  pulse:false, glowAnim:'none', dotAnim:'blink 2s step-end infinite' },
 }
 
 // ── Fonts ──────────────────────────────────────────────────────
@@ -84,11 +52,10 @@ export const MF = "'Share Tech Mono', 'Courier New', monospace"
 // ── LIVE SCAM INTERVENTION SYSTEM ────────────────────────────────
 // ══════════════════════════════════════════════════════════════════
 
-// Intervention escalation levels — maps threat score ranges to response intensity
 export const INTERVENTION_LEVELS = {
-  WARN:     { threshold: 55, color: '#ff9500', label: 'WARNING',           icon: '⚠️',  pulse: false },
-  BLOCK:    { threshold: 75, color: '#ff2d55', label: 'DANGER — BLOCK',    icon: '🛑',  pulse: true  },
-  LOCKDOWN: { threshold: 90, color: '#ff2d55', label: 'LOCKDOWN',          icon: '🚨',  pulse: true  },
+  WARN:     { threshold: 55, color: '#ff9500', label: 'WARNING',        icon: '⚠️',  pulse: false },
+  BLOCK:    { threshold: 75, color: '#ff2d55', label: 'DANGER — BLOCK', icon: '🛑',  pulse: true  },
+  LOCKDOWN: { threshold: 90, color: '#ff2d55', label: 'LOCKDOWN',       icon: '🚨',  pulse: true  },
 }
 
 // Which alert patterns trigger immediate intervention regardless of cumulative score
@@ -97,13 +64,249 @@ export const INSTANT_INTERVENTION_PATTERNS = [
   'Safe Account Transfer',
   'Gift Card Demand',
   'Crypto Transfer Scam',
-  'Pencurian OTP / Kredensial',   // ID
-  'OTP チョリ',                    // JA
-  'OTP 도용',                      // KO
-  'سرقة بيانات',                  // AR
-  'OTP चोरी',                     // HI
-  'Robo de Credenciales',         // ES
+  'Pencurian OTP / Kredensial',
+  'OTP チョリ',
+  'OTP 도용',
+  'سرقة بيانات',
+  'OTP चोरी',
+  'Robo de Credenciales',
 ]
+
+// ══════════════════════════════════════════════════════════════════
+// ── INTERVENTION RULES — determines what UI each scenario gets ──
+// ══════════════════════════════════════════════════════════════════
+
+// Patterns where the damage is immediate — NO challenge, safe exit ONLY
+const FATAL_PATTERNS = new Set([
+  'OTP / Credential Extraction',
+  'Safe Account Transfer',
+  'Gift Card Demand',
+  'Crypto Transfer Scam',
+  // Localized
+  'Pencurian OTP / Kredensial',
+  '安全账户转账',
+  'OTP チョリ',
+  'OTP 도용',
+  'سرقة بيانات',
+  'OTP चोरी',
+  'Robo de Credenciales',
+])
+
+// Determines if Verification Challenge is available for a given intervention
+export function isChallengeAvailable(interventionLevel, pattern) {
+  // LOCKDOWN: always safe exit only — too dangerous for challenge
+  if (interventionLevel === 'LOCKDOWN') return false
+  // Fatal patterns: always safe exit only
+  if (FATAL_PATTERNS.has(pattern)) return false
+  // WARN and non-fatal BLOCK: challenge available
+  return true
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ── SCENARIO-BASED VERIFICATION CHALLENGES ──────────────────────
+// ══════════════════════════════════════════════════════════════════
+// 2-3 questions per scenario. Contextual to the scam type.
+// Each question: answering "scam_indicator" = confirms scam behavior.
+
+// Scenario classifier — maps pattern names to scenario keys
+const SCENARIO_MAP = {
+  'Bank Impersonation': 'bank',
+  'Government Impersonation': 'government',
+  'Tech Support Impersonation': 'tech_support',
+  'Investment Fraud': 'investment',
+  'Family Impersonation': 'family',
+  'Artificial Urgency': 'urgency',
+  'Isolation Tactic': 'generic',
+  'Fake Prize / Lottery': 'prize',
+  'Extortion / Blackmail': 'generic',
+  'Fake Giveaway / Celebrity': 'prize',
+  // Localized — map to same scenarios
+  'Penipuan Perbankan': 'bank',
+  '冒充政府机关': 'government',
+  '家族なりすまし': 'family',
+  '정부기관 사칭': 'government',
+  'Suplantación Bancaria': 'bank',
+  'Usurpation gouvernementale': 'government',
+  'सरकारी एजेंसी का रूप': 'government',
+  'انتحال موظف بنكي': 'bank',
+  'Pemerasan / Intimidasi': 'generic',
+  'Ancaman Pemerasan': 'generic',
+  'Penipuan Identitas Keluarga': 'family',
+  'डिजिटल अरेस्ट': 'government',
+}
+
+function getScenarioKey(pattern) {
+  return SCENARIO_MAP[pattern] || 'generic'
+}
+
+// Per-language, per-scenario verification challenges
+// Each scenario has exactly 2-3 questions + results + verify action
+const SCENARIO_CHALLENGES = {
+  en: {
+    bank: {
+      title: 'VERIFY THIS CALLER',
+      subtitle: 'This caller claims to be from your bank.',
+      questions: [
+        { q: 'Did this caller contact you first, or did you call them?', scam_indicator: 'They contacted me', safe_indicator: 'I called them' },
+        { q: 'Are they asking you to share your OTP, PIN, or password?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Did they tell you NOT to call your bank directly?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'This matches confirmed bank impersonation tactics. Real banks NEVER ask for your OTP or password by phone.',
+      result_caution: 'Some red flags detected. Do not share any credentials until you verify independently.',
+      verify_action: 'Call the number on the BACK of your bank card',
+    },
+    government: {
+      title: 'VERIFY THIS CALLER',
+      subtitle: 'This caller claims to be from a government agency.',
+      questions: [
+        { q: 'Is this caller threatening arrest or legal action if you don\'t pay now?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Are they demanding payment via gift cards, crypto, or wire transfer?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'Government agencies NEVER threaten arrest by phone or demand gift card payments. This is a scam.',
+      result_caution: 'Be cautious. Verify by calling the agency\'s official public number.',
+      verify_action: 'Look up the agency\'s official number independently',
+    },
+    tech_support: {
+      title: 'VERIFY THIS CALLER',
+      subtitle: 'This caller claims your device is compromised.',
+      questions: [
+        { q: 'Did this caller contact you first about a "virus" or "security issue"?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Are they asking you to install remote access software?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Are they rushing you to act immediately?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'Legitimate tech companies NEVER cold-call about viruses. Do NOT install any software they suggest.',
+      result_caution: 'Do not grant remote access. Contact the company through their official website.',
+      verify_action: 'Visit the official company website for real support',
+    },
+    investment: {
+      title: 'VERIFY THIS OPPORTUNITY',
+      subtitle: 'This caller is promoting an investment.',
+      questions: [
+        { q: 'Are they promising guaranteed returns with zero risk?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Are they pressuring you to invest before a deadline?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'No legitimate investment guarantees returns. This matches classic investment fraud patterns.',
+      result_caution: 'High-pressure tactics are a red flag. Research independently before investing.',
+      verify_action: 'Check with your financial advisor or regulatory body',
+    },
+    family: {
+      title: 'VERIFY THIS CALLER',
+      subtitle: 'This caller claims to be a family member in trouble.',
+      questions: [
+        { q: 'Can you verify their identity by asking something only they would know?', scam_indicator: 'They can\'t answer', safe_indicator: 'They answered correctly' },
+        { q: 'Are they telling you not to contact other family members?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'This matches family impersonation tactics. Scammers use panic to prevent you from verifying.',
+      result_caution: 'Hang up and call this family member directly on their known number.',
+      verify_action: 'Call this person back on their real phone number',
+    },
+    prize: {
+      title: 'VERIFY THIS CLAIM',
+      subtitle: 'This caller says you\'ve won a prize.',
+      questions: [
+        { q: 'Did you enter any contest or lottery to win this?', scam_indicator: 'No', safe_indicator: 'Yes' },
+        { q: 'Are they asking you to pay a fee to claim your prize?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'You cannot win a contest you didn\'t enter. Legitimate prizes NEVER require upfront payment.',
+      result_caution: 'Be skeptical. Verify the contest through official channels before paying anything.',
+      verify_action: 'Search for the contest name online to verify it exists',
+    },
+    urgency: {
+      title: 'PAUSE AND THINK',
+      subtitle: 'This caller is creating extreme time pressure.',
+      questions: [
+        { q: 'Is the caller saying you must act within minutes or face consequences?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Are they preventing you from hanging up to verify their claims?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'Artificial urgency is the #1 manipulation tactic. Legitimate organizations give you time to verify.',
+      result_caution: 'Take a breath. No legitimate situation requires instant action by phone.',
+      verify_action: 'Hang up and call back through an official number',
+    },
+    generic: {
+      title: 'VERIFY THIS CALLER',
+      subtitle: 'VoxGuard detected manipulation patterns in this call.',
+      questions: [
+        { q: 'Did this caller contact you first, or did you initiate contact?', scam_indicator: 'They contacted me', safe_indicator: 'I contacted them' },
+        { q: 'Are they pressuring you to act immediately without verifying?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'Multiple scam indicators detected. Do NOT proceed with any requests from this caller.',
+      result_caution: 'Exercise caution. Verify the caller\'s identity through independent channels.',
+      verify_action: 'Verify through an official channel before taking any action',
+    },
+  },
+  id: {
+    bank: {
+      title: 'VERIFIKASI PENELEPON',
+      subtitle: 'Penelepon mengaku dari bank Anda.',
+      questions: [
+        { q: 'Apakah penelepon yang menghubungi Anda duluan?', scam_indicator: 'Ya, mereka duluan', safe_indicator: 'Saya yang menelepon' },
+        { q: 'Apakah mereka meminta OTP, PIN, atau password?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+        { q: 'Apakah mereka bilang jangan hubungi bank langsung?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+      ],
+      result_scam: 'Ini sesuai pola penipuan perbankan. Bank TIDAK PERNAH minta OTP atau password via telepon.',
+      result_caution: 'Ada tanda mencurigakan. Jangan bagikan data apapun sebelum verifikasi.',
+      verify_action: 'Hubungi nomor resmi bank di BELAKANG kartu ATM',
+    },
+    government: {
+      title: 'VERIFIKASI PENELEPON',
+      subtitle: 'Penelepon mengaku dari instansi pemerintah.',
+      questions: [
+        { q: 'Apakah penelepon mengancam penangkapan jika tidak bayar sekarang?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+        { q: 'Apakah mereka minta pembayaran via pulsa, kripto, atau transfer?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+      ],
+      result_scam: 'Instansi pemerintah TIDAK PERNAH mengancam via telepon. Ini penipuan.',
+      result_caution: 'Hati-hati. Verifikasi dengan menghubungi kantor resmi.',
+      verify_action: 'Cari nomor resmi instansi di website resmi',
+    },
+    generic: {
+      title: 'VERIFIKASI PENELEPON',
+      subtitle: 'VoxGuard mendeteksi pola manipulasi.',
+      questions: [
+        { q: 'Apakah penelepon yang menghubungi Anda duluan?', scam_indicator: 'Ya, mereka duluan', safe_indicator: 'Saya yang menelepon' },
+        { q: 'Apakah mereka menekan Anda untuk bertindak segera?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+      ],
+      result_scam: 'Beberapa indikator penipuan terdeteksi. JANGAN lanjutkan permintaan penelepon.',
+      result_caution: 'Berhati-hati. Verifikasi identitas penelepon secara mandiri.',
+      verify_action: 'Verifikasi melalui saluran resmi sebelum bertindak',
+    },
+  },
+  zh: {
+    bank: { title:'验证来电者', subtitle:'来电者自称是您的银行。', questions:[{q:'是对方先联系您的吗？',scam_indicator:'是',safe_indicator:'不是'},{q:'对方是否要求您提供验证码或密码？',scam_indicator:'是',safe_indicator:'否'}], result_scam:'银行绝不会通过电话要求密码。这是诈骗。', result_caution:'请通过官方渠道验证。', verify_action:'拨打银行卡背面的官方电话' },
+    generic: { title:'验证来电者', subtitle:'检测到操纵模式。', questions:[{q:'是对方先联系您的吗？',scam_indicator:'是',safe_indicator:'不是'},{q:'对方是否催促您立即行动？',scam_indicator:'是',safe_indicator:'否'}], result_scam:'检测到多个诈骗指标。', result_caution:'请保持警惕。', verify_action:'通过官方渠道验证' },
+  },
+  ja: {
+    bank: { title:'発信者を確認', subtitle:'発信者は銀行を名乗っています。', questions:[{q:'相手から電話がかかってきましたか？',scam_indicator:'はい',safe_indicator:'自分からかけました'},{q:'暗証番号やパスワードを聞かれましたか？',scam_indicator:'はい',safe_indicator:'いいえ'}], result_scam:'銀行が電話でパスワードを聞くことはありません。', result_caution:'公式窓口で確認してください。', verify_action:'カード裏面の公式番号に電話' },
+    generic: { title:'発信者を確認', subtitle:'操作パターンを検出。', questions:[{q:'相手から電話がかかってきましたか？',scam_indicator:'はい',safe_indicator:'自分から'},{q:'すぐに行動するよう迫られていますか？',scam_indicator:'はい',safe_indicator:'いいえ'}], result_scam:'複数の詐欺指標を検出。', result_caution:'慎重に進めてください。', verify_action:'公式チャネルで確認' },
+  },
+  ko: {
+    bank: { title:'발신자 확인', subtitle:'발신자가 은행이라고 합니다.', questions:[{q:'상대방이 먼저 전화했습니까?',scam_indicator:'예',safe_indicator:'제가 전화했습니다'},{q:'OTP나 비밀번호를 요구했습니까?',scam_indicator:'예',safe_indicator:'아니오'}], result_scam:'은행은 절대 전화로 비밀번호를 묻지 않습니다.', result_caution:'공식 채널로 확인하세요.', verify_action:'카드 뒷면 공식 번호로 전화' },
+    generic: { title:'발신자 확인', subtitle:'조작 패턴 감지.', questions:[{q:'상대방이 먼저 전화했습니까?',scam_indicator:'예',safe_indicator:'제가'},{q:'즉시 행동하라고 압박합니까?',scam_indicator:'예',safe_indicator:'아니오'}], result_scam:'사기 지표 감지.', result_caution:'주의하세요.', verify_action:'공식 채널로 확인' },
+  },
+  es: {
+    bank: { title:'VERIFICAR LLAMANTE', subtitle:'El llamante dice ser de su banco.', questions:[{q:'¿Le contactaron ellos primero?',scam_indicator:'Sí',safe_indicator:'Yo llamé'},{q:'¿Le pidieron OTP, PIN o contraseña?',scam_indicator:'Sí',safe_indicator:'No'}], result_scam:'Los bancos NUNCA piden contraseñas por teléfono.', result_caution:'Verifique por canales oficiales.', verify_action:'Llame al número oficial en su tarjeta' },
+    generic: { title:'VERIFICAR LLAMANTE', subtitle:'Patrones de manipulación detectados.', questions:[{q:'¿Le contactaron ellos primero?',scam_indicator:'Sí',safe_indicator:'Yo llamé'},{q:'¿Le presionan para actuar de inmediato?',scam_indicator:'Sí',safe_indicator:'No'}], result_scam:'Indicadores de fraude detectados.', result_caution:'Proceda con precaución.', verify_action:'Verifique por canal oficial' },
+  },
+  fr: {
+    bank: { title:'VÉRIFIER L\'APPELANT', subtitle:'L\'appelant prétend être de votre banque.', questions:[{q:'Est-ce l\'appelant qui vous a contacté en premier ?',scam_indicator:'Oui',safe_indicator:'J\'ai appelé'},{q:'Vous a-t-on demandé OTP, PIN ou mot de passe ?',scam_indicator:'Oui',safe_indicator:'Non'}], result_scam:'Les banques ne demandent JAMAIS de mot de passe par téléphone.', result_caution:'Vérifiez par les canaux officiels.', verify_action:'Appelez le numéro officiel sur votre carte' },
+    generic: { title:'VÉRIFIER L\'APPELANT', subtitle:'Modèles de manipulation détectés.', questions:[{q:'L\'appelant vous a-t-il contacté en premier ?',scam_indicator:'Oui',safe_indicator:'J\'ai appelé'},{q:'Vous presse-t-on d\'agir maintenant ?',scam_indicator:'Oui',safe_indicator:'Non'}], result_scam:'Indicateurs de fraude détectés.', result_caution:'Soyez prudent.', verify_action:'Vérifiez par canal officiel' },
+  },
+  hi: {
+    bank: { title:'कॉलर की पुष्टि करें', subtitle:'कॉलर बैंक से होने का दावा कर रहा है।', questions:[{q:'क्या कॉलर ने आपको पहले संपर्क किया?',scam_indicator:'हाँ',safe_indicator:'मैंने कॉल किया'},{q:'क्या OTP, PIN या पासवर्ड माँगा?',scam_indicator:'हाँ',safe_indicator:'नहीं'}], result_scam:'बैंक कभी फोन पर पासवर्ड नहीं माँगता।', result_caution:'आधिकारिक चैनल से सत्यापित करें।', verify_action:'कार्ड के पीछे का आधिकारिक नंबर डायल करें' },
+    generic: { title:'कॉलर की पुष्टि करें', subtitle:'मैनिपुलेशन पैटर्न पाया गया।', questions:[{q:'क्या कॉलर ने पहले संपर्क किया?',scam_indicator:'हाँ',safe_indicator:'मैंने'},{q:'क्या तुरंत कार्रवाई का दबाव है?',scam_indicator:'हाँ',safe_indicator:'नहीं'}], result_scam:'धोखाधड़ी संकेतक पाए गए।', result_caution:'सावधान रहें।', verify_action:'आधिकारिक चैनल से सत्यापित करें' },
+  },
+  ar: {
+    bank: { title:'تحقق من المتصل', subtitle:'المتصل يدعي أنه من البنك.', questions:[{q:'هل المتصل اتصل بك أولاً؟',scam_indicator:'نعم',safe_indicator:'أنا اتصلت'},{q:'هل طلبوا رمز OTP أو كلمة المرور؟',scam_indicator:'نعم',safe_indicator:'لا'}], result_scam:'البنوك لا تطلب كلمات المرور عبر الهاتف أبداً.', result_caution:'تحقق عبر القنوات الرسمية.', verify_action:'اتصل بالرقم الرسمي على بطاقتك' },
+    generic: { title:'تحقق من المتصل', subtitle:'تم اكتشاف أنماط تلاعب.', questions:[{q:'هل المتصل اتصل بك أولاً؟',scam_indicator:'نعم',safe_indicator:'أنا'},{q:'هل يضغطون للتصرف فوراً؟',scam_indicator:'نعم',safe_indicator:'لا'}], result_scam:'تم اكتشاف مؤشرات احتيال.', result_caution:'كن حذراً.', verify_action:'تحقق عبر القناة الرسمية' },
+  },
+}
+
+// Get scenario-based challenge for a pattern + language
+export function getChallengeForScenario(pattern, langCode) {
+  const lang = langCode?.split('-')[0] || 'en'
+  const scenario = getScenarioKey(pattern)
+  const langChallenges = SCENARIO_CHALLENGES[lang] || SCENARIO_CHALLENGES['en']
+  return langChallenges[scenario] || langChallenges['generic'] || SCENARIO_CHALLENGES['en']['generic']
+}
 
 // Sensitive action keywords that trigger intervention in transcript
 export const SENSITIVE_ACTION_KEYWORDS = {
@@ -116,118 +319,6 @@ export const SENSITIVE_ACTION_KEYWORDS = {
   fr: ['transférer','envoyer','mot de passe','code','carte','crypto','télécharger'],
   hi: ['ट्रांसफर','भेजें','OTP','पासवर्ड','बिटकॉइन','डाउनलोड'],
   ar: ['تحويل','إرسال','كلمة المرور','رمز','بيتكوين','تحميل'],
-}
-
-// Verification challenge prompts — forces user to pause and think
-export const VERIFICATION_CHALLENGES = {
-  en: {
-    title: 'VERIFICATION CHALLENGE',
-    question: 'Before you continue, answer this:',
-    challenges: [
-      { q: 'Did YOU initiate this call, or did they call you?', safe: 'They called me', unsafe: 'I called them' },
-      { q: 'Has this caller asked for your OTP, PIN, or password?', safe: 'Yes', unsafe: 'No' },
-      { q: 'Are they pressuring you to act RIGHT NOW?', safe: 'Yes', unsafe: 'No' },
-      { q: 'Did they tell you NOT to contact your bank or family?', safe: 'Yes', unsafe: 'No' },
-    ],
-    result_scam: 'This matches confirmed scam behavior. Do NOT proceed.',
-    result_safe: 'Proceed with caution. Stay alert for further red flags.',
-  },
-  id: {
-    title: 'TANTANGAN VERIFIKASI',
-    question: 'Sebelum melanjutkan, jawab ini:',
-    challenges: [
-      { q: 'Apakah ANDA yang menelepon, atau mereka yang menelepon Anda?', safe: 'Mereka menelepon saya', unsafe: 'Saya yang menelepon' },
-      { q: 'Apakah mereka meminta OTP, PIN, atau password Anda?', safe: 'Ya', unsafe: 'Tidak' },
-      { q: 'Apakah mereka menekan Anda untuk bertindak SEKARANG JUGA?', safe: 'Ya', unsafe: 'Tidak' },
-      { q: 'Apakah mereka bilang jangan hubungi bank atau keluarga?', safe: 'Ya', unsafe: 'Tidak' },
-    ],
-    result_scam: 'Ini cocok dengan perilaku penipuan. JANGAN lanjutkan.',
-    result_safe: 'Lanjutkan dengan hati-hati. Tetap waspada.',
-  },
-  zh: {
-    title: '安全验证',
-    question: '继续之前请回答：',
-    challenges: [
-      { q: '是您主动拨打的电话，还是对方打给您的？', safe: '对方打给我的', unsafe: '我打给他们的' },
-      { q: '对方是否要求您提供验证码、密码或PIN？', safe: '是', unsafe: '否' },
-      { q: '对方是否在催促您立即行动？', safe: '是', unsafe: '否' },
-      { q: '对方是否要求您不要联系银行或家人？', safe: '是', unsafe: '否' },
-    ],
-    result_scam: '这符合诈骗行为特征。请勿继续操作。',
-    result_safe: '请谨慎继续。保持警惕。',
-  },
-  ja: {
-    title: '安全確認チャレンジ',
-    question: '続ける前にお答えください：',
-    challenges: [
-      { q: 'この電話はあなたからかけましたか？それとも相手から？', safe: '相手からです', unsafe: '自分からです' },
-      { q: '相手はOTP・暗証番号・パスワードを聞きましたか？', safe: 'はい', unsafe: 'いいえ' },
-      { q: '「今すぐ」行動するよう迫られていますか？', safe: 'はい', unsafe: 'いいえ' },
-      { q: '銀行や家族に相談しないよう言われましたか？', safe: 'はい', unsafe: 'いいえ' },
-    ],
-    result_scam: 'これは詐欺の特徴と一致します。絶対に続けないでください。',
-    result_safe: '慎重に進めてください。引き続き警戒してください。',
-  },
-  ko: {
-    title: '보안 확인 질문',
-    question: '계속하기 전에 답해주세요:',
-    challenges: [
-      { q: '이 전화를 당신이 걸었습니까, 상대방이 걸었습니까?', safe: '상대방이 걸었습니다', unsafe: '제가 걸었습니다' },
-      { q: '상대방이 OTP, 비밀번호를 요구했습니까?', safe: '예', unsafe: '아니오' },
-      { q: '지금 당장 행동하라고 압박하고 있습니까?', safe: '예', unsafe: '아니오' },
-      { q: '은행이나 가족에게 연락하지 말라고 했습니까?', safe: '예', unsafe: '아니오' },
-    ],
-    result_scam: '확인된 사기 행위와 일치합니다. 진행하지 마세요.',
-    result_safe: '주의하며 진행하세요. 계속 경계하세요.',
-  },
-  es: {
-    title: 'DESAFÍO DE VERIFICACIÓN',
-    question: 'Antes de continuar, responda:',
-    challenges: [
-      { q: '¿Usted inició esta llamada o le llamaron a usted?', safe: 'Me llamaron a mí', unsafe: 'Yo llamé' },
-      { q: '¿Le pidieron OTP, PIN o contraseña?', safe: 'Sí', unsafe: 'No' },
-      { q: '¿Le presionan para actuar AHORA MISMO?', safe: 'Sí', unsafe: 'No' },
-      { q: '¿Le dijeron que no contacte a su banco o familia?', safe: 'Sí', unsafe: 'No' },
-    ],
-    result_scam: 'Esto coincide con un fraude confirmado. NO continúe.',
-    result_safe: 'Proceda con precaución. Manténgase alerta.',
-  },
-  fr: {
-    title: 'DÉFI DE VÉRIFICATION',
-    question: 'Avant de continuer, répondez :',
-    challenges: [
-      { q: 'Avez-VOUS initié cet appel, ou vous a-t-on appelé ?', safe: 'On m\'a appelé', unsafe: 'J\'ai appelé' },
-      { q: 'Vous a-t-on demandé un OTP, PIN ou mot de passe ?', safe: 'Oui', unsafe: 'Non' },
-      { q: 'Vous presse-t-on d\'agir MAINTENANT ?', safe: 'Oui', unsafe: 'Non' },
-      { q: 'Vous a-t-on dit de ne pas contacter votre banque ?', safe: 'Oui', unsafe: 'Non' },
-    ],
-    result_scam: 'Cela correspond à un comportement frauduleux. Ne continuez PAS.',
-    result_safe: 'Continuez avec prudence. Restez vigilant.',
-  },
-  hi: {
-    title: 'सत्यापन चुनौती',
-    question: 'आगे बढ़ने से पहले जवाब दें:',
-    challenges: [
-      { q: 'क्या आपने कॉल किया या उन्होंने कॉल किया?', safe: 'उन्होंने कॉल किया', unsafe: 'मैंने कॉल किया' },
-      { q: 'क्या उन्होंने OTP, PIN या पासवर्ड माँगा?', safe: 'हाँ', unsafe: 'नहीं' },
-      { q: 'क्या वे अभी तुरंत कार्रवाई के लिए दबाव बना रहे हैं?', safe: 'हाँ', unsafe: 'नहीं' },
-      { q: 'क्या उन्होंने कहा कि बैंक या परिवार को न बताएं?', safe: 'हाँ', unsafe: 'नहीं' },
-    ],
-    result_scam: 'यह धोखाधड़ी के व्यवहार से मेल खाता है। आगे न बढ़ें।',
-    result_safe: 'सावधानी से आगे बढ़ें। सतर्क रहें।',
-  },
-  ar: {
-    title: 'تحدي التحقق',
-    question: 'قبل المتابعة، أجب على هذا:',
-    challenges: [
-      { q: 'هل أنت من بدأ المكالمة أم هم من اتصلوا بك؟', safe: 'هم من اتصلوا', unsafe: 'أنا من اتصلت' },
-      { q: 'هل طلبوا منك رمز OTP أو كلمة المرور؟', safe: 'نعم', unsafe: 'لا' },
-      { q: 'هل يضغطون عليك للتصرف الآن؟', safe: 'نعم', unsafe: 'لا' },
-      { q: 'هل قالوا لك لا تتصل بالبنك أو العائلة؟', safe: 'نعم', unsafe: 'لا' },
-    ],
-    result_scam: 'هذا يتطابق مع سلوك احتيالي مؤكد. لا تتابع.',
-    result_safe: 'تابع بحذر. ابق متيقظاً.',
-  },
 }
 
 // Safe exit actions — what to show when intervention fires
@@ -288,13 +379,10 @@ export const SAFE_EXIT_ACTIONS = {
   ],
 }
 
-// Helper to get intervention text for a language
-export function getInterventionForLang(langCode) {
+// Helper to get safe exit actions for a language
+export function getSafeExitForLang(langCode) {
   const base = langCode?.split('-')[0] || 'en'
-  return {
-    challenges: VERIFICATION_CHALLENGES[base] || VERIFICATION_CHALLENGES['en'],
-    safeExits: SAFE_EXIT_ACTIONS[base] || SAFE_EXIT_ACTIONS['en'],
-  }
+  return SAFE_EXIT_ACTIONS[base] || SAFE_EXIT_ACTIONS['en']
 }
 
 // Check if a pattern name should trigger instant intervention
@@ -306,7 +394,6 @@ export function isInstantInterventionPattern(patternName) {
 
 // Get intervention level from threat score
 export function getInterventionLevel(threatScore, latestAlert) {
-  // Instant intervention for dangerous patterns regardless of score
   if (latestAlert && isInstantInterventionPattern(latestAlert.pattern)) {
     return INTERVENTION_LEVELS.BLOCK
   }
@@ -316,141 +403,27 @@ export function getInterventionLevel(threatScore, latestAlert) {
   return null
 }
 
-// ── Recommended Actions per Language/Country — ALL IN LOCAL LANGUAGE ──
-export const RECOMMENDED_ACTIONS = {
-  en: {
-    country: 'United States',
-    actions: [
-      { icon:'🚫', text:'Do NOT transfer money, gift cards, or cryptocurrency to anyone', priority:'critical' },
-      { icon:'📞', text:'Hang up immediately — do not engage further with the caller', priority:'critical' },
-      { icon:'🏦', text:'Contact your bank\'s official fraud hotline (number on back of your card)', priority:'high' },
-      { icon:'📋', text:'Report to FTC: reportfraud.ftc.gov', link:'https://reportfraud.ftc.gov', priority:'high' },
-      { icon:'🔍', text:'File FBI IC3 complaint: ic3.gov', link:'https://ic3.gov', priority:'high' },
-      { icon:'📱', text:'Enable two-factor authentication on all financial accounts', priority:'medium' },
-      { icon:'🔒', text:'Change passwords on any accounts you may have disclosed', priority:'high' },
-      { icon:'📝', text:'Document everything: save call logs, screenshots, messages', priority:'medium' },
-      { icon:'👥', text:'Alert family members — scammers often target multiple people', priority:'medium' },
-      { icon:'⚖️', text:'Contact your state Attorney General\'s consumer protection office', priority:'low' },
-    ]
-  },
-  id: {
-    country: 'Indonesia',
-    actions: [
-      { icon:'🚫', text:'JANGAN transfer uang, pulsa, atau kripto ke siapapun', priority:'critical' },
-      { icon:'📞', text:'Putuskan panggilan segera — jangan lanjutkan percakapan', priority:'critical' },
-      { icon:'🏦', text:'Hubungi hotline resmi bank Anda (cek nomor di belakang kartu ATM)', priority:'high' },
-      { icon:'📋', text:'Lapor ke OJK: 157 atau konsumen@ojk.go.id', link:'https://ojk.go.id', priority:'high' },
-      { icon:'🔍', text:'Lapor ke Kominfo: aduankonten.id', link:'https://aduankonten.id', priority:'high' },
-      { icon:'👮', text:'Lapor ke Bareskrim Polri: patrolisiber.id', link:'https://patrolisiber.id', priority:'high' },
-      { icon:'📱', text:'Aktifkan verifikasi 2 langkah di semua akun keuangan', priority:'medium' },
-      { icon:'🔒', text:'Ganti PIN dan password mobile banking segera', priority:'high' },
-      { icon:'📝', text:'Simpan semua bukti: screenshot, log panggilan, pesan', priority:'medium' },
-      { icon:'👥', text:'Peringatkan keluarga — penipu sering menargetkan banyak orang', priority:'medium' },
-    ]
-  },
-  'zh-CN': {
-    country: '中国',
-    actions: [
-      { icon:'🚫', text:'切勿向任何人转账、汇款或提供银行信息', priority:'critical' },
-      { icon:'📞', text:'立即挂断电话 — 不要继续与来电者交流', priority:'critical' },
-      { icon:'🏦', text:'联系银行官方客服热线', priority:'high' },
-      { icon:'📋', text:'拨打反诈热线 96110 报警', priority:'high' },
-      { icon:'🔍', text:'下载国家反诈中心APP进行举报', priority:'high' },
-      { icon:'👮', text:'向当地公安局报案', priority:'high' },
-      { icon:'📱', text:'开启银行账户交易提醒和二次验证', priority:'medium' },
-      { icon:'🔒', text:'立即修改网银密码和支付密码', priority:'high' },
-      { icon:'📝', text:'保留所有证据：通话记录、截图、转账记录', priority:'medium' },
-      { icon:'👥', text:'提醒家人朋友注意防范', priority:'medium' },
-    ]
-  },
-  zh: {
-    country: '中国',
-    actions: [
-      { icon:'🚫', text:'切勿向任何人转账、汇款或提供银行信息', priority:'critical' },
-      { icon:'📞', text:'立即挂断电话', priority:'critical' },
-      { icon:'📋', text:'拨打反诈热线 96110 报警', priority:'high' },
-      { icon:'🔍', text:'下载国家反诈中心APP进行举报', priority:'high' },
-      { icon:'👮', text:'向当地公安局报案', priority:'high' },
-      { icon:'🔒', text:'立即修改网银密码和支付密码', priority:'high' },
-    ]
-  },
-  ja: {
-    country: '日本',
-    actions: [
-      { icon:'🚫', text:'絶対にお金を振り込まない・渡さない', priority:'critical' },
-      { icon:'📞', text:'すぐに電話を切る — これ以上会話しない', priority:'critical' },
-      { icon:'🏦', text:'銀行の公式相談窓口に連絡', priority:'high' },
-      { icon:'📋', text:'警察相談 #9110 に電話', priority:'high' },
-      { icon:'🔍', text:'消費者ホットライン 188 に相談', priority:'high' },
-      { icon:'👮', text:'最寄りの警察署に被害届を提出', priority:'high' },
-      { icon:'📱', text:'全ての金融口座で二段階認証を有効化', priority:'medium' },
-      { icon:'🔒', text:'暗証番号・パスワードを直ちに変更', priority:'high' },
-    ]
-  },
-  ko: {
-    country: '대한민국',
-    actions: [
-      { icon:'🚫', text:'절대 송금하거나 개인정보를 제공하지 마세요', priority:'critical' },
-      { icon:'📞', text:'즉시 전화를 끊으세요', priority:'critical' },
-      { icon:'🏦', text:'은행 공식 콜센터에 연락하세요', priority:'high' },
-      { icon:'📋', text:'금융감독원 1332에 신고하세요', priority:'high' },
-      { icon:'🔍', text:'경찰청 사이버수사대 182에 신고하세요', priority:'high' },
-      { icon:'📱', text:'모든 금융계좌 2단계 인증을 활성화하세요', priority:'medium' },
-      { icon:'🔒', text:'비밀번호를 즉시 변경하세요', priority:'high' },
-    ]
-  },
-  es: {
-    country: 'España',
-    actions: [
-      { icon:'🚫', text:'NO transfiera dinero ni proporcione datos personales a nadie', priority:'critical' },
-      { icon:'📞', text:'Cuelgue inmediatamente — no continúe la conversación', priority:'critical' },
-      { icon:'🏦', text:'Contacte la línea de fraude oficial de su banco', priority:'high' },
-      { icon:'📋', text:'Denuncie a la Policía Nacional: 091', priority:'high' },
-      { icon:'🔍', text:'Reporte en INCIBE: incibe.es', link:'https://incibe.es', priority:'high' },
-      { icon:'📱', text:'Active la verificación en dos pasos en todas sus cuentas', priority:'medium' },
-      { icon:'🔒', text:'Cambie sus contraseñas inmediatamente', priority:'high' },
-      { icon:'📝', text:'Guarde todas las pruebas: capturas, registros de llamadas', priority:'medium' },
-    ]
-  },
-  fr: {
-    country: 'France',
-    actions: [
-      { icon:'🚫', text:'Ne transférez PAS d\'argent et ne communiquez aucune donnée personnelle', priority:'critical' },
-      { icon:'📞', text:'Raccrochez immédiatement — ne poursuivez pas la conversation', priority:'critical' },
-      { icon:'🏦', text:'Contactez votre banque via le numéro officiel', priority:'high' },
-      { icon:'📋', text:'Signalez sur Pharos: internet-signalement.gouv.fr', priority:'high' },
-      { icon:'🔍', text:'Appelez Info Escroqueries: 0 805 805 817 (gratuit)', priority:'high' },
-      { icon:'📱', text:'Activez l\'authentification à deux facteurs sur tous vos comptes', priority:'medium' },
-      { icon:'🔒', text:'Changez vos mots de passe immédiatement', priority:'high' },
-    ]
-  },
-  hi: {
-    country: 'भारत (India)',
-    actions: [
-      { icon:'🚫', text:'किसी को भी पैसे ट्रांसफर न करें या OTP न बताएं', priority:'critical' },
-      { icon:'📞', text:'तुरंत कॉल काट दें — बातचीत जारी न रखें', priority:'critical' },
-      { icon:'🏦', text:'अपने बैंक की आधिकारिक हेल्पलाइन पर कॉल करें', priority:'high' },
-      { icon:'📋', text:'साइबर क्राइम हेल्पलाइन 1930 पर रिपोर्ट करें', priority:'high' },
-      { icon:'🔍', text:'cybercrime.gov.in पर शिकायत दर्ज करें', link:'https://cybercrime.gov.in', priority:'high' },
-      { icon:'📱', text:'सभी वित्तीय खातों पर 2FA सक्रिय करें', priority:'medium' },
-      { icon:'🔒', text:'UPI PIN और बैंकिंग पासवर्ड तुरंत बदलें', priority:'high' },
-    ]
-  },
-  ar: {
-    country: 'الشرق الأوسط',
-    actions: [
-      { icon:'🚫', text:'لا تحول أي أموال أو تشارك بياناتك المصرفية مع أي شخص', priority:'critical' },
-      { icon:'📞', text:'أغلق المكالمة فوراً — لا تستمر في الحديث', priority:'critical' },
-      { icon:'🏦', text:'اتصل بالخط الساخن الرسمي لبنكك', priority:'high' },
-      { icon:'📋', text:'أبلغ الجهات المختصة في بلدك', priority:'high' },
-      { icon:'📱', text:'فعّل التحقق بخطوتين على جميع حساباتك المالية', priority:'medium' },
-      { icon:'🔒', text:'غيّر كلمات المرور فوراً', priority:'high' },
-      { icon:'📝', text:'احتفظ بجميع الأدلة: لقطات الشاشة وسجلات المكالمات', priority:'medium' },
-    ]
-  },
+// ── LEGACY COMPAT — keep old exports working ──
+export function getInterventionForLang(langCode) {
+  return {
+    challenges: getChallengeForScenario('generic', langCode),
+    safeExits: getSafeExitForLang(langCode),
+  }
 }
 
-// Helper to get actions for a language code
+// ── Recommended Actions per Language/Country ──
+export const RECOMMENDED_ACTIONS = {
+  en: { country:'United States', actions:[{icon:'🚫',text:'Do NOT transfer money, gift cards, or cryptocurrency to anyone',priority:'critical'},{icon:'📞',text:'Hang up immediately — do not engage further with the caller',priority:'critical'},{icon:'🏦',text:'Contact your bank\'s official fraud hotline (number on back of your card)',priority:'high'},{icon:'📋',text:'Report to FTC: reportfraud.ftc.gov',link:'https://reportfraud.ftc.gov',priority:'high'},{icon:'🔍',text:'File FBI IC3 complaint: ic3.gov',link:'https://ic3.gov',priority:'high'},{icon:'📱',text:'Enable two-factor authentication on all financial accounts',priority:'medium'},{icon:'🔒',text:'Change passwords on any accounts you may have disclosed',priority:'high'},{icon:'📝',text:'Document everything: save call logs, screenshots, messages',priority:'medium'},{icon:'👥',text:'Alert family members — scammers often target multiple people',priority:'medium'},{icon:'⚖️',text:'Contact your state Attorney General\'s consumer protection office',priority:'low'}] },
+  id: { country:'Indonesia', actions:[{icon:'🚫',text:'JANGAN transfer uang, pulsa, atau kripto ke siapapun',priority:'critical'},{icon:'📞',text:'Putuskan panggilan segera',priority:'critical'},{icon:'🏦',text:'Hubungi hotline resmi bank (cek di belakang kartu ATM)',priority:'high'},{icon:'📋',text:'Lapor ke OJK: 157',link:'https://ojk.go.id',priority:'high'},{icon:'🔍',text:'Lapor ke Kominfo: aduankonten.id',link:'https://aduankonten.id',priority:'high'},{icon:'👮',text:'Lapor ke Bareskrim: patrolisiber.id',link:'https://patrolisiber.id',priority:'high'},{icon:'📱',text:'Aktifkan verifikasi 2 langkah',priority:'medium'},{icon:'🔒',text:'Ganti PIN dan password mobile banking',priority:'high'},{icon:'📝',text:'Simpan semua bukti',priority:'medium'},{icon:'👥',text:'Peringatkan keluarga',priority:'medium'}] },
+  zh: { country:'中国', actions:[{icon:'🚫',text:'切勿转账或提供银行信息',priority:'critical'},{icon:'📞',text:'立即挂断电话',priority:'critical'},{icon:'📋',text:'拨打反诈热线 96110',priority:'high'},{icon:'🔍',text:'下载国家反诈中心APP',priority:'high'},{icon:'👮',text:'向当地公安局报案',priority:'high'},{icon:'🔒',text:'修改网银密码',priority:'high'}] },
+  ja: { country:'日本', actions:[{icon:'🚫',text:'絶対にお金を振り込まない',priority:'critical'},{icon:'📞',text:'すぐに電話を切る',priority:'critical'},{icon:'🏦',text:'銀行の公式窓口に連絡',priority:'high'},{icon:'📋',text:'警察相談 #9110',priority:'high'},{icon:'🔍',text:'消費者ホットライン 188',priority:'high'},{icon:'👮',text:'最寄りの警察署に届出',priority:'high'},{icon:'📱',text:'二段階認証を有効化',priority:'medium'},{icon:'🔒',text:'暗証番号を変更',priority:'high'}] },
+  ko: { country:'대한민국', actions:[{icon:'🚫',text:'절대 송금하지 마세요',priority:'critical'},{icon:'📞',text:'즉시 전화를 끊으세요',priority:'critical'},{icon:'🏦',text:'은행 공식 콜센터에 연락',priority:'high'},{icon:'📋',text:'금융감독원 1332 신고',priority:'high'},{icon:'🔍',text:'경찰청 182 신고',priority:'high'},{icon:'📱',text:'2단계 인증 활성화',priority:'medium'},{icon:'🔒',text:'비밀번호 변경',priority:'high'}] },
+  es: { country:'España', actions:[{icon:'🚫',text:'NO transfiera dinero ni datos personales',priority:'critical'},{icon:'📞',text:'Cuelgue inmediatamente',priority:'critical'},{icon:'🏦',text:'Contacte la línea de fraude de su banco',priority:'high'},{icon:'📋',text:'Denuncie: Policía Nacional 091',priority:'high'},{icon:'🔍',text:'Reporte en INCIBE: incibe.es',link:'https://incibe.es',priority:'high'},{icon:'📱',text:'Active verificación en dos pasos',priority:'medium'},{icon:'🔒',text:'Cambie contraseñas',priority:'high'}] },
+  fr: { country:'France', actions:[{icon:'🚫',text:'Ne transférez PAS d\'argent',priority:'critical'},{icon:'📞',text:'Raccrochez immédiatement',priority:'critical'},{icon:'🏦',text:'Contactez votre banque via le numéro officiel',priority:'high'},{icon:'📋',text:'Signalez sur Pharos',priority:'high'},{icon:'🔍',text:'Info Escroqueries: 0 805 805 817',priority:'high'},{icon:'📱',text:'Activez l\'authentification 2FA',priority:'medium'},{icon:'🔒',text:'Changez vos mots de passe',priority:'high'}] },
+  hi: { country:'भारत', actions:[{icon:'🚫',text:'पैसे ट्रांसफर न करें या OTP न बताएं',priority:'critical'},{icon:'📞',text:'तुरंत कॉल काटें',priority:'critical'},{icon:'🏦',text:'बैंक की आधिकारिक हेल्पलाइन पर कॉल करें',priority:'high'},{icon:'📋',text:'साइबर क्राइम हेल्पलाइन 1930',priority:'high'},{icon:'🔍',text:'cybercrime.gov.in पर शिकायत',link:'https://cybercrime.gov.in',priority:'high'},{icon:'📱',text:'2FA सक्रिय करें',priority:'medium'},{icon:'🔒',text:'UPI PIN और पासवर्ड बदलें',priority:'high'}] },
+  ar: { country:'الشرق الأوسط', actions:[{icon:'🚫',text:'لا تحول أي أموال',priority:'critical'},{icon:'📞',text:'أغلق المكالمة فوراً',priority:'critical'},{icon:'🏦',text:'اتصل بالخط الساخن لبنكك',priority:'high'},{icon:'📋',text:'أبلغ الجهات المختصة',priority:'high'},{icon:'📱',text:'فعّل التحقق بخطوتين',priority:'medium'},{icon:'🔒',text:'غيّر كلمات المرور',priority:'high'},{icon:'📝',text:'احتفظ بالأدلة',priority:'medium'}] },
+}
+
 export function getActionsForLang(langCode) {
   if (RECOMMENDED_ACTIONS[langCode]) return RECOMMENDED_ACTIONS[langCode]
   const base = langCode.split('-')[0]

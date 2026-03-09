@@ -83,7 +83,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 | Pre-call blocking | Yes | Yes | Yes | Yes |
 | During-call analysis | No | No | No | **Yes (First)** |
 | **Live intervention (blocks fatal actions)** | No | No | No | **Yes (First)** |
-| **Verification challenge during call** | No | No | No | **Yes (First)** |
+| **Scenario-based verification challenge** | No | No | No | **Yes (First)** |
 | **Auto-disconnect countdown** | No | No | No | **Yes (First)** |
 | Multimodal (audio + vision) | No | No | No | **Yes (First)** |
 | 2-way transcript (ME + CALLER) | No | No | No | **Yes (First)** |
@@ -93,7 +93,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 | Lie detection analysis | No | No | No | **Yes (First)** |
 | User vulnerability scoring | No | No | No | **Yes (First)** |
 | Multi-language support | Partial | Partial | SG only | Yes, 40+ languages |
-| Per-country recommended actions | No | No | No | **Yes (8 countries)** |
+| Per-country recommended actions | No | No | No | **Yes (9 countries)** |
 | **Intervention history in forensic reports** | No | No | No | **Yes (First)** |
 | Session gallery with playback | No | No | No | **Yes** |
 | Forensic export (PDF + HTML) | No | No | No | **Yes** |
@@ -108,7 +108,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 <img src="docs/svgs/intervention.svg" alt="Live Scam Intervention Demo" width="100%"/>
 </div>
 
-No other tool does this. That’s what sets VoxGuard apart.
+No other tool does this. That's what sets VoxGuard apart.
 
 When VoxGuard's threat engine determines you are about to take a fatal action, the system **does not wait for you to check a dashboard**. It takes over your screen and forces a decision point.
 
@@ -116,31 +116,61 @@ When VoxGuard's threat engine determines you are about to take a fatal action, t
 
 | Level | Trigger | What Happens |
 |-------|---------|-------------|
-| **⚠️ WARN** | Threat score crosses 55, or a high-risk manipulation pattern is detected | Amber warning banner appears with safe exit suggestions. Speech synthesis pauses. |
-| **🛑 BLOCK** | Threat score crosses 75, or the caller requests OTP / account credentials / gift cards / crypto transfer | Full-screen red overlay. Verification challenge forces you to answer questions that expose the scam. Safe exit actions are displayed. You must actively choose to continue. |
-| **🚨 LOCKDOWN** | Threat score crosses 90. Confirmed scam with maximum confidence. | Full-screen red lockdown with a 30-second auto-disconnect countdown. The only action available is ending the call safely. If you do not respond, VoxGuard ends the session for you. |
+| **⚠️ WARN** | Threat score crosses 55, or a high-risk manipulation pattern is detected | Amber warning banner. Verify Caller + Safe Exit + Continue With Caution. Speech pauses. |
+| **🛑 BLOCK** | Threat score crosses 75, or the caller requests OTP / account credentials / gift cards / crypto transfer | Full-screen red overlay. **Fatal patterns (OTP/transfer/crypto): Safe Exit only.** Verifiable patterns (impersonation): Verification Challenge + Safe Exit. |
+| **🚨 LOCKDOWN** | Threat score crosses 90. Confirmed scam with maximum confidence. | Full-screen red lockdown with 30-second auto-disconnect countdown. Safe Exit only. No challenge — too dangerous. |
 
 ### Instant Intervention
 
 Some patterns are so dangerous that VoxGuard does not wait for the threat score to accumulate. These high-lethality patterns trigger an immediate BLOCK-level intervention the moment they are detected, regardless of cumulative score:
 
-- **OTP / Credential Extraction** ("Read me the code", "Confirm your PIN")
-- **Safe Account Transfer** ("Transfer your funds to this protection account")
-- **Gift Card Demand** ("Purchase prepaid cards and read me the numbers")
-- **Crypto Transfer Scam** ("Send Bitcoin to this wallet address")
+- **OTP / Credential Extraction** ("Read me the code", "Confirm your PIN") → **Safe Exit only**
+- **Safe Account Transfer** ("Transfer your funds to this protection account") → **Safe Exit only**
+- **Gift Card Demand** ("Purchase prepaid cards and read me the numbers") → **Safe Exit only**
+- **Crypto Transfer Scam** ("Send Bitcoin to this wallet address") → **Safe Exit only**
+
+These fatal patterns skip the Verification Challenge entirely — when someone is actively extracting your credentials, the only safe action is to disconnect.
 
 This works across all supported languages. If the caller asks for your OTP in Indonesian, Chinese, Japanese, Korean, Spanish, French, Hindi, or Arabic, VoxGuard blocks it instantly.
 
-### Verification Challenge
+### Scenario-Based Verification Challenge
 
-When a BLOCK-level intervention fires, the user can take a **Verification Challenge**. This is a set of simple yes/no questions, fully localized in the user's language, designed so that answering honestly about the call reveals scam behavior patterns:
+When a non-fatal WARN or BLOCK-level intervention fires (e.g., impersonation, fake support, government scare), the user can take a **Verification Challenge**. Unlike generic questionnaires, VoxGuard's challenges are **contextual to the detected scam type**:
 
-- "Did YOU initiate this call, or did they call you?"
-- "Has this caller asked for your OTP, PIN, or password?"
-- "Are they pressuring you to act RIGHT NOW?"
-- "Did they tell you NOT to contact your bank or family?"
+**Bank Impersonation** (2-3 questions):
+- "Did this caller contact you first, or did you call them?"
+- "Are they asking you to share your OTP, PIN, or password?"
+- "Did they tell you NOT to call your bank directly?"
 
-If the user's answers match scam indicators, VoxGuard confirms the scam and recommends immediate disconnection. If the answers suggest lower risk, VoxGuard allows the user to continue with a caution notice.
+**Government Impersonation** (2 questions):
+- "Is this caller threatening arrest or legal action if you don't pay now?"
+- "Are they demanding payment via gift cards, crypto, or wire transfer?"
+
+**Tech Support Impersonation** (3 questions):
+- "Did this caller contact you first about a 'virus' or 'security issue'?"
+- "Are they asking you to install remote access software?"
+- "Are they rushing you to act immediately?"
+
+Each scenario includes 7 supported scam types (bank, government, tech support, investment, family impersonation, prize/lottery, urgency) with a generic fallback for unknown patterns.
+
+After the user answers, VoxGuard provides a clear result:
+- **⚠ LIKELY SCAM** → recommends immediate disconnection
+- **⚡ EXERCISE CAUTION** → offers "I Will Verify Through Official Channel" action with specific guidance (e.g., "Call the number on the BACK of your bank card")
+
+Challenges are fully localized in 9 languages (EN, ID, ZH, JA, KO, ES, FR, HI, AR).
+
+### Safe Exit — End Call
+
+The **End Call — Safe Exit** button is the primary protective action. When pressed:
+
+1. **Speech synthesis stops** immediately
+2. **Demo/call playback halts** completely
+3. **Detection stream terminates**
+4. **Session status changes** to terminated
+5. **App switches to the REPORT tab** automatically
+6. **Forensic report displays** with full session data, intervention history, and export options
+
+This ensures the user experiences a clear, decisive break from the scam call — not just a UI dismiss.
 
 ### Safe Exit Actions
 
@@ -157,7 +187,7 @@ These are available in English, Indonesian, Chinese, Japanese, Korean, Spanish, 
 
 Scammers succeed because they keep victims in a state of panic that prevents rational thinking. The caller creates urgency ("your account will be frozen in 10 minutes"), establishes false authority ("I am calling from the fraud department"), and demands isolation ("do not contact your bank directly").
 
-The intervention overlay physically breaks that panic loop. It pauses the conversation. It forces a moment of reflection. The verification challenge makes the victim confront the reality of what is happening. And if the victim is too far gone to respond, the 30-second lockdown countdown ends the call automatically.
+The intervention overlay physically breaks that panic loop. It pauses the conversation. It forces a moment of reflection. The scenario-based verification challenge makes the victim confront the reality of what is happening with questions specific to the scam type they are experiencing. And if the victim is too far gone to respond, the 30-second lockdown countdown ends the call automatically.
 
 No other scam detection tool does this. Every other system either blocks calls before they connect (which misses new numbers) or sends a passive notification after the call ends (which is too late). VoxGuard is the first system that intervenes **during** the critical moment when the victim is about to hand over their money.
 
@@ -214,7 +244,7 @@ All patterns grounded to published sources: FTC Consumer Sentinel, FBI IC3 2024,
 ### 5. 🧠 Psychological Manipulation Scoring
 
 <div align="center">
-<img src="docs/svgs/psych_vectors.svg" alt="Psychological Vectors" width="260"/>
+<img src="docs/svgs/psych-vectors.svg" alt="Psychological Vectors" width="260"/>
 </div>
 
 The **only scam detection system in the world** that maps psychological manipulation vectors in real-time using three analytical frameworks:
@@ -276,7 +306,7 @@ Every session generates a complete forensic report with:
 
 ### 9. 🌍 Multi-Language Support (40+ Languages)
 
-Gemini Live API supports 40+ languages natively. VoxGuard includes region-specific scam patterns, localized alerts, **localized intervention UI, verification challenges, and safe exit actions**.
+Gemini Live API supports 40+ languages natively. VoxGuard includes region-specific scam patterns, localized alerts, **localized intervention UI, scenario-based verification challenges, and safe exit actions**.
 
 #### Fully Native Support (demo scripts + localized alerts + intervention):
 
@@ -296,7 +326,7 @@ Gemini Live API supports 40+ languages natively. VoxGuard includes region-specif
 
 Malay 🇲🇾, Filipino 🇵🇭, Thai 🇹🇭, Vietnamese 🇻🇳, German 🇩🇪, Italian 🇮🇹, Dutch 🇳🇱, Turkish 🇹🇷, Polish 🇵🇱, Russian 🇷🇺, Ukrainian 🇺🇦, Romanian 🇷🇴, Czech 🇨🇿, Hungarian 🇭🇺, Swedish 🇸🇪, Danish 🇩🇰, Finnish 🇫🇮, Greek 🇬🇷, Hebrew 🇮🇱, Persian 🇮🇷, Bengali 🇧🇩, Urdu 🇵🇰, Tamil 🇱🇰, Swahili 🇰🇪, Amharic 🇪🇹, Yoruba 🇳🇬, Hausa 🇳🇬, Afrikaans 🇿🇦, Norwegian 🇳🇴, Portuguese 🇧🇷
 
-> ⚠️ English fallback languages show a yellow notice in the app. Full native support requires Google Cloud TTS backend.
+> ⚠️ English fallback languages show a yellow notice in the app. Full native support planned for future release.
 
 ### 10. 📱 Responsive Design
 
@@ -371,6 +401,7 @@ voxguard/
 │   ├── intervention.svg                   # Animated intervention tiers (WARN/BLOCK/LOCKDOWN)
 │   ├── threat-demo.svg                    # Threat score gauge demo graphic
 │   ├── psych-vectors.svg                  # Psychological vector bar chart
+│   ├── lie-detection.svg                  # Lie detection indicator chart
 │   └── audio-stream.svg                   # Animated audio waveform graphic
 │
 ├── scripts/
@@ -430,15 +461,19 @@ uvicorn app.main:app --reload --port 8000
 Three pre-loaded scripts for Demo Mode (no microphone needed):
 
 **Script A: Bank Impersonation (Critical)**
-> *"Hello, I'm calling from Chase Bank fraud prevention. We've detected suspicious activity on your account. Your account will be frozen in 10 minutes unless you verify your identity. Please provide your account number and the OTP."*
+> *"Hello, I'm calling from your bank's fraud prevention department. We've detected suspicious activity on your account. Your account will be frozen in 10 minutes unless you verify your identity. Please provide your account number and the OTP."*
 >
-> **Intervention trigger:** When the caller asks for OTP, a BLOCK-level intervention fires instantly.
+> **Intervention trigger:** When the caller asks for OTP, a BLOCK-level intervention fires instantly — Safe Exit only (fatal pattern).
 
-**Script B: Investment Scam (Critical)**
-> *"This is a guaranteed investment opportunity: 300% returns in 30 days, zero risk. To lock in your position before it expires in 10 minutes, I need you to transfer $500 immediately. Don't tell your family."*
+**Script B: Tech Support Scam (High)**
+> *"Your computer has been compromised. I'm calling from the Security Center. You must install our remote access tool immediately or we cannot protect your credit cards."*
+>
+> **Intervention trigger:** WARN fires on impersonation detection. User can Verify Caller or Safe Exit.
 
-**Script C: Tech Support Scam (High)**
-> *"Your computer has been compromised. I'm calling from Microsoft Security Center. You must install our remote access tool immediately or we cannot protect your credit cards."*
+**Script C: Government / Tax Scam (Critical)**
+> *"This is an officer from the tax enforcement division. A warrant has been issued for your arrest. Settle this balance right now or face arrest. Purchase prepaid debit cards and read me the card numbers."*
+>
+> **Intervention trigger:** Gift Card Demand fires instant BLOCK — Safe Exit only (fatal pattern).
 
 ---
 
@@ -448,7 +483,7 @@ Three pre-loaded scripts for Demo Mode (no microphone needed):
 
 VoxGuard has no text box. The user never types. The interface is entirely driven by audio (microphone stream via Rust WASM to Gemini Live API), vision (screen capture to Gemini Vision API), and inference (psychological vector scoring via Gemini Text). The interaction is **ambient**: the AI listens and watches while the user is on their call.
 
-The **Live Scam Intervention** system is entirely new. No existing scam detection product actively blocks the user from completing a dangerous action during a live call. VoxGuard's three-tier escalation (WARN, BLOCK, LOCKDOWN) with verification challenges and auto-disconnect represents a fundamental shift from passive detection to active protection.
+The **Live Scam Intervention** system is entirely new. No existing scam detection product actively blocks the user from completing a dangerous action during a live call. VoxGuard's three-tier escalation (WARN, BLOCK, LOCKDOWN) with scenario-based verification challenges and auto-disconnect represents a fundamental shift from passive detection to active protection.
 
 ### Technical Implementation (30%)
 
@@ -457,7 +492,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 - **Rust WASM:** Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency
 - **Cloud Run:** Fully containerized, auto-scaling, health check endpoints
 - **Grounding:** Reasoning against 50+ verified patterns with zero hallucination
-- **Intervention Engine:** Backend evaluates every alert for intervention eligibility, emitting `intervention` events via WebSocket. Frontend renders the overlay and sends `intervention_response` back. The full loop is tracked in session state.
+- **Intervention Engine:** Backend evaluates every alert for intervention eligibility, emitting `intervention` events via WebSocket. Frontend renders the overlay with scenario-appropriate UI and sends `intervention_response` back. The full loop is tracked in session state.
 - **Psych Analyzer:** Single Gemini call returns both Cialdini scores and lie detection indicators, plus an intervention recommendation
 
 ### Demo and Presentation (30%)
@@ -470,7 +505,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 ## ⚠️ Limitations
 
 - **Demo Mode on Vercel:** The live demo runs with simulated 2-way dialog and TTS alerts. Full real-time analysis requires a running backend with a valid Gemini API key.
-- **Browser Speech Synthesis:** Demo voice quality varies by browser/OS. A MUTE button + volume slider are available. Production uses Gemini Live API for natural voices.
+- **Browser Speech Synthesis:** Demo voice quality varies by browser/OS. A MUTE button + volume slider are available.
 - **English fallback:** 30+ languages use English voice and alerts in demo. 9 languages have full native support (EN, ID, ZH, JA, KO, ES, FR, HI, AR).
 - **Browser-only:** No native mobile or desktop clients yet.
 - **Latency depends on network:** <80ms measured locally; 100-300ms over public internet with Cloud Run.
@@ -488,7 +523,6 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 - **Enterprise API:** Hosted API for banks, telcos, and contact centers.
 - **Real-time video deepfake detection:** Detect AI-generated video in video call scams.
 - **Auto-detect call platform:** Automatically identify if user is on phone, Zoom, WhatsApp, or Teams.
-- **Natural voice TTS:** Google Cloud TTS / ElevenLabs for natural demo voices across all 40+ languages.
 - **Emotional contagion scoring:** Measure how the caller's emotional state transfers to the victim.
 - **Intervention learning:** Track which intervention levels and challenge questions are most effective at stopping victims from complying with scammers, and adapt the system over time.
 - **Full native support for 40+ languages:** Extend localized demo scripts, alerts, and intervention UI beyond the current 9 languages.
