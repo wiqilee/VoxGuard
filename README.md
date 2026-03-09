@@ -43,7 +43,7 @@ Gemini Live API + Rust WASM + Psychological AI = Protection in <80ms.
 
 | Tab | What It Demonstrates |
 |-----|---------------------|
-| **MONITOR** | 2-way dialog (ME + CALLER), 3D waveform, <80ms alerts, caller HUD, **live intervention overlay** |
+| **MONITOR** | 2-way dialog (ME + CALLER), waveform, <80ms alerts, caller HUD, **live intervention overlay** |
 | **PSYCH** | 6 Cialdini vectors + 5 lie detection indicators + user vulnerability (world first) |
 | **PATTERNS** | 50+ grounded patterns with fullscreen detail view + interpretation |
 | **REPORT** | Full transcript, **intervention history**, forensic export (PDF + HTML), session gallery |
@@ -80,7 +80,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 
 | Feature | Truecaller | Hiya | ScamShield (SG) | **VoxGuard** |
 |---|---|---|---|---|
-| Pre-call blocking | Yes | Yes | Yes | Yes |
+| Pre-call blocking | Yes | Yes | Yes | No (by design) |
 | During-call analysis | No | No | No | **Yes (First)** |
 | **Live intervention (blocks fatal actions)** | No | No | No | **Yes (First)** |
 | **Scenario-based verification challenge** | No | No | No | **Yes (First)** |
@@ -118,7 +118,7 @@ When VoxGuard's threat engine determines you are about to take a fatal action, t
 |-------|---------|-------------|
 | **⚠️ WARN** | Threat score crosses 55, or a high-risk manipulation pattern is detected | Amber warning banner. Verify Caller + Safe Exit + Continue With Caution. Speech pauses. |
 | **🛑 BLOCK** | Threat score crosses 75, or the caller requests OTP / account credentials / gift cards / crypto transfer | Full-screen red overlay. **Fatal patterns (OTP/transfer/crypto): Safe Exit only.** Verifiable patterns (impersonation): Verification Challenge + Safe Exit. |
-| **🚨 LOCKDOWN** | Threat score crosses 90. Confirmed scam with maximum confidence. | Full-screen red lockdown with 30-second auto-disconnect countdown. Safe Exit only. No challenge — too dangerous. |
+| **🚨 LOCKDOWN** | Threat score crosses 90. Confirmed scam with maximum confidence. | Full-screen red lockdown with 30-second auto-disconnect countdown. Safe Exit only. No challenge - too dangerous. |
 
 ### Instant Intervention
 
@@ -129,7 +129,7 @@ Some patterns are so dangerous that VoxGuard does not wait for the threat score 
 - **Gift Card Demand** ("Purchase prepaid cards and read me the numbers") → **Safe Exit only**
 - **Crypto Transfer Scam** ("Send Bitcoin to this wallet address") → **Safe Exit only**
 
-These fatal patterns skip the Verification Challenge entirely — when someone is actively extracting your credentials, the only safe action is to disconnect.
+These fatal patterns skip the Verification Challenge entirely - when someone is actively extracting your credentials, the only safe action is to disconnect.
 
 This works across all supported languages. If the caller asks for your OTP in Indonesian, Chinese, Japanese, Korean, Spanish, French, Hindi, or Arabic, VoxGuard blocks it instantly.
 
@@ -159,9 +159,9 @@ After the user answers, VoxGuard provides a clear result:
 
 Challenges are fully localized in 9 languages (EN, ID, ZH, JA, KO, ES, FR, HI, AR).
 
-### Safe Exit — End Call
+### Safe Exit - End Call
 
-The **End Call — Safe Exit** button is the primary protective action. When pressed:
+The **End Call - Safe Exit** button is the primary protective action. When pressed:
 
 1. **Speech synthesis stops** immediately
 2. **Demo/call playback halts** completely
@@ -170,7 +170,7 @@ The **End Call — Safe Exit** button is the primary protective action. When pre
 5. **App switches to the REPORT tab** automatically
 6. **Forensic report displays** with full session data, intervention history, and export options
 
-This ensures the user experiences a clear, decisive break from the scam call — not just a UI dismiss.
+This ensures the user experiences a clear, decisive break from the scam call - not just a UI dismiss.
 
 ### Safe Exit Actions
 
@@ -463,7 +463,7 @@ Three pre-loaded scripts for Demo Mode (no microphone needed):
 **Script A: Bank Impersonation (Critical)**
 > *"Hello, I'm calling from your bank's fraud prevention department. We've detected suspicious activity on your account. Your account will be frozen in 10 minutes unless you verify your identity. Please provide your account number and the OTP."*
 >
-> **Intervention trigger:** When the caller asks for OTP, a BLOCK-level intervention fires instantly — Safe Exit only (fatal pattern).
+> **Intervention trigger:** When the caller asks for OTP, a BLOCK-level intervention fires instantly - Safe Exit only (fatal pattern).
 
 **Script B: Tech Support Scam (High)**
 > *"Your computer has been compromised. I'm calling from the Security Center. You must install our remote access tool immediately or we cannot protect your credit cards."*
@@ -473,7 +473,7 @@ Three pre-loaded scripts for Demo Mode (no microphone needed):
 **Script C: Government / Tax Scam (Critical)**
 > *"This is an officer from the tax enforcement division. A warrant has been issued for your arrest. Settle this balance right now or face arrest. Purchase prepaid debit cards and read me the card numbers."*
 >
-> **Intervention trigger:** Gift Card Demand fires instant BLOCK — Safe Exit only (fatal pattern).
+> **Intervention trigger:** Gift Card Demand fires instant BLOCK - Safe Exit only (fatal pattern).
 
 ---
 
