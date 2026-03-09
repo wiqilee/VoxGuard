@@ -553,7 +553,8 @@ Submitted to: **Gemini Live Agent Challenge 2026** `#GeminiLiveAgentChallenge`
 
 | Source | URL | Usage |
 |--------|-----|-------|
-| FBI IC3 2024 Annual Report | [ic3.gov/AnnualReport](https://ic3.gov/AnnualReport) | Statistics ($16.6B), scam categories |
+| FBI IC3 2024 Annual Report | [ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf](https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf) | Statistics ($16.6B), scam categories |
+| FBI IC3 Annual Reports Index | [ic3.gov/annualreport/reports](https://www.ic3.gov/annualreport/reports) | All yearly reports archive |
 | FTC Consumer Sentinel | [ftc.gov/enforcement](https://ftc.gov/enforcement/consumer-sentinel-network) | Pattern taxonomy, linguistic markers |
 | GASA Global Scam Report | [gasa.org](https://gasa.org) | Global $1T+ loss estimates |
 | MAS ScamShield (SG) | [scamshield.org.sg](https://scamshield.org.sg) | Southeast Asian variants |
