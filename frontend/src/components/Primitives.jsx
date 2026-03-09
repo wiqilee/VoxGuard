@@ -40,6 +40,11 @@ export function PBtn({ children, onClick, color = '#00d4ff', danger = false, dis
   const [pressed, setPressed] = useState(false)
   const c = disabled ? 'rgba(255,255,255,0.15)' : danger ? '#ff2d55' : color
 
+  // Hover text: brighten the color instead of going full white
+  // This keeps red buttons readable and all buttons on-brand
+  const hoverTextColor = disabled ? c : '#fff'
+  const idleTextColor = c
+
   return (
     <button
       onClick={disabled ? undefined : onClick}
@@ -50,14 +55,21 @@ export function PBtn({ children, onClick, color = '#00d4ff', danger = false, dis
       style={{
         fontFamily: PF, fontSize: 8, letterSpacing: 2, padding: '12px 24px',
         border: `1px solid ${hov && !disabled ? c : c + '55'}`,
-        background: hov && !disabled ? `linear-gradient(135deg, ${c}28, ${c}0c)` : `linear-gradient(135deg, ${c}0e, transparent)`,
-        color: hov && !disabled ? '#fff' : c,
+        // Stronger fill on hover so white text has enough contrast
+        background: hov && !disabled
+          ? `linear-gradient(135deg, ${c}44, ${c}22)`
+          : `linear-gradient(135deg, ${c}0e, transparent)`,
+        color: hov && !disabled ? hoverTextColor : idleTextColor,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        boxShadow: hov && !disabled ? `0 0 24px ${c}55, 0 0 48px ${c}1a, inset 0 0 16px ${c}12` : `0 0 8px ${c}18`,
+        boxShadow: pressed
+          ? `0 0 12px ${c}33, inset 0 0 20px ${c}18`
+          : hov && !disabled
+            ? `0 0 24px ${c}55, 0 0 48px ${c}1a, inset 0 0 16px ${c}12`
+            : `0 0 8px ${c}18`,
         transform: pressed ? 'scale(0.96) translateY(1px)' : hov && !disabled ? 'translateY(-2px)' : 'none',
         transition: 'all 0.14s ease', textTransform: 'uppercase',
         position: 'relative', opacity: disabled ? 0.35 : 1, overflow: 'hidden',
-        textShadow: hov && !disabled ? `0 0 8px ${c}` : 'none',
+        textShadow: hov && !disabled ? `0 0 8px ${c}, 0 0 16px ${c}66` : 'none',
         ...style,
       }}
     >

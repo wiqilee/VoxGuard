@@ -16,7 +16,8 @@ def test_session_init():
 def test_no_scam_returns_none():
     engine = ThreatEngine()
     result = engine.ingest_audio_result({"is_scam": False})
-    assert result is None
+    assert result["alert"] is None
+    assert result["intervention"] is None
 
 
 def test_critical_scam_produces_alert():
@@ -29,9 +30,9 @@ def test_critical_scam_produces_alert():
         "quote": "Your account will be frozen",
         "tactics": ["AUTHORITY", "FEAR"],
     })
-    assert result is not None
-    assert result["type"] == "threat_alert"
-    assert result["alert"]["severity"] == "critical"
+    assert result["alert"] is not None
+    assert result["alert"]["type"] == "threat_alert"
+    assert result["alert"]["alert"]["severity"] == "critical"
     assert engine.session.threat_score > 8
     assert len(engine.session.alerts) == 1
 
@@ -66,3 +67,70 @@ def test_score_update_message():
     assert msg["type"] == "score_update"
     assert "threat_score" in msg
     assert "language_risk" in msg
+
+
+def test_instant_intervention_fires():
+    """OTP extraction triggers immediate BLOCK intervention."""
+    engine = ThreatEngine()
+    result = engine.ingest_audio_result({
+        "is_scam": True,
+        "severity": "critical",
+        "confidence": 99,
+        "pattern": "OTP / Credential Extraction",
+        "quote": "Read me the code",
+        "tactics": ["AUTHORITY", "COMMITMENT"],
+    })
+    assert result["intervention"] is not None
+    assert result["intervention"]["intervention"]["level"] == "BLOCK"
+    assert result["intervention"]["intervention"]["trigger"] == "instant_pattern"
+    assert result["alert"]["alert"]["triggered_intervention"] is True
+    assert len(engine.session.interventions) == 1
+
+
+def test_intervention_not_fired_low_score():
+    """Low-severity scam below threshold should not trigger intervention."""
+    engine = ThreatEngine()
+    result = engine.ingest_audio_result({
+        "is_scam": True,
+        "severity": "low",
+        "confidence": 50,
+        "pattern": "Suspicious Behavior",
+        "quote": "Something odd",
+        "tactics": ["FEAR"],
+    })
+    assert result["alert"] is not None
+    assert result["intervention"] is None
+    assert len(engine.session.interventions) == 0
+
+
+def test_record_intervention_action():
+    """User response to intervention is recorded."""
+    engine = ThreatEngine()
+    engine.ingest_audio_result({
+        "is_scam": True,
+        "severity": "critical",
+        "confidence": 99,
+        "pattern": "OTP / Credential Extraction",
+        "quote": "Read me the code",
+        "tactics": ["AUTHORITY"],
+    })
+    assert len(engine.session.interventions) == 1
+    engine.record_intervention_action("INT-1", "safe_exit")
+    assert engine.session.interventions[0].user_action == "safe_exit"
+
+
+def test_session_summary_includes_interventions():
+    """Session summary includes intervention history."""
+    engine = ThreatEngine()
+    engine.ingest_audio_result({
+        "is_scam": True,
+        "severity": "critical",
+        "confidence": 99,
+        "pattern": "Safe Account Transfer",
+        "quote": "Transfer to safe account",
+        "tactics": ["AUTHORITY", "FEAR"],
+    })
+    summary = engine.session_summary()
+    assert summary["interventions_count"] == 1
+    assert summary["interventions"][0]["level"] == "BLOCK"
+    assert summary["interventions"][0]["pattern"] == "Safe Account Transfer"

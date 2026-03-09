@@ -26,6 +26,12 @@ const cvCSS=`
 @keyframes cv-hs{0%{transform:rotate(0deg)}100%{transform:rotate(60deg)}}
 @keyframes cv-ds{0%{background-position:0 0}100%{background-position:0 200px}}
 @keyframes cv-ch{0%{text-shadow:2px 0 #ff2d5555,-2px 0 #00d4ff55}50%{text-shadow:-1px 0 #ff2d5555,1px 0 #00d4ff55}100%{text-shadow:2px 0 #ff2d5555,-2px 0 #00d4ff55}}
+@keyframes cv-sw-scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes cv-sw-pulse{0%,100%{box-shadow:inset 0 0 30px rgba(123,97,255,0.08)}50%{box-shadow:inset 0 0 60px rgba(123,97,255,0.18),0 0 20px rgba(123,97,255,0.1)}}
+@keyframes cv-sw-grid{0%{opacity:.06}50%{opacity:.12}100%{opacity:.06}}
+@keyframes cv-crt-line{0%{top:-2px}100%{top:100%}}
+@keyframes rec-pulse{0%,100%{box-shadow:0 0 8px #ff2d55,0 0 16px rgba(255,45,85,0.3)}50%{box-shadow:0 0 14px #ff2d55,0 0 28px rgba(255,45,85,0.5),0 0 40px rgba(255,45,85,0.15)}}
+@keyframes rec-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
 `
 
 function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
@@ -33,8 +39,10 @@ function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
   useEffect(()=>{if(!active)return;const t=setInterval(()=>setTick(v=>v+1),80);return()=>clearInterval(t)},[active])
   if(!active)return null
   const aC='#00d4ff',aV='#2d8cff',aR='#ff2d55',ac=mode==='phone'?aC:aV
+  // Screen Watch: override accent to purple when active
+  const borderColor = screenWatchOn ? '#7b61ff' : ac+'22'
   return(
-    <div style={{position:'relative',width:'100%',height:200,marginBottom:14,overflow:'hidden',border:`1px solid ${screenWatchOn?'rgba(123,97,255,0.25)':ac+'22'}`,background:'linear-gradient(180deg,rgba(0,0,0,.95),rgba(4,8,20,.98),rgba(0,0,0,.95))'}}>
+    <div style={{position:'relative',width:'100%',height:200,marginBottom:14,overflow:'hidden',border:`1px solid ${borderColor}`,background:'linear-gradient(180deg,rgba(0,0,0,.95),rgba(4,8,20,.98),rgba(0,0,0,.95))',transition:'border-color 0.4s ease',animation:screenWatchOn?'cv-sw-pulse 3s ease-in-out infinite':'none'}}>
       <style>{cvCSS}</style>
       <div style={{position:'absolute',inset:0,opacity:.035,backgroundImage:'linear-gradient(rgba(0,212,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,1) 1px,transparent 1px)',backgroundSize:'28px 28px',pointerEvents:'none'}}/>
       <div style={{position:'absolute',bottom:0,left:'10%',right:'10%',height:'40%',opacity:.04,pointerEvents:'none',backgroundImage:`linear-gradient(${ac} 1px,transparent 1px),linear-gradient(90deg,${ac} 1px,transparent 1px)`,backgroundSize:'30px 30px',transform:'perspective(200px) rotateX(60deg)',transformOrigin:'bottom center'}}/>
@@ -42,6 +50,27 @@ function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
       <div style={{position:'absolute',left:0,right:0,height:1,opacity:.12,background:`linear-gradient(90deg,transparent,${ac},transparent)`,animation:'cv-sc 3.5s linear infinite',pointerEvents:'none'}}/>
       <div style={{position:'absolute',left:10,top:0,bottom:0,width:35,opacity:.04,pointerEvents:'none',backgroundImage:`repeating-linear-gradient(0deg,transparent 0px,transparent 6px,${ac} 6px,${ac} 7px)`,backgroundSize:'100% 16px',animation:'cv-ds 3s linear infinite'}}/>
       <div style={{position:'absolute',right:10,top:0,bottom:0,width:35,opacity:.04,pointerEvents:'none',backgroundImage:`repeating-linear-gradient(0deg,transparent 0px,transparent 6px,${ac} 6px,${ac} 7px)`,backgroundSize:'100% 16px',animation:'cv-ds 2.5s linear infinite reverse'}}/>
+
+      {/* ── SCREEN WATCH OVERLAY ── */}
+      {screenWatchOn&&(<>
+        {/* Purple scan line sweeping down */}
+        <div style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:4}}>
+          <div style={{position:'absolute',left:0,right:0,height:'50%',background:'linear-gradient(180deg,transparent,rgba(123,97,255,0.12),transparent)',animation:'cv-sw-scan 2.5s linear infinite'}}/>
+        </div>
+        {/* Grid overlay with pulsing opacity */}
+        <div style={{position:'absolute',inset:0,pointerEvents:'none',zIndex:3,backgroundImage:'linear-gradient(rgba(123,97,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(123,97,255,0.5) 1px,transparent 1px)',backgroundSize:'40px 40px',animation:'cv-sw-grid 2s ease-in-out infinite'}}/>
+        {/* Corner brackets in purple */}
+        {[{top:8,left:8},{top:8,right:8},{bottom:8,left:8},{bottom:8,right:8}].map((pos,i)=>(
+          <div key={i} style={{position:'absolute',...pos,width:24,height:24,pointerEvents:'none',zIndex:5}}>
+            <div style={{position:'absolute',top:0,left:i%2===0?0:undefined,right:i%2===1?0:undefined,width:24,height:2,background:'#7b61ff',boxShadow:'0 0 8px #7b61ff'}}/>
+            <div style={{position:'absolute',top:0,left:i%2===0?0:undefined,right:i%2===1?0:undefined,width:2,height:24,background:'#7b61ff',boxShadow:'0 0 8px #7b61ff'}}/>
+          </div>
+        ))}
+        {/* CAPTURING label */}
+        <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',zIndex:6,fontFamily:PF,fontSize:7,color:'#7b61ff',letterSpacing:3,textShadow:'0 0 12px #7b61ff,0 0 24px rgba(123,97,255,0.4)',padding:'8px 20px',border:'1px solid rgba(123,97,255,0.4)',background:'rgba(0,0,0,0.7)',backdropFilter:'blur(4px)'}}>
+          ◈ SCREEN CAPTURING
+        </div>
+      </>)}
 
       {mode==='phone'&&(<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
         <div style={{position:'absolute',width:200,height:200,borderRadius:'50%',background:`radial-gradient(circle,${aC}15,${aC}06 40%,transparent 70%)`,animation:'cv-pu 3s ease-in-out infinite'}}/>
@@ -124,6 +153,63 @@ function getNow(){return new Date().toLocaleString('en-US',{timeZone:'America/Ne
 function TechChip({item}){const[h,setH]=useState(false);return(<div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',marginBottom:3,borderLeft:`2px solid ${h?item.c:item.c+'35'}`,background:h?item.c+'0f':'rgba(255,255,255,.01)',transition:'all .18s ease',cursor:'default'}}><span style={{fontSize:16,filter:h?`drop-shadow(0 0 6px ${item.c})`:'none',transition:'filter .2s'}}>{item.icon}</span><div style={{flex:1}}><div style={{fontFamily:PF,fontSize:7,color:h?item.c:item.c+'cc',transition:'all .2s'}}>{item.name}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,.38)',marginTop:2}}>{item.sub}</div></div></div>)}
 function LiveTranscript({lines,speaking}){const ref=useRef(null);useEffect(()=>{if(ref.current)ref.current.scrollTop=ref.current.scrollHeight},[lines]);return(<div ref={ref} style={{background:'rgba(0,0,0,.6)',border:'1px solid rgba(0,212,255,.12)',padding:'12px 16px',maxHeight:180,overflowY:'auto',marginBottom:16}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}><div style={{fontFamily:PF,fontSize:6,color:'rgba(0,212,255,.6)',letterSpacing:2}}>LIVE TRANSCRIPT</div>{speaking&&<span style={{fontFamily:MF,fontSize:8,color:'#ff2d55',animation:'blink .8s step-end infinite'}}>● SPEAKING</span>}</div>{lines.length===0?<div style={{fontFamily:MF,fontSize:10,color:'rgba(255,255,255,.2)',fontStyle:'italic'}}>Waiting for audio input...</div>:lines.map((l,i)=>{const m=l.speaker==='me';return(<div key={i} style={{fontFamily:MF,fontSize:11,color:m?'#30d158':'rgba(255,255,255,.75)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':m?'2px solid #30d15844':'2px solid transparent',paddingLeft:8,background:l.flagged?'rgba(255,45,85,.06)':'transparent'}}><span style={{color:m?'#30d15877':'rgba(0,212,255,.4)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:m?'#30d158':'#ff9500',marginRight:5,letterSpacing:1}}>{m?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>)})}</div>)}
 
+/* ── Custom REC Button ── */
+function RecButton({ isRecording, onClick }) {
+  const [hov, setHov] = useState(false)
+  const [pressed, setPressed] = useState(false)
+  const active = isRecording
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => { setHov(false); setPressed(false) }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      style={{
+        fontFamily: PF, fontSize: 7, letterSpacing: 2, padding: '8px 16px',
+        border: active
+          ? '1px solid #ff2d55'
+          : `1px solid ${hov ? '#ff2d55cc' : '#ff2d5555'}`,
+        background: active
+          ? 'linear-gradient(135deg, rgba(255,45,85,0.25), rgba(255,45,85,0.12))'
+          : hov
+            ? 'linear-gradient(135deg, rgba(255,45,85,0.15), rgba(255,45,85,0.06))'
+            : 'linear-gradient(135deg, rgba(255,45,85,0.06), transparent)',
+        color: '#ff2d55',
+        cursor: 'pointer',
+        boxShadow: active
+          ? '0 0 16px rgba(255,45,85,0.4), 0 0 32px rgba(255,45,85,0.15), inset 0 0 12px rgba(255,45,85,0.1)'
+          : hov
+            ? '0 0 12px rgba(255,45,85,0.3), inset 0 0 8px rgba(255,45,85,0.06)'
+            : '0 0 6px rgba(255,45,85,0.1)',
+        transform: pressed ? 'scale(0.96) translateY(1px)' : hov ? 'translateY(-1px)' : 'none',
+        transition: 'all 0.14s ease',
+        textTransform: 'uppercase',
+        position: 'relative',
+        overflow: 'hidden',
+        animation: active ? 'rec-pulse 2s ease-in-out infinite' : 'none',
+        textShadow: active ? '0 0 8px rgba(255,45,85,0.6)' : hov ? '0 0 6px rgba(255,45,85,0.4)' : 'none',
+        display: 'flex', alignItems: 'center', gap: 6,
+      }}
+    >
+      {/* Corner dots */}
+      {[['0','0'],['calc(100% - 3px)','0'],['0','calc(100% - 3px)'],['calc(100% - 3px)','calc(100% - 3px)']].map(([l,t],i) => (
+        <span key={i} style={{ position:'absolute',left:l,top:t,width:3,height:3,background:'#ff2d55',display:'block',opacity:active||hov?0.8:0.3,transition:'opacity 0.15s' }} />
+      ))}
+      {/* Recording dot */}
+      <span style={{
+        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+        background: active ? '#ff2d55' : hov ? '#ff2d5588' : '#ff2d5544',
+        boxShadow: active ? '0 0 8px #ff2d55, 0 0 16px rgba(255,45,85,0.4)' : 'none',
+        animation: active ? 'rec-dot 1s ease-in-out infinite' : 'none',
+        transition: 'all 0.2s',
+      }} />
+      <span>{active ? 'REC ON' : 'REC'}</span>
+    </button>
+  )
+}
+
 export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,language='en'}){
   const[script,setScript]=useState(null),[now,setNow]=useState(getNow()),[speaking,setSpeaking]=useState(false),[transcriptLines,setTranscriptLines]=useState([]),[voiceDemo,setVoiceDemo]=useState(false),[demoProgress,setDemoProgress]=useState(0),[voiceMuted,setVoiceMuted]=useState(false),[volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
@@ -188,7 +274,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   const startVoiceDemo=useCallback((sel)=>{if(!sel||!window.speechSynthesis)return;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis.cancel();setVoiceDemo(true);setTranscriptLines([]);setDemoProgress(0);finished.current=false;startTimeRef.current=Date.now();const sents=sel.sentences,tc=sents.filter(s=>s.speaker==='caller').length;pendingCount.current=tc;const go=()=>{const voice=getVoiceForLang(language);sents.forEach((s,idx)=>{const timer=setTimeout(()=>{const el=Date.now()-startTimeRef.current,ts=fmt(Math.floor(el/1000)),line={text:s.text,time:ts,flagged:!!s.alert,speaker:s.speaker||'caller'};setTranscriptLines(p=>[...p,line]);if(onTranscriptLine)onTranscriptLine(line);if(s.speaker==='me'){if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},500);speechTimers.current.push(at)};return}if(!voiceMuted){const u=new SpeechSynthesisUtterance(s.text);if(voice)u.voice=voice;u.rate=1;u.pitch=1;u.volume=volumeRef.current;u.onstart=()=>setSpeaking(true);u.onend=()=>{setSpeaking(false);const cd=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length;setDemoProgress(Math.round((cd/tc)*100));pendingCount.current--;if(pendingCount.current<=0&&!finished.current){finished.current=true;const st=setTimeout(()=>onStop(),3000);speechTimers.current.push(st)}};window.speechSynthesis.speak(u)}else{const cd=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length;setDemoProgress(Math.round((cd/tc)*100));pendingCount.current--;if(pendingCount.current<=0&&!finished.current){finished.current=true;const st=setTimeout(()=>onStop(),3000);speechTimers.current.push(st)}}if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},1800);speechTimers.current.push(at)}},s.delay);speechTimers.current.push(timer)})};if(window.speechSynthesis.getVoices().length===0){window.speechSynthesis.addEventListener('voiceschanged',go,{once:true});setTimeout(go,300)}else go()},[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted])
   const handleStartWithVoice=()=>{onStart();if(script)setTimeout(()=>startVoiceDemo(script),500)},handleStop=()=>{window.speechSynthesis?.cancel();speechTimers.current.forEach(t=>clearTimeout(t));onStop()}
 
-  return(<div style={{display:'grid',gridTemplateColumns:'1fr 296px',gap:20,position:'relative'}}><style>{`@keyframes progressShimmer{0%{background-position:-200% center}100%{background-position:200% center}}@keyframes progressScan{0%{opacity:0;transform:translateX(-20px)}50%{opacity:1}100%{opacity:0;transform:translateX(20px)}}@media(max-width:900px){.monitor-grid{grid-template-columns:1fr!important}}`}</style>
+  return(<div style={{display:'grid',gridTemplateColumns:'1fr 296px',gap:20,position:'relative'}}><style>{`@keyframes progressShimmer{0%{background-position:-200% center}100%{background-position:200% center}}@keyframes progressScan{0%{opacity:0;transform:translateX(-20px)}50%{opacity:1}100%{opacity:0;transform:translateX(20px)}}@keyframes rec-pulse{0%,100%{box-shadow:0 0 8px #ff2d55,0 0 16px rgba(255,45,85,0.3)}50%{box-shadow:0 0 14px #ff2d55,0 0 28px rgba(255,45,85,0.5),0 0 40px rgba(255,45,85,0.15)}}@keyframes rec-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}@keyframes cv-crt-line{0%{top:-2px}100%{top:100%}}@media(max-width:900px){.monitor-grid{grid-template-columns:1fr!important}}`}</style>
 
     {/* ── INTERVENTION OVERLAY ── */}
     {activeIntervention&&monitoring&&(
@@ -201,14 +287,18 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     )}
 
     <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      <PBox color={monitoring&&threatLevel==='critical'?'#ff2d55':'#00d4ff'} style={{padding:24,background:'rgba(0,212,255,.01)',transition:'all .5s'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:10}}>
+      <PBox color={monitoring&&threatLevel==='critical'?'#ff2d55':'#00d4ff'} style={{padding:24,background:'rgba(0,212,255,.01)',transition:'all .5s',position:'relative',overflow:'hidden'}}>
+        {/* CRT scanline on monitor panel */}
+        {monitoring&&<div style={{position:'absolute',left:0,right:0,height:2,background:'linear-gradient(90deg,transparent,rgba(0,212,255,0.06),transparent)',animation:'cv-crt-line 4s linear infinite',pointerEvents:'none',zIndex:1}}/>}
+
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:10,position:'relative',zIndex:2}}>
           <div><div style={{fontFamily:PF,fontSize:10,color:'#00d4ff',marginBottom:6,textShadow:'0 0 14px #00d4ff'}}>LIVE SESSION MONITOR</div><div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,.48)'}}>{monitoring?voiceDemo?`► VOICE DEMO — ${fmt(sessionTime)} — ${demoProgress}%`:`► ANALYZING — ${fmt(sessionTime)}`:'■ READY — SELECT DEMO → START'}</div></div>
           <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
             <div style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
-            <PBtn onClick={()=>setIsRecording(r=>!r)} color={isRecording?'#ff2d55':'rgba(255,45,85,.5)'} style={{padding:'6px 12px'}}>{isRecording?'● REC ON':'○ REC'}</PBtn>
+            {/* ── REC Button (custom component) ── */}
+            <RecButton isRecording={isRecording} onClick={()=>setIsRecording(r=>!r)} />
             {voiceDemo&&<PBtn onClick={()=>{setVoiceMuted(m=>!m);if(!voiceMuted)window.speechSynthesis?.cancel()}} color={voiceMuted?'#ff9500':'#30d158'} style={{padding:'10px 14px'}}>{voiceMuted?'🔇 UNMUTE':'🔊 MUTE'}</PBtn>}
-            <PBtn onClick={onToggleScreen} color={screenOn?'#ffd60a':'#7b61ff'}>{screenOn?'■ SCREEN OFF':'◈ SCREEN WATCH'}</PBtn>
+            <PBtn onClick={onToggleScreen} color={screenOn?'#7b61ff':'#7b61ff'}>{screenOn?'■ SCREEN OFF':'◈ SCREEN WATCH'}</PBtn>
             {!monitoring?<PBtn onClick={handleStartWithVoice} color="#30d158">{script?'▶ START VOICE DEMO':'▶ START'}</PBtn>:<PBtn onClick={handleStop} danger>■ STOP</PBtn>}
           </div>
         </div>
