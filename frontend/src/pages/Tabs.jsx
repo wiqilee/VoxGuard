@@ -780,9 +780,40 @@ export function AboutTab(){
   const RC=['#00d4ff','#7b61ff','#30d158','#ffd60a'],LC=['#ff9500','#00d4ff','#ff2d55','#30d158']
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
     <div className="vg-about-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
-      <PBox color="#00d4ff" style={{padding:32,background:'rgba(0,212,255,0.02)',gridRow:'span 2'}}><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff',marginBottom:16}}>THE PROBLEM</div><div style={{fontFamily:MF,fontSize:13,color:'rgba(255,255,255,0.7)',lineHeight:2.1}}>Every 30 seconds, someone loses money to a phone scam.<br/><br/>FBI IC3 2024:<span style={{fontFamily:PF,fontSize:16,color:'#ff2d55',display:'block',margin:'10px 0'}}>$16.6B</span>GASA global estimate:<span style={{fontFamily:PF,fontSize:16,color:'#ff2d55',display:'block',margin:'10px 0'}}>$1 TRILLION</span>Every solution shares one flaw: <span style={{color:'#ff9500'}}>they act after the damage is done</span>.</div></PBox>
-      <PBox color="#ff9500" style={{padding:28}}><div style={{fontFamily:PF,fontSize:9,color:'#ff9500',marginBottom:12}}>WHAT'S NEW</div><div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.68)',lineHeight:1.9}}>World's <span style={{color:'#ff9500'}}>first</span> real-time multimodal scam detection. Gemini Live API + Rust WASM = &lt;80ms.</div></PBox>
-      <PBox color="#7b61ff" style={{padding:28}}><div style={{fontFamily:PF,fontSize:9,color:'#7b61ff',marginBottom:12}}>PSYCH + LIE DETECT</div><div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.68)',lineHeight:1.9}}>6 Cialdini vectors + 5 lie indicators + user vulnerability state.</div></PBox>
+      <PBox color="#ff2d55" style={{padding:32,background:'rgba(255,45,85,0.02)',gridRow:'span 2'}}>
+        <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',marginBottom:16,textShadow:'0 0 12px #ff2d55'}}>THE PROBLEM</div>
+        <div style={{fontFamily:MF,fontSize:13,color:'rgba(255,255,255,0.7)',lineHeight:2.1}}>
+          A grandmother in Tokyo wires her life savings to a stranger impersonating her grandson. A father in Jakarta shares his OTP because the caller said his daughter was in the hospital. A retiree in Ohio buys $5,000 in gift cards because "the IRS" threatened arrest.
+          <br/><br/>
+          <span style={{color:'rgba(255,255,255,0.45)',fontSize:11}}>Every single one of them knew about scams. None of them recognized it was happening <span style={{color:'#ff2d55'}}>to them</span>, <span style={{color:'#ff2d55'}}>in that moment</span>.</span>
+          <br/><br/>
+          <span style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,0.4)',letterSpacing:1}}>FBI IC3 2024 — UNITED STATES ALONE</span>
+          <span style={{fontFamily:PF,fontSize:20,color:'#ff2d55',display:'block',margin:'8px 0',textShadow:'0 0 20px #ff2d55'}}>$16.6 BILLION</span>
+          <span style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,0.4)',letterSpacing:1}}>GASA 2024 — GLOBAL ESTIMATE</span>
+          <span style={{fontFamily:PF,fontSize:20,color:'#ff2d55',display:'block',margin:'8px 0',textShadow:'0 0 20px #ff2d55'}}>$1.03 TRILLION</span>
+          <div style={{marginTop:16,padding:'12px 16px',borderLeft:'3px solid #ff9500',background:'rgba(255,149,0,0.04)'}}>
+            <span style={{color:'#ff9500',fontFamily:PF,fontSize:7}}>THE FATAL FLAW</span><br/>
+            <span style={{color:'rgba(255,255,255,0.6)',fontSize:12,lineHeight:1.8}}>Truecaller blocks numbers. ScamShield flags known callers. Hiya warns before you pick up. <strong style={{color:'#ff2d55'}}>Every tool acts before or after the call — none of them protect you during.</strong></span>
+          </div>
+          <div style={{marginTop:12,padding:'12px 16px',borderLeft:'3px solid #30d158',background:'rgba(48,209,88,0.04)'}}>
+            <span style={{color:'#30d158',fontFamily:PF,fontSize:7}}>WHAT VOXGUARD DOES DIFFERENTLY</span><br/>
+            <span style={{color:'rgba(255,255,255,0.6)',fontSize:12,lineHeight:1.8}}>VoxGuard listens while you talk. When the caller asks for your OTP, VoxGuard <strong style={{color:'#30d158'}}>takes over your screen and stops you</strong> from giving it away. The scammer is still talking — but you are now thinking.</span>
+          </div>
+        </div>
+      </PBox>
+      <PBox color="#ff9500" style={{padding:28}}>
+        <div style={{fontFamily:PF,fontSize:9,color:'#ff9500',marginBottom:12,textShadow:'0 0 10px #ff9500'}}>WHAT'S NEW</div>
+        <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.68)',lineHeight:1.9}}>
+          World's <span style={{color:'#ff9500'}}>first</span> real-time multimodal scam detection with <span style={{color:'#ff2d55'}}>active intervention</span>.<br/><br/>
+          <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>Gemini Live API streams audio in real-time. Rust WASM preprocesses at &lt;80ms. The threat engine scores every 500ms. When danger is detected → full-screen intervention fires.</span>
+        </div>
+      </PBox>
+      <PBox color="#7b61ff" style={{padding:28}}>
+        <div style={{fontFamily:PF,fontSize:9,color:'#7b61ff',marginBottom:12,textShadow:'0 0 10px #7b61ff'}}>PSYCH + LIE DETECT</div>
+        <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.68)',lineHeight:1.9}}>
+          <span style={{color:'#ff9500'}}>6 Cialdini vectors</span> map which persuasion buttons the caller is pushing. <span style={{color:'#ff2d55'}}>5 FBI CBCA indicators</span> detect deception in real-time. <span style={{color:'#00d4ff'}}>User vulnerability state</span> shows how the manipulation is affecting <em>your</em> decision-making.
+        </div>
+      </PBox>
     </div>
     <PBox color="#7b61ff" style={{padding:0,marginBottom:16,overflow:'hidden'}}>
       <div style={{height:3,background:'linear-gradient(90deg,#7b61ff,#00d4ff,#ff2d55,#ff9500,#30d158)',backgroundSize:'200%',animation:'rotateHue 4s linear infinite'}}/>
@@ -804,11 +835,11 @@ export function AboutTab(){
       </div>
     </PBox>
     <PBox color="#30d158" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES</div><div className="vg-datasources-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
-      <DataSourceCard name="FBI IC3 2024" url="ic3.gov" href="https://www.ic3.gov/AnnualReport" c="#ff2d55"/>
-      <DataSourceCard name="FTC Sentinel" url="ftc.gov" href="https://www.ftc.gov/enforcement/consumer-sentinel-network" c="#00d4ff"/>
-      <DataSourceCard name="GASA Global" url="gasa.org" href="https://www.gasa.org" c="#ffd60a"/>
-      <DataSourceCard name="MAS ScamShield" url="scamshield.org.sg" href="https://www.scamshield.org.sg" c="#7b61ff"/>
-      <DataSourceCard name="ACCC ScamWatch" url="scamwatch.gov.au" href="https://www.scamwatch.gov.au" c="#30d158"/>
+      <DataSourceCard name="FBI IC3 2024 Annual Report" url="ic3.gov/AnnualReport/Reports/2024" href="https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf" c="#ff2d55"/>
+      <DataSourceCard name="FTC Consumer Sentinel" url="ftc.gov/enforcement" href="https://www.ftc.gov/enforcement/consumer-sentinel-network" c="#00d4ff"/>
+      <DataSourceCard name="GASA Global Scam Report" url="gasa.org" href="https://www.gasa.org" c="#ffd60a"/>
+      <DataSourceCard name="MAS ScamShield (SG)" url="scamshield.org.sg" href="https://www.scamshield.org.sg" c="#7b61ff"/>
+      <DataSourceCard name="ACCC ScamWatch (AU)" url="scamwatch.gov.au" href="https://www.scamwatch.gov.au" c="#30d158"/>
     </div></PBox>
   </div>)
 }
