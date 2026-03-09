@@ -214,7 +214,7 @@ All patterns grounded to published sources: FTC Consumer Sentinel, FBI IC3 2024,
 ### 5. 🧠 Psychological Manipulation Scoring
 
 <div align="center">
-<img src="docs/svgs/psych-vectors.svg" alt="Psychological Vectors" width="260"/>
+<img src="docs/svgs/psych_vectors.svg" alt="Psychological Vectors" width="260"/>
 </div>
 
 The **only scam detection system in the world** that maps psychological manipulation vectors in real-time using three analytical frameworks:
