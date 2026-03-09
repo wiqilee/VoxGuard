@@ -182,7 +182,7 @@ function RecButton({ isRecording, onClick }) {
 export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en'}){
   const[script,setScript]=useState(null),[now,setNow]=useState(getNow()),[speaking,setSpeaking]=useState(false),[transcriptLines,setTranscriptLines]=useState([]),[voiceDemo,setVoiceDemo]=useState(false),[demoProgress,setDemoProgress]=useState(0),[voiceMuted,setVoiceMuted]=useState(false),[volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
-  const handleVolume=(v)=>{setVolume(v);volumeRef.current=v;if(window.speechSynthesis?.speaking){window.speechSynthesis.cancel();setSpeaking(false)}}
+  const handleVolume=(v)=>{setVolume(v);volumeRef.current=v} /* [FIX] removed cancel() — volume now applies to next utterance without killing current speech */
   const[callMode,setCallMode]=useState('phone'),[isRecording,setIsRecording]=useState(false)
   const speechTimers=useRef([]),startTimeRef=useRef(null),pendingCount=useRef(0),finished=useRef(false)
   const availableScripts=getScriptsForLang(language)

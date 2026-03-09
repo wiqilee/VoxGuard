@@ -57,6 +57,13 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
   const [countdown, setCountdown] = useState(level === 'LOCKDOWN' ? 30 : null)
   const countdownRef = useRef(null)
 
+  // [FIX] Lock body scroll when overlay is active — prevents position jumping
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [])
+
   // Lockdown countdown
   useEffect(() => {
     if (level !== 'LOCKDOWN') return
@@ -114,9 +121,10 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
   return (
     <div style={{ position:'fixed', inset:0, zIndex:10000, background:c.overlayBg, backdropFilter:'blur(8px)',
       display:'flex', alignItems:'center', justifyContent:'center', animation:'intv-fadein 0.3s ease',
+      overflowY:'hidden', /* [FIX] prevent background scroll */
     }}>
       <style>{overlayCSS}</style>
-      <div style={{ maxWidth:520, width:'90%', maxHeight:'90vh', overflowY:'auto',
+      <div style={{ maxWidth:520, width:'90%', maxHeight:'90vh', overflowY:'auto', overflowX:'hidden', /* [FIX] prevent horizontal shift */
         border:`2px solid ${c.border}`, background:'#020408',
         boxShadow:`0 0 60px ${c.accent}33, inset 0 0 30px ${c.accent}08`,
         animation:`intv-slidein 0.4s cubic-bezier(0.22,1,0.36,1)${level==='LOCKDOWN'?', intv-lockdown-bg 3s ease-in-out infinite':''}`,
@@ -141,13 +149,15 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
               </div>
             </div>
 
-            {/* Description based on context */}
+            {/* [FIX] Description — LOCKDOWN now also shows doNotShare so it doesn't feel empty */}
             <div style={{ fontFamily:MF, fontSize:12, color:'rgba(255,255,255,0.7)', lineHeight:1.8, marginBottom:24,
               padding:'14px 18px', borderLeft:`3px solid ${c.accent}`, background:`${c.accent}08`,
             }}>
-              {level === 'LOCKDOWN' ? labels.lockdownSub
-                : isFatal ? (<><span style={{color:'#ff2d55',fontWeight:'bold'}}>{labels.fatalSub}</span><br/><br/>{labels.doNotShare}</>)
-                : challenge?.subtitle || labels.fatalSub}
+              {level === 'LOCKDOWN' ? (
+                <><span style={{color:'#ff2d55',fontWeight:'bold'}}>{labels.lockdownSub}</span><br/><br/>{labels.doNotShare}</>
+              ) : isFatal ? (
+                <><span style={{color:'#ff2d55',fontWeight:'bold'}}>{labels.fatalSub}</span><br/><br/>{labels.doNotShare}</>
+              ) : challenge?.subtitle || labels.fatalSub}
             </div>
 
             {/* LOCKDOWN countdown */}
