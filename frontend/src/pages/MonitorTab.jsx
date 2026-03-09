@@ -50,7 +50,6 @@ function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
       <div style={{position:'absolute',left:10,top:0,bottom:0,width:35,opacity:.04,pointerEvents:'none',backgroundImage:`repeating-linear-gradient(0deg,transparent 0px,transparent 6px,${ac} 6px,${ac} 7px)`,backgroundSize:'100% 16px',animation:'cv-ds 3s linear infinite'}}/>
       <div style={{position:'absolute',right:10,top:0,bottom:0,width:35,opacity:.04,pointerEvents:'none',backgroundImage:`repeating-linear-gradient(0deg,transparent 0px,transparent 6px,${ac} 6px,${ac} 7px)`,backgroundSize:'100% 16px',animation:'cv-ds 2.5s linear infinite reverse'}}/>
 
-      {/* ── SCREEN WATCH OVERLAY ── */}
       {screenWatchOn&&(<>
         <div style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:4}}>
           <div style={{position:'absolute',left:0,right:0,height:'50%',background:'linear-gradient(180deg,transparent,rgba(123,97,255,0.12),transparent)',animation:'cv-sw-scan 2.5s linear infinite'}}/>
@@ -148,7 +147,6 @@ function getNow(){return new Date().toLocaleString('en-US',{timeZone:'America/Ne
 function TechChip({item}){const[h,setH]=useState(false);return(<div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',marginBottom:3,borderLeft:`2px solid ${h?item.c:item.c+'35'}`,background:h?item.c+'0f':'rgba(255,255,255,.01)',transition:'all .18s ease',cursor:'default'}}><span style={{fontSize:16,filter:h?`drop-shadow(0 0 6px ${item.c})`:'none',transition:'filter .2s'}}>{item.icon}</span><div style={{flex:1}}><div style={{fontFamily:PF,fontSize:7,color:h?item.c:item.c+'cc',transition:'all .2s'}}>{item.name}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,.38)',marginTop:2}}>{item.sub}</div></div></div>)}
 function LiveTranscript({lines,speaking}){const ref=useRef(null);useEffect(()=>{if(ref.current)ref.current.scrollTop=ref.current.scrollHeight},[lines]);return(<div ref={ref} style={{background:'rgba(0,0,0,.6)',border:'1px solid rgba(0,212,255,.12)',padding:'12px 16px',maxHeight:180,overflowY:'auto',marginBottom:16}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}><div style={{fontFamily:PF,fontSize:6,color:'rgba(0,212,255,.6)',letterSpacing:2}}>LIVE TRANSCRIPT</div>{speaking&&<span style={{fontFamily:MF,fontSize:8,color:'#ff2d55',animation:'blink .8s step-end infinite'}}>● SPEAKING</span>}</div>{lines.length===0?<div style={{fontFamily:MF,fontSize:10,color:'rgba(255,255,255,.2)',fontStyle:'italic'}}>Waiting for audio input...</div>:lines.map((l,i)=>{const m=l.speaker==='me';return(<div key={i} style={{fontFamily:MF,fontSize:11,color:m?'#30d158':'rgba(255,255,255,.75)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':m?'2px solid #30d15844':'2px solid transparent',paddingLeft:8,background:l.flagged?'rgba(255,45,85,.06)':'transparent'}}><span style={{color:m?'#30d15877':'rgba(0,212,255,.4)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:m?'#30d158':'#ff9500',marginRight:5,letterSpacing:1}}>{m?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>)})}</div>)}
 
-/* ── Custom REC Button ── */
 function RecButton({ isRecording, onClick }) {
   const [hov, setHov] = useState(false)
   const [pressed, setPressed] = useState(false)
@@ -177,17 +175,16 @@ function RecButton({ isRecording, onClick }) {
 }
 
 // ══════════════════════════════════════════════════════════
-// ── MAIN COMPONENT — onSafeExit added ──
+// ── MAIN COMPONENT — MOBILE RESPONSIVE FIX ──
 // ══════════════════════════════════════════════════════════
 export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en'}){
   const[script,setScript]=useState(null),[now,setNow]=useState(getNow()),[speaking,setSpeaking]=useState(false),[transcriptLines,setTranscriptLines]=useState([]),[voiceDemo,setVoiceDemo]=useState(false),[demoProgress,setDemoProgress]=useState(0),[voiceMuted,setVoiceMuted]=useState(false),[volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
-  const handleVolume=(v)=>{setVolume(v);volumeRef.current=v} /* [FIX] removed cancel() — volume now applies to next utterance without killing current speech */
+  const handleVolume=(v)=>{setVolume(v);volumeRef.current=v}
   const[callMode,setCallMode]=useState('phone'),[isRecording,setIsRecording]=useState(false)
   const speechTimers=useRef([]),startTimeRef=useRef(null),pendingCount=useRef(0),finished=useRef(false)
   const availableScripts=getScriptsForLang(language)
 
-  // ── INTERVENTION STATE ──
   const[activeIntervention,setActiveIntervention]=useState(null)
   const[interventionHistory,setInterventionHistory]=useState([])
   const lastInterventionLevel=useRef('')
@@ -211,49 +208,22 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     if(window.speechSynthesis?.speaking) window.speechSynthesis.pause()
   },[threatScore,alerts.length,monitoring])
 
-  // ══════════════════════════════════════════════════════════
-  // ── INTERVENTION DISMISS — proper flow separation ──
-  // ══════════════════════════════════════════════════════════
   const handleInterventionDismiss = (action) => {
-    // Record user action in history
     const updated = { ...activeIntervention, userAction: action }
     setInterventionHistory(h => h.map(e => e.id === updated.id ? updated : e))
     setActiveIntervention(null)
-
     if (action === 'safe_exit') {
-      // ── FULL SESSION TERMINATION ──
-      // 1. Kill all audio/speech
       window.speechSynthesis?.cancel()
       speechTimers.current.forEach(t => clearTimeout(t))
       speechTimers.current = []
-      setSpeaking(false)
-      setVoiceDemo(false)
-      setIsRecording(false)
-
-      // 2. Signal parent to stop monitoring AND switch to Report tab
-      if (onSafeExit) {
-        onSafeExit()
-      } else {
-        // Fallback if onSafeExit not wired yet
-        handleStop()
-      }
+      setSpeaking(false);setVoiceDemo(false);setIsRecording(false)
+      if (onSafeExit) { onSafeExit() } else { handleStop() }
       return
     }
-
-    if (action === 'challenge_passed') {
-      // User verified through challenge or chose "verify through official channel"
-      // Resume session with caution — they made an informed decision
+    if (action === 'challenge_passed' || action === 'dismissed') {
       if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
       return
     }
-
-    if (action === 'dismissed') {
-      // User chose "Continue With Caution" (only available on WARN)
-      if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
-      return
-    }
-
-    // Default fallback: resume
     if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
   }
 
@@ -263,7 +233,35 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   const startVoiceDemo=useCallback((sel)=>{if(!sel||!window.speechSynthesis)return;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis.cancel();setVoiceDemo(true);setTranscriptLines([]);setDemoProgress(0);finished.current=false;startTimeRef.current=Date.now();const sents=sel.sentences,tc=sents.filter(s=>s.speaker==='caller').length;pendingCount.current=tc;const go=()=>{const voice=getVoiceForLang(language);sents.forEach((s,idx)=>{const timer=setTimeout(()=>{const el=Date.now()-startTimeRef.current,ts=fmt(Math.floor(el/1000)),line={text:s.text,time:ts,flagged:!!s.alert,speaker:s.speaker||'caller'};setTranscriptLines(p=>[...p,line]);if(onTranscriptLine)onTranscriptLine(line);if(s.speaker==='me'){if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},500);speechTimers.current.push(at)};return}if(!voiceMuted){const u=new SpeechSynthesisUtterance(s.text);if(voice)u.voice=voice;u.rate=1;u.pitch=1;u.volume=volumeRef.current;u.onstart=()=>setSpeaking(true);u.onend=()=>{setSpeaking(false);const cd=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length;setDemoProgress(Math.round((cd/tc)*100));pendingCount.current--;if(pendingCount.current<=0&&!finished.current){finished.current=true;const st=setTimeout(()=>onStop(),3000);speechTimers.current.push(st)}};window.speechSynthesis.speak(u)}else{const cd=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length;setDemoProgress(Math.round((cd/tc)*100));pendingCount.current--;if(pendingCount.current<=0&&!finished.current){finished.current=true;const st=setTimeout(()=>onStop(),3000);speechTimers.current.push(st)}}if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},1800);speechTimers.current.push(at)}},s.delay);speechTimers.current.push(timer)})};if(window.speechSynthesis.getVoices().length===0){window.speechSynthesis.addEventListener('voiceschanged',go,{once:true});setTimeout(go,300)}else go()},[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted])
   const handleStartWithVoice=()=>{onStart();if(script)setTimeout(()=>startVoiceDemo(script),500)},handleStop=()=>{window.speechSynthesis?.cancel();speechTimers.current.forEach(t=>clearTimeout(t));onStop()}
 
-  return(<div style={{display:'grid',gridTemplateColumns:'1fr 296px',gap:20,position:'relative'}}><style>{`@keyframes progressShimmer{0%{background-position:-200% center}100%{background-position:200% center}}@keyframes progressScan{0%{opacity:0;transform:translateX(-20px)}50%{opacity:1}100%{opacity:0;transform:translateX(20px)}}@keyframes rec-pulse{0%,100%{box-shadow:0 0 8px #ff2d55,0 0 16px rgba(255,45,85,0.3)}50%{box-shadow:0 0 14px #ff2d55,0 0 28px rgba(255,45,85,0.5),0 0 40px rgba(255,45,85,0.15)}}@keyframes rec-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}@keyframes cv-crt-line{0%{top:-2px}100%{top:100%}}@media(max-width:900px){.monitor-grid{grid-template-columns:1fr!important}}`}</style>
+  /* ══════════════════════════════════════════════════════════
+     Mobile responsive grid.
+     - Desktop: 2-column layout (main + sidebar 296px)
+     - Tablet (<=900px): single column, sidebar moves below
+     - Phone (<=480px): tighter padding, smaller buttons
+     ══════════════════════════════════════════════════════════ */
+  return(<div className="vg-monitor-grid" style={{display:'grid',gridTemplateColumns:'1fr 296px',gap:20,position:'relative'}}>
+    <style>{`
+      @keyframes progressShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+      @keyframes progressScan{0%{opacity:0;transform:translateX(-20px)}50%{opacity:1}100%{opacity:0;transform:translateX(20px)}}
+      @keyframes rec-pulse{0%,100%{box-shadow:0 0 8px #ff2d55,0 0 16px rgba(255,45,85,0.3)}50%{box-shadow:0 0 14px #ff2d55,0 0 28px rgba(255,45,85,0.5),0 0 40px rgba(255,45,85,0.15)}}
+      @keyframes rec-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+      @keyframes cv-crt-line{0%{top:-2px}100%{top:100%}}
+
+      /* ── MOBILE RESPONSIVE ── */
+      @media(max-width:900px){
+        .vg-monitor-grid{grid-template-columns:1fr!important}
+        .vg-monitor-sidebar{order:2}
+        .vg-monitor-sidebar-inner{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important}
+      }
+      @media(max-width:600px){
+        .vg-monitor-sidebar-inner{grid-template-columns:1fr!important}
+        .vg-monitor-controls{gap:6px!important}
+        .vg-monitor-controls>*{font-size:6px!important;padding:6px 10px!important}
+        .vg-monitor-header{flex-direction:column!important;align-items:stretch!important}
+        .vg-monitor-stats{flex-wrap:wrap!important}
+        .vg-monitor-stats>*{min-width:calc(50% - 4px)!important;flex:none!important}
+      }
+    `}</style>
 
     {/* ── INTERVENTION OVERLAY ── */}
     {activeIntervention&&monitoring&&(
@@ -279,9 +277,9 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       <PBox color={monitoring&&threatLevel==='critical'?'#ff2d55':'#00d4ff'} style={{padding:24,background:'rgba(0,212,255,.01)',transition:'all .5s',position:'relative',overflow:'hidden'}}>
         {monitoring&&<div style={{position:'absolute',left:0,right:0,height:2,background:'linear-gradient(90deg,transparent,rgba(0,212,255,0.06),transparent)',animation:'cv-crt-line 4s linear infinite',pointerEvents:'none',zIndex:1}}/>}
 
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:10,position:'relative',zIndex:2}}>
+        <div className="vg-monitor-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:10,position:'relative',zIndex:2}}>
           <div><div style={{fontFamily:PF,fontSize:10,color:'#00d4ff',marginBottom:6,textShadow:'0 0 14px #00d4ff'}}>LIVE SESSION MONITOR</div><div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,.48)'}}>{monitoring?voiceDemo?`► VOICE DEMO — ${fmt(sessionTime)} — ${demoProgress}%`:`► ANALYZING — ${fmt(sessionTime)}`:'■ READY — SELECT DEMO → START'}</div></div>
-          <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
+          <div className="vg-monitor-controls" style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
             <div style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
             <RecButton isRecording={isRecording} onClick={()=>setIsRecording(r=>!r)} />
             {voiceDemo&&<PBtn onClick={()=>{setVoiceMuted(m=>!m);if(!voiceMuted)window.speechSynthesis?.cancel()}} color={voiceMuted?'#ff9500':'#30d158'} style={{padding:'10px 14px'}}>{voiceMuted?'🔇 UNMUTE':'🔊 MUTE'}</PBtn>}
@@ -294,7 +292,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         {isRecording&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(255,45,85,.3)',background:'rgba(255,45,85,.06)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:'#ff2d55',animation:'blink .8s step-end infinite',boxShadow:'0 0 8px #ff2d55'}}/><span style={{fontFamily:MF,fontSize:9,color:'#ff2d55'}}>● RECORDING — Session audio captured for forensic export</span></div>)}
 
         {interventionHistory.length>0&&monitoring&&(
-          <div style={{padding:'8px 12px',marginBottom:12,border:'2px solid #ff2d55',background:'rgba(255,45,85,.08)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{padding:'8px 12px',marginBottom:12,border:'2px solid #ff2d55',background:'rgba(255,45,85,.08)',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <span style={{fontSize:16}}>🛑</span>
               <span style={{fontFamily:PF,fontSize:7,color:'#ff2d55',letterSpacing:1}}>INTERVENTIONS FIRED: {interventionHistory.length}</span>
@@ -311,11 +309,18 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         {voiceDemo&&!voiceMuted&&(<div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12,padding:'8px 12px',background:'rgba(0,0,0,.3)',border:'1px solid rgba(0,212,255,.08)'}}><span style={{fontFamily:PF,fontSize:6,color:'rgba(0,212,255,.6)',letterSpacing:1,flexShrink:0}}>VOL</span><div style={{flex:1,position:'relative',height:20,display:'flex',alignItems:'center'}}><div style={{position:'absolute',left:0,right:0,height:6,background:'rgba(0,212,255,.08)',border:'1px solid rgba(0,212,255,.12)'}}><div style={{height:'100%',width:`${volume*100}%`,background:'linear-gradient(90deg,#00d4ff55,#00d4ff)',boxShadow:'0 0 8px #00d4ff44',transition:'width .1s'}}/></div><input type="range" min="0" max="1" step="0.05" value={volume} onChange={e=>handleVolume(parseFloat(e.target.value))} style={{position:'absolute',left:0,right:0,height:20,opacity:0,cursor:'pointer',zIndex:2}}/><div style={{position:'absolute',left:`calc(${volume*100}% - 6px)`,width:12,height:12,background:'#00d4ff',boxShadow:'0 0 8px #00d4ff',pointerEvents:'none',zIndex:1,transition:'left .1s'}}/></div><span style={{fontFamily:PF,fontSize:8,color:'#00d4ff',width:36,textAlign:'right',textShadow:'0 0 6px #00d4ff'}}>{Math.round(volume*100)}%</span></div>)}
         {voiceDemo&&<LiveTranscript lines={transcriptLines} speaking={speaking&&!voiceMuted}/>}
         {voiceDemo&&<AnalysisProgressBar progress={demoProgress} threatColor={tColor}/>}
-        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}><StatCard label="THREATS" value={alerts.length} color="#ff2d55" icon="⚠"/><StatCard label="PATTERNS" value="50+" color="#00d4ff" icon="◎"/><StatCard label="LATENCY" value="<80ms" color="#30d158" icon="⚡"/><StatCard label="CONFIDENCE" value={avgConf?`${avgConf}%`:'—'} color="#7b61ff" icon="◆"/></div>
+        <div className="vg-monitor-stats" style={{display:'flex',gap:8,flexWrap:'wrap'}}><StatCard label="THREATS" value={alerts.length} color="#ff2d55" icon="⚠"/><StatCard label="PATTERNS" value="50+" color="#00d4ff" icon="◎"/><StatCard label="LATENCY" value="<80ms" color="#30d158" icon="⚡"/><StatCard label="CONFIDENCE" value={avgConf?`${avgConf}%`:'—'} color="#7b61ff" icon="◆"/></div>
       </PBox>
       <PBox color="rgba(255,214,10,.2)" style={{padding:16,background:'rgba(255,214,10,.01)'}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{width:6,height:6,background:'#ffd60a',animation:'blink 1s step-end infinite'}}/><span style={{fontFamily:PF,fontSize:7,color:'#ffd60a',letterSpacing:1}}>VOICE DEMO SCRIPTS</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.45)'}}>— {language.toUpperCase()}</span></div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.35)',marginBottom:12,paddingLeft:14}}>🔊 2-way dialog (ME + CALLER) · Auto-stop · Use 🔇 MUTE for text-only mode</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{availableScripts.map(s=>(<button key={s.id} onClick={()=>setScript(script?.id===s.id?null:s)} style={{fontFamily:MF,fontSize:10,padding:'7px 14px',cursor:'pointer',border:`1px solid ${script?.id===s.id?'#ffd60a':'rgba(255,214,10,.22)'}`,background:script?.id===s.id?'rgba(255,214,10,.12)':'transparent',color:script?.id===s.id?'#ffd60a':'rgba(255,214,10,.52)',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>{s.label}{script?.id===s.id&&<span style={{fontSize:8}}>✓</span>}</button>))}</div></PBox>
-      <PBox color={alerts.length>0?'#ff2d55':'rgba(0,212,255,.15)'} style={{padding:20,background:'rgba(0,0,0,.2)',flex:1}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}><div><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff'}}>REAL-TIME ALERTS</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,.3)',marginTop:5}}>{now}</div></div>{alerts.length>0&&<div style={{fontFamily:PF,fontSize:7,padding:'5px 12px',border:'2px solid #ff2d55',color:'#ff2d55',background:'rgba(255,45,85,.08)',animation:'ppulse 1.5s infinite',flexShrink:0}}>{alerts.length} DETECTED</div>}</div>{alerts.length===0?(<div style={{textAlign:'center',padding:'52px 0'}}><div style={{fontSize:38,marginBottom:14,color:'rgba(0,212,255,.15)'}}>🛡</div><div style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,.2)',lineHeight:2.5}}>{monitoring?'LISTENING...\nANALYZING':'SELECT DEMO\nTHEN START'}</div></div>):(<div style={{maxHeight:380,overflowY:'auto',paddingRight:4}}>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</div>)}</PBox>
+      <PBox color={alerts.length>0?'#ff2d55':'rgba(0,212,255,.15)'} style={{padding:20,background:'rgba(0,0,0,.2)',flex:1}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,flexWrap:'wrap',gap:8}}><div><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff'}}>REAL-TIME ALERTS</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,.3)',marginTop:5}}>{now}</div></div>{alerts.length>0&&<div style={{fontFamily:PF,fontSize:7,padding:'5px 12px',border:'2px solid #ff2d55',color:'#ff2d55',background:'rgba(255,45,85,.08)',animation:'ppulse 1.5s infinite',flexShrink:0}}>{alerts.length} DETECTED</div>}</div>{alerts.length===0?(<div style={{textAlign:'center',padding:'52px 0'}}><div style={{fontSize:38,marginBottom:14,color:'rgba(0,212,255,.15)'}}>🛡</div><div style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,.2)',lineHeight:2.5}}>{monitoring?'LISTENING...\nANALYZING':'SELECT DEMO\nTHEN START'}</div></div>):(<div style={{maxHeight:380,overflowY:'auto',paddingRight:4}}>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</div>)}</PBox>
     </div>
-    <div style={{display:'flex',flexDirection:'column',gap:16}}><PBox color="#7b61ff" style={{padding:20,background:'rgba(0,0,0,.2)'}}><div style={{fontFamily:PF,fontSize:8,color:'#7b61ff',marginBottom:16,textShadow:'0 0 10px #7b61ff'}}>THREAT SCORE</div><ThreatMeter score={threatScore}/></PBox><PBox color="rgba(0,212,255,.12)" style={{padding:16,background:'rgba(0,0,0,.1)'}}><div style={{fontFamily:PF,fontSize:7,color:'rgba(0,212,255,.55)',marginBottom:12,letterSpacing:1}}>TECH STACK</div>{TECH_ITEMS.map(item=><TechChip key={item.name} item={item}/>)}</PBox></div>
+
+    {/* ── SIDEBAR — now responsive ── */}
+    <div className="vg-monitor-sidebar" style={{display:'flex',flexDirection:'column',gap:16}}>
+      <div className="vg-monitor-sidebar-inner" style={{display:'flex',flexDirection:'column',gap:16}}>
+        <PBox color="#7b61ff" style={{padding:20,background:'rgba(0,0,0,.2)'}}><div style={{fontFamily:PF,fontSize:8,color:'#7b61ff',marginBottom:16,textShadow:'0 0 10px #7b61ff'}}>THREAT SCORE</div><ThreatMeter score={threatScore}/></PBox>
+        <PBox color="rgba(0,212,255,.12)" style={{padding:16,background:'rgba(0,0,0,.1)'}}><div style={{fontFamily:PF,fontSize:7,color:'rgba(0,212,255,.55)',marginBottom:12,letterSpacing:1}}>TECH STACK</div>{TECH_ITEMS.map(item=><TechChip key={item.name} item={item}/>)}</PBox>
+      </div>
+    </div>
   </div>)
 }

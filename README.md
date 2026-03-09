@@ -304,7 +304,7 @@ Every session generates a complete forensic report with:
 
 **Session Gallery:** Saved sessions with threat score preview, country label, duration, and intervention count. Click any session for fullscreen detail view with tabs (Transcript, Alerts, **Interventions**, Psych + Lie Detection, Recommended Actions). Audio playback when recording is available.
 
-### 9. 🌍 Multi-Language Support (40+ Languages)
+### 9. 🌍 Multi-Language Support (40 Languages)
 
 Gemini Live API supports 40+ languages natively. VoxGuard includes region-specific scam patterns, localized alerts, **localized intervention UI, scenario-based verification challenges, and safe exit actions**.
 

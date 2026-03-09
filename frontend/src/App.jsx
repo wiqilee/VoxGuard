@@ -67,6 +67,18 @@ export default function App() {
   const [interventionHistory,setInterventionHistory]=useState([])
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
 
+  /* ── Track header height for sticky tab offset ── */
+  const headerRef = useRef(null)
+  const [headerH, setHeaderH] = useState(92)
+  useEffect(() => {
+    if (!headerRef.current) return
+    const ro = new ResizeObserver(([entry]) => {
+      setHeaderH(Math.ceil(entry.contentRect.height) + 3) // +3 for top accent bar + border
+    })
+    ro.observe(headerRef.current)
+    return () => ro.disconnect()
+  }, [])
+
   useEffect(()=>{ const t=setInterval(()=>setScanY(y=>(y+1.4)%100),16); return()=>clearInterval(t) },[])
 
   const ws=useWebSocket()
@@ -103,12 +115,10 @@ export default function App() {
     setTranscript(prev=>[...prev,line])
   }
 
-  // ── Intervention event handler — tracks history at App level ──
   const handleInterventionEvent = (event) => {
     setInterventionHistory(prev => [...prev, event])
   }
 
-  // ── Safe Exit handler — full session termination + switch to Report ──
   const handleSafeExit = () => {
     setMonitoring(false)
     if (audio.recordingBlob) {
@@ -150,9 +160,8 @@ export default function App() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;cursor:${cursorURL}}
+        *{box-sizing:border-box;margin:0;padding:0}
         body{background:#020408;color:#e0e0e0;overflow-x:hidden}
-        a,button{cursor:${cursorURL}}
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:rgba(0,212,255,0.03)}::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00d4ff,#7b61ff)}
         @keyframes marquee  {0%{transform:translateX(100%)}100%{transform:translateX(-200%)}}
         @keyframes blink    {0%,100%{opacity:1}50%{opacity:0}}
@@ -167,21 +176,64 @@ export default function App() {
         .tab-btn:hover{color:rgba(255,255,255,0.95)!important;text-shadow:0 0 12px rgba(255,255,255,0.4)!important;background:rgba(255,255,255,0.04)!important}
         .tab-btn.active-tab{color:#00ffff!important;text-shadow:0 0 16px #00ffff,0 0 32px rgba(0,255,255,0.4)!important}
 
+        /* ── Custom cursor only on desktop (touch devices ignore) ── */
+        @media(hover:hover){
+          *{cursor:${cursorURL}}
+          a,button{cursor:${cursorURL}}
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MOBILE RESPONSIVE — Header, Tabs, Content, Footer
+           ══════════════════════════════════════════════════════ */
         @media(max-width:768px){
-          .vg-header-inner{height:auto!important;flex-wrap:wrap!important;padding:10px 14px!important;gap:10px!important}
+          .vg-header-inner{
+            height:auto!important;
+            flex-wrap:wrap!important;
+            padding:10px 14px!important;
+            gap:8px!important;
+          }
           .vg-header-inner .vg-marquee{display:none!important}
           .vg-header-inner .vg-divider{display:none!important}
-          .vg-header-inner .vg-status{min-width:auto!important;padding:6px 10px!important}
-          .vg-tabs{padding:0 10px!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
-          .vg-tabs .tab-btn{padding:12px 14px!important;font-size:6px!important;white-space:nowrap}
+          .vg-header-inner .vg-status{
+            min-width:auto!important;
+            padding:6px 10px!important;
+            flex:1!important;
+          }
+          .vg-tabs{
+            padding:0 8px!important;
+            overflow-x:auto!important;
+            -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;
+          }
+          .vg-tabs::-webkit-scrollbar{display:none}
+          .vg-tabs .tab-btn{
+            padding:12px 14px!important;
+            font-size:6px!important;
+            white-space:nowrap;
+            flex-shrink:0;
+          }
           .vg-content{padding:14px!important}
-          .vg-footer-inner{flex-direction:column!important;padding:12px 14px!important;text-align:center!important;gap:8px!important}
+          .vg-footer-inner{
+            flex-direction:column!important;
+            padding:12px 14px!important;
+            text-align:center!important;
+            gap:10px!important;
+          }
           .vg-footer-inner>*{justify-content:center!important}
+          .vg-footer-socials{flex-wrap:wrap!important;justify-content:center!important}
         }
         @media(max-width:480px){
           .vg-header-inner{padding:8px 10px!important}
           .vg-content{padding:10px!important}
-          .vg-tabs .tab-btn{padding:10px 10px!important;font-size:5px!important;letter-spacing:1px!important}
+          .vg-tabs .tab-btn{
+            padding:10px 10px!important;
+            font-size:5px!important;
+            letter-spacing:1px!important;
+          }
+          .vg-footer-socials a{
+            font-size:8px!important;
+            padding:4px 8px!important;
+          }
         }
       `}</style>
 
@@ -195,8 +247,8 @@ export default function App() {
 
         <div style={{ position:'relative',zIndex:2,display:'flex',flexDirection:'column',minHeight:'100vh' }}>
 
-          {/* HEADER */}
-          <header style={{ background:'rgba(2,4,8,0.92)',borderBottom:'1px solid rgba(0,255,255,0.15)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)' }}>
+          {/* HEADER — ref for dynamic height measurement */}
+          <header ref={headerRef} style={{ background:'rgba(2,4,8,0.92)',borderBottom:'1px solid rgba(0,255,255,0.15)',position:'sticky',top:0,zIndex:100,backdropFilter:'blur(8px)',WebkitBackdropFilter:'blur(8px)' }}>
             <div style={{ height:2,background:monitoring?`linear-gradient(90deg,transparent,${tColor}cc,${tColor}88,transparent)`:'linear-gradient(90deg,transparent,rgba(0,255,255,0.6),rgba(167,139,250,0.4),transparent)',transition:'background 0.6s ease' }} />
             <div className="vg-header-inner" style={{ display:'flex',alignItems:'center',gap:0,height:90,padding:'0 32px' }}>
               <PixelLogo />
@@ -223,8 +275,8 @@ export default function App() {
             </div>
           </header>
 
-          {/* TABS */}
-          <nav className="vg-tabs" style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.97)',padding:'0 32px',position:'sticky',top:92,zIndex:99 }}>
+          {/* TABS — dynamic top offset from measured header height */}
+          <nav className="vg-tabs" style={{ display:'flex',alignItems:'stretch',borderBottom:'1px solid rgba(0,255,255,0.1)',background:'rgba(2,4,8,0.97)',padding:'0 32px',position:'sticky',top:headerH,zIndex:99 }}>
             {TABS.map(t=>(
               <button key={t} onClick={()=>setTab(t)}
                 className={`tab-btn${tab===t?' active-tab':''}`}
@@ -276,7 +328,7 @@ export default function App() {
                 <span style={{ color:'rgba(0,255,255,0.85)',textShadow:'0 0 6px rgba(0,255,255,0.4)' }}>VOXGUARD &copy; 2026</span><br/>
                 <span style={{ color:'rgba(255,255,255,0.5)',fontSize:5 }}>WIQI LEE - MIT LICENSE</span>
               </div>
-              <div style={{ display:'flex',gap:6,alignItems:'center',flexWrap:'wrap' }}>
+              <div className="vg-footer-socials" style={{ display:'flex',gap:6,alignItems:'center',flexWrap:'wrap' }}>
                 <SocialLink href="https://x.com/wiqi_lee" icon={<XIcon size={11} color="currentColor"/>} label="@wiqi_lee" c="rgba(255,255,255,0.7)" bc="rgba(255,255,255,0.16)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />
                 <SocialLink href="https://discord.com/users/209385020912173066" icon={<DiscordIcon size={12} color="#7b8cde"/>} label="Discord" c="#7b8cde" bc="rgba(123,140,222,0.25)" bg="rgba(123,140,222,0.06)" hc="#a5b4fc" hbg="rgba(123,140,222,0.14)" />
                 <SocialLink href="https://github.com/wiqilee" icon={<GitHubIcon size={12} color="currentColor"/>} label="GitHub" c="rgba(255,255,255,0.7)" bc="rgba(255,255,255,0.14)" bg="rgba(255,255,255,0.04)" hc="#fff" hbg="rgba(255,255,255,0.1)" />

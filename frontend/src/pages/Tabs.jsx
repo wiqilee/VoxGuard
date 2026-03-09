@@ -18,6 +18,29 @@ const tabsCSS = `
   0%, 100% { text-shadow: none; }
   50% { text-shadow: 0 0 8px currentColor; }
 }
+
+/* ── MOBILE RESPONSIVE for Tabs (Psych, Patterns, Report, About) ── */
+@media(max-width:768px){
+  .vg-psych-frameworks{grid-template-columns:1fr!important}
+  .vg-psych-section{flex-direction:column!important}
+  .vg-psych-section>div:first-child{min-width:0!important}
+  .vg-patterns-grid{grid-template-columns:1fr!important}
+  .vg-report-metrics{grid-template-columns:repeat(2,1fr)!important}
+  .vg-gallery-grid{grid-template-columns:1fr!important}
+  .vg-about-grid{grid-template-columns:1fr!important}
+  .vg-about-grid>*{grid-row:auto!important}
+  .vg-about-creator{flex-direction:column!important}
+  .vg-about-creator>div:first-child{border-right:none!important;border-bottom:1px solid rgba(123,97,255,0.15)}
+  .vg-datasources-grid{grid-template-columns:1fr 1fr!important}
+  .vg-fullscreen-header{flex-direction:column!important;align-items:flex-start!important}
+  .vg-filter-row{flex-direction:column!important}
+  .vg-scoring-rubric{flex-wrap:wrap!important}
+}
+@media(max-width:480px){
+  .vg-report-metrics{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .vg-datasources-grid{grid-template-columns:1fr!important}
+  .vg-gallery-card-meta{flex-direction:column!important;gap:4px!important}
+}
 `
 
 /* ── Score Interpretation ── */
@@ -83,7 +106,7 @@ function PieChart({ data, size=120, title }) {
 }
 
 /* ── Country Flags ── */
-const FLAGS = { en:'🇺🇸/🇬🇧',id:'🇮🇩','zh-CN':'🇨🇳',zh:'🇨🇳',ja:'🇯🇵',ko:'🇰🇷',es:'🇪🇸',fr:'🇫🇷',hi:'🇮🇳',ar:'🇸🇦',de:'🇩🇪',pt:'🇧🇷','pt-BR':'🇧🇷',ru:'🇷🇺',th:'🇹🇭',vi:'🇻🇳',ms:'🇲🇾',tr:'🇹🇷',it:'🇮🇹',nl:'🇳🇱',pl:'🇵🇱',sv:'🇸🇪' }
+const FLAGS = { en:'🇺🇸',id:'🇮🇩','zh-CN':'🇨🇳',zh:'🇨🇳',ja:'🇯🇵',ko:'🇰🇷',es:'🇪🇸',fr:'🇫🇷',hi:'🇮🇳',ar:'🇸🇦',de:'🇩🇪',pt:'🇧🇷','pt-BR':'🇧🇷',ru:'🇷🇺',th:'🇹🇭',vi:'🇻🇳',ms:'🇲🇾',tr:'🇹🇷',it:'🇮🇹',nl:'🇳🇱',pl:'🇵🇱',sv:'🇸🇪' }
 function getFlag(lang) { return FLAGS[lang] || FLAGS[lang?.split('-')[0]] || '🌐' }
 
 /* ── Social SVGs ── */
@@ -161,6 +184,11 @@ function InterventionHistorySection({ interventions, language }) {
 
 /* ══════════════════════════════════════════════════════════
    PREMIUM HTML/PDF EXPORT — colored bars, all sections, footer
+   ─────────────────────────────────────────────────────────
+   FIX: Comprehensive @media print overrides so all text is
+   readable on white paper. Dark-theme hex colors that were
+   invisible on white (#888, rgba(255,255,255,*)) are now
+   remapped to dark equivalents (#333, #555, #000).
 ══════════════════════════════════════════════════════════ */
 function genHTML(report) {
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
@@ -207,21 +235,94 @@ h2{color:#00d4ff;margin:28px 0 14px;font-size:12px;letter-spacing:2px;text-trans
 .intv .lvl{display:inline-block;font-size:8px;padding:3px 8px;font-weight:bold;margin-right:8px;text-transform:uppercase;border:1px solid}
 .footer{margin-top:40px;padding:20px 0;border-top:2px solid #111;text-align:center;color:#666;font-size:10px}
 .footer .brand{color:#00d4ff;font-size:12px;font-weight:bold;letter-spacing:2px}
+
+/* ════════════════════════════════════════════════════════
+   PRINT STYLES — Full override for white-paper readability
+   ════════════════════════════════════════════════════════ */
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
-  body{background:#fff!important;color:#222!important}
+
+  /* Base: white background, black text */
+  body{background:#fff!important;color:#111!important}
   .page{padding:20px}
-  h1{color:#cc0000!important}
-  h2{color:#005599!important}
-  .metric{border-color:#ddd}.metric .v{color:#cc0000!important}
-  .bar .bl{color:#444!important}
-  .bt{background:#eee!important;border-color:#ddd!important}
+
+  /* Headings */
+  h1{color:#cc0000!important;border-bottom-color:#cc0000!important}
+  h2{color:#005599!important;border-bottom-color:#005599!important}
+
+  /* Metadata */
+  .meta{color:#444!important}
+  .meta strong{color:#111!important}
+
+  /* Metric grid */
+  .metric{border-color:#ddd!important;background:#fafafa!important}
+  .metric .v{color:#cc0000!important}
+  .metric .l{color:#555!important}
+
+  /* Alert cards */
+  .alert{background:#fafafa!important}
+  .alert strong{color:#111!important}
+  .alert span[style*="color:#888"]{color:#555!important}
+
+  /* Badges — keep colored but ensure contrast */
+  .badge.critical{color:#cc0000!important;border-color:#cc0000!important;background:#fff0f0!important}
+  .badge.high{color:#cc7700!important;border-color:#cc7700!important;background:#fff8f0!important}
+  .badge.medium{color:#997700!important;border-color:#997700!important;background:#fffdf0!important}
+
+  /* Quotes / evidence text */
+  .quote{color:#333!important}
+
+  /* Bar chart — labels and track */
+  .bl{color:#333!important}
+  .bt{background:#eee!important;border-color:#ccc!important}
   .bf{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-  .tline{color:#333!important}.tline.flagged{background:#fff0f0!important}
-  .action{background:#f0fff4!important;border-color:#007700!important}
-  .footer{border-color:#eee!important}.footer .brand{color:#005599!important}
+  .bv{-webkit-print-color-adjust:exact!important}
+
+  /* Transcript lines */
+  .tline{color:#222!important}
+  .tline.flagged{background:#fff0f0!important;border-left-color:#cc0000!important}
+  .tline.me{border-left-color:#008833!important}
+  .ts{color:#005599!important}
   .speaker{-webkit-print-color-adjust:exact!important}
-  .badge{-webkit-print-color-adjust:exact!important}
+  .flag{color:#cc0000!important}
+
+  /* ME speaker green → dark green for print */
+  .speaker[style*="color:#30d158"],
+  .speaker[style*="color: #30d158"]{color:#007722!important}
+
+  /* CALLER speaker orange → dark orange for print */
+  .speaker[style*="color:#ff9500"],
+  .speaker[style*="color: #ff9500"]{color:#995500!important}
+
+  /* Intervention section */
+  .intv{background:#fafafa!important}
+  .intv strong{color:#111!important}
+  .intv .lvl{-webkit-print-color-adjust:exact!important}
+  .intv .quote{color:#333!important}
+  .intv span[style*="color:#888"]{color:#555!important}
+
+  /* Action items */
+  .action{background:#f0fff4!important;border-color:#007700!important;color:#222!important}
+  .action .pri{-webkit-print-color-adjust:exact!important}
+
+  /* Footer */
+  .footer{border-color:#ddd!important;color:#666!important}
+  .footer .brand{color:#005599!important}
+
+  /* Intervention level-specific overrides for print readability */
+  .intv .lvl[style*="#ff2d55"]{color:#cc0000!important;border-color:#cc0000!important}
+  .intv .lvl[style*="#ff9500"]{color:#cc7700!important;border-color:#cc7700!important}
+  .intv .lvl[style*="#ffd60a"]{color:#997700!important;border-color:#997700!important}
+
+  /* Intervened badge in alerts */
+  span[style*="color:#ff2d55"]{color:#cc0000!important}
+
+  /* Generic: any inline rgba(255,255,255,*) text → dark */
+  [style*="rgba(255,255,255"]{color:#333!important}
+  [style*="color:#888"]{color:#555!important}
+  [style*="color:#999"]{color:#555!important}
+  [style*="color:#666"]{color:#555!important}
+  [style*="color:#ccc"]{color:#333!important}
 }
 </style></head><body><div class="page">
 <h1>🛡 VOXGUARD — FORENSIC REPORT</h1>
@@ -250,7 +351,6 @@ ${(report.interventionHistory||[]).length>0?`<h2>LIVE INTERVENTIONS (${report.in
 <p style="color:#999;font-size:11px;margin-bottom:12px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
 ${report.interventionHistory.map(e=>{
   const c=e.level==='LOCKDOWN'?'#ff2d55':e.level==='BLOCK'?'#ff9500':'#ffd60a'
-  const cls=e.level==='LOCKDOWN'?'critical':'high'
   return `<div class="intv" style="border-color:${c}">
     <span class="lvl" style="color:${c};border-color:${c}">${e.level}</span>
     <strong>${e.pattern}</strong> <span style="color:#888;font-size:10px">Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span>
@@ -412,7 +512,7 @@ function SessionGallery({saved,onRefresh}){
   return(
     <div style={{marginTop:32}}>
       <div style={{fontFamily:PF,fontSize:9,color:'rgba(0,212,255,0.7)',marginBottom:16}}>📁 SESSION GALLERY ({saved.length})</div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:12}}>
+      <div className="vg-gallery-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:12}}>
         {saved.map(r=>{const sc=r.threatScore>75?'#ff2d55':r.threatScore>45?'#ff9500':'#30d158';return<GalleryCard key={r.id} r={r} sc={sc} fmt={fmt} onOpen={()=>setFs(r)} onDel={()=>{delReport(r.id);onRefresh();if(fs?.id===r.id)setFs(null)}}/>})}
       </div>
       <GalleryFullscreen report={fs} onClose={()=>setFs(null)} onDelete={()=>{if(fs){delReport(fs.id);onRefresh();setFs(null)}}}/>
@@ -457,7 +557,7 @@ export function PsychTab({psychScores,lieScores={}}){
         <div style={{fontFamily:PF,fontSize:11,color:'#ff9500',textShadow:'0 0 16px #ff9500',marginBottom:10}}>PSYCHOLOGICAL MANIPULATION ANALYZER</div>
         <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.9,maxWidth:780}}>Maps the <span style={{color:'#ff9500'}}>psychological architecture</span> of a manipulation attempt using <span style={{color:'#ff2d55'}}>three analytical frameworks</span>:</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:28}}>
+      <div className="vg-psych-frameworks" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:28}}>
         {[
           {title:'Cialdini\'s 6 Principles',desc:'Influence psychology framework (1984). Maps which persuasion vectors the caller is deploying.',color:'#ff9500',icon:'🧠'},
           {title:'FBI CBCA Method',desc:'Criteria-Based Content Analysis. Behavioral lie detection from interrogation research.',color:'#ff2d55',icon:'🔍'},
@@ -487,7 +587,7 @@ export function PsychTab({psychScores,lieScores={}}){
 
       {/* ── SECTION 1: Caller Manipulation Vectors ── */}
       <PBox color="#ff950044" style={{padding:20,marginBottom:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+        <div className="vg-psych-section" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#ff9500',textShadow:'0 0 10px #ff9500',marginBottom:4}}>CALLER — MANIPULATION VECTORS</div>
             <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.55)',marginBottom:14}}>Cialdini's 6 influence principles detected from scammer</div>
@@ -561,7 +661,7 @@ export function PatternsTab({detectedIds=[]}){
       <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{flex:1,minWidth:200,padding:'9px 14px',background:'rgba(0,212,255,0.04)',border:'1px solid rgba(0,212,255,0.18)',color:'#e0e0e0',fontFamily:MF,fontSize:11,outline:'none'}}/>
       <div style={{display:'flex',gap:6}}>{['all','critical','high','medium','low'].map(f=>{const fc=f==='all'?'#00d4ff':SEV[f]?.text||'#00d4ff';return<button key={f} onClick={()=>setFilter(f)} style={{padding:'9px 14px',fontFamily:PF,fontSize:6,border:`1px solid ${filter===f?fc:fc+'44'}`,background:filter===f?fc+'18':'transparent',color:filter===f?fc:'rgba(255,255,255,0.5)',cursor:'pointer'}}>{f.toUpperCase()}</button>})}</div>
     </div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(330px,1fr))',gap:14}}>{filtered.map(p=>{const c=SEV[p.severity];return<PatternCard key={p.id} p={p} c={c} hit={detectedIds.includes(p.category)} onClick={()=>setSelected(p)}/>})}</div>
+    <div className="vg-patterns-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:14}}>{filtered.map(p=>{const c=SEV[p.severity];return<PatternCard key={p.id} p={p} c={c} hit={detectedIds.includes(p.category)} onClick={()=>setSelected(p)}/>})}</div>
 
     {/* Fullscreen Pattern Detail */}
     {selected&&(()=>{
@@ -630,7 +730,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
       <div style={{display:'flex',flexDirection:'column',gap:14}}>
         <PBox color="#ff2d55" style={{padding:24,background:'rgba(255,45,85,0.04)'}}>
           <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',marginBottom:16}}>⚠ HIGH RISK — SCAM DETECTED</div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
+          <div className="vg-report-metrics" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
             {[{l:'DURATION',v:fmt(sessionTime),c:'#00d4ff'},{l:'THREATS',v:alerts.length,c:'#ff2d55'},{l:'RISK SCORE',v:`${threatScore}/100`,c:'#ff2d55'},{l:'INTERVENTIONS',v:interventionHistory.length,c:interventionHistory.length>0?'#ff9500':'#30d158'}].map(item=>(
               <div key={item.l}><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.45)',marginBottom:5}}>{item.l}</div><div style={{fontFamily:PF,fontSize:15,color:item.c,textShadow:`0 0 12px ${item.c}`}}>{item.v}</div></div>
             ))}
@@ -679,14 +779,14 @@ export function AboutTab(){
   const R=['Data Scientist','AI/ML Researcher','Software Engineer','Cellist'],L=['Python','Java','Rust','Julia']
   const RC=['#00d4ff','#7b61ff','#30d158','#ffd60a'],LC=['#ff9500','#00d4ff','#ff2d55','#30d158']
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
-    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+    <div className="vg-about-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
       <PBox color="#00d4ff" style={{padding:32,background:'rgba(0,212,255,0.02)',gridRow:'span 2'}}><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff',marginBottom:16}}>THE PROBLEM</div><div style={{fontFamily:MF,fontSize:13,color:'rgba(255,255,255,0.7)',lineHeight:2.1}}>Every 30 seconds, someone loses money to a phone scam.<br/><br/>FBI IC3 2024:<span style={{fontFamily:PF,fontSize:16,color:'#ff2d55',display:'block',margin:'10px 0'}}>$16.6B</span>GASA global estimate:<span style={{fontFamily:PF,fontSize:16,color:'#ff2d55',display:'block',margin:'10px 0'}}>$1 TRILLION</span>Every solution shares one flaw: <span style={{color:'#ff9500'}}>they act after the damage is done</span>.</div></PBox>
       <PBox color="#ff9500" style={{padding:28}}><div style={{fontFamily:PF,fontSize:9,color:'#ff9500',marginBottom:12}}>WHAT'S NEW</div><div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.68)',lineHeight:1.9}}>World's <span style={{color:'#ff9500'}}>first</span> real-time multimodal scam detection. Gemini Live API + Rust WASM = &lt;80ms.</div></PBox>
       <PBox color="#7b61ff" style={{padding:28}}><div style={{fontFamily:PF,fontSize:9,color:'#7b61ff',marginBottom:12}}>PSYCH + LIE DETECT</div><div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.68)',lineHeight:1.9}}>6 Cialdini vectors + 5 lie indicators + user vulnerability state.</div></PBox>
     </div>
     <PBox color="#7b61ff" style={{padding:0,marginBottom:16,overflow:'hidden'}}>
       <div style={{height:3,background:'linear-gradient(90deg,#7b61ff,#00d4ff,#ff2d55,#ff9500,#30d158)',backgroundSize:'200%',animation:'rotateHue 4s linear infinite'}}/>
-      <div style={{display:'flex',flexWrap:'wrap'}}>
+      <div className="vg-about-creator" style={{display:'flex',flexWrap:'wrap'}}>
         <div style={{padding:28,borderRight:'1px solid rgba(123,97,255,0.15)',display:'flex',flexDirection:'column',alignItems:'center',gap:14,minWidth:220}}>
           <div style={{padding:18,border:'1px solid rgba(123,97,255,0.3)',background:'rgba(123,97,255,0.07)'}}><PixelLogo/></div>
           <div style={{textAlign:'center'}}><div style={{fontFamily:PF,fontSize:9,color:'#7b61ff',marginBottom:10}}>WIQI LEE</div><div style={{display:'flex',flexDirection:'column',gap:5,alignItems:'center'}}>{R.map((r,i)=><Tag key={r} label={r} c={RC[i]}/>)}</div></div>
@@ -703,7 +803,7 @@ export function AboutTab(){
         </div>
       </div>
     </PBox>
-    <PBox color="#30d158" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES</div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
+    <PBox color="#30d158" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES</div><div className="vg-datasources-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
       <DataSourceCard name="FBI IC3 2024" url="ic3.gov" href="https://www.ic3.gov/AnnualReport" c="#ff2d55"/>
       <DataSourceCard name="FTC Sentinel" url="ftc.gov" href="https://www.ftc.gov/enforcement/consumer-sentinel-network" c="#00d4ff"/>
       <DataSourceCard name="GASA Global" url="gasa.org" href="https://www.gasa.org" c="#ffd60a"/>
