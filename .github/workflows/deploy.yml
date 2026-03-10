@@ -26,9 +26,9 @@ jobs:
 
       - name: Deploy backend to Cloud Run
         run: |
-          gcloud run deploy voxguard-backend \
+          gcloud run deploy voxguard-489803 \
             --source backend/ \
-            --region us-central1 \
+            --region asia-southeast1 \
             --allow-unauthenticated \
             --set-env-vars GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
             --memory 512Mi \
