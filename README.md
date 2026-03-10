@@ -543,7 +543,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 **Wiqi Lee** · Data Scientist, AI/ML Researcher, Software Engineer, Cellist
 
-Languages: Python, Java, Rust, Julia
+Programming languages: Python, Java, Rust, Julia
 
 Submitted to: **Gemini Live Agent Challenge 2026** `#GeminiLiveAgentChallenge`
 
