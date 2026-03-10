@@ -246,6 +246,16 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       @keyframes rec-pulse{0%,100%{box-shadow:0 0 8px #ff2d55,0 0 16px rgba(255,45,85,0.3)}50%{box-shadow:0 0 14px #ff2d55,0 0 28px rgba(255,45,85,0.5),0 0 40px rgba(255,45,85,0.15)}}
       @keyframes rec-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
       @keyframes cv-crt-line{0%{top:-2px}100%{top:100%}}
+      @keyframes scriptBtnGlow{0%{border-color:#ffd60a44;text-shadow:none}33%{border-color:#ff950066;text-shadow:0 0 6px #ff950044}66%{border-color:#30d15866;text-shadow:0 0 6px #30d15844}100%{border-color:#ffd60a44;text-shadow:none}}
+
+      /* ── Demo script button hover ── */
+      .vg-demo-script-btn:hover{
+        border-color:#ffd60a!important;
+        color:#ffd60a!important;
+        background:rgba(255,214,10,.1)!important;
+        animation:scriptBtnGlow 2s ease infinite!important;
+        box-shadow:0 0 12px rgba(255,214,10,.15),inset 0 0 8px rgba(255,214,10,.05);
+      }
 
       /* ── MOBILE RESPONSIVE ── */
       @media(max-width:900px){
@@ -260,13 +270,18 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         .vg-monitor-controls>button{font-size:5px!important;padding:8px 8px!important;letter-spacing:1px!important}
         .vg-monitor-controls .vg-callmode-toggle{flex:0 0 auto!important}
         .vg-monitor-header{flex-direction:column!important;align-items:stretch!important}
+        .vg-monitor-header>div:first-child{margin-bottom:4px}
+        .vg-monitor-title{font-size:8px!important}
         .vg-monitor-stats{flex-wrap:wrap!important}
         .vg-monitor-stats>*{min-width:calc(50% - 4px)!important;flex:1 1 calc(50% - 4px)!important}
+        .vg-main-box{padding:14px!important}
+        .vg-main-box .vg-monitor-controls{overflow-x:auto;-webkit-overflow-scrolling:touch}
       }
       @media(max-width:400px){
         .vg-monitor-controls{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important}
         .vg-monitor-controls .vg-callmode-toggle{grid-column:span 2}
         .vg-monitor-controls .vg-btn-start{grid-column:span 2}
+        .vg-monitor-title{font-size:7px!important}
       }
     `}</style>
 
@@ -281,11 +296,11 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     )}
 
     <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      <PBox color={monitoring&&threatLevel==='critical'?'#ff2d55':'#00d4ff'} style={{padding:24,background:'rgba(0,212,255,.01)',transition:'all .5s',position:'relative',overflow:'hidden'}}>
+      <PBox className="vg-main-box" color={monitoring&&threatLevel==='critical'?'#ff2d55':'#00d4ff'} style={{padding:24,background:'rgba(0,212,255,.01)',transition:'all .5s',position:'relative',overflow:'hidden'}}>
         {monitoring&&<div style={{position:'absolute',left:0,right:0,height:2,background:'linear-gradient(90deg,transparent,rgba(0,212,255,0.06),transparent)',animation:'cv-crt-line 4s linear infinite',pointerEvents:'none',zIndex:1}}/>}
 
         <div className="vg-monitor-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:10,position:'relative',zIndex:2}}>
-          <div><div style={{fontFamily:PF,fontSize:10,color:'#00d4ff',marginBottom:6,textShadow:'0 0 14px #00d4ff'}}>LIVE SESSION MONITOR</div><div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,.48)'}}>{monitoring?voiceDemo?`► VOICE DEMO — ${fmt(sessionTime)} — ${demoProgress}%`:`► ANALYZING — ${fmt(sessionTime)}`:'■ READY — SELECT DEMO → START'}</div></div>
+          <div><div className="vg-monitor-title" style={{fontFamily:PF,fontSize:10,color:'#00d4ff',marginBottom:6,textShadow:'0 0 14px #00d4ff'}}>LIVE SESSION MONITOR</div><div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,.48)'}}>{monitoring?voiceDemo?`► VOICE DEMO — ${fmt(sessionTime)} — ${demoProgress}%`:`► ANALYZING — ${fmt(sessionTime)}`:'■ READY — SELECT DEMO → START'}</div></div>
           <div className="vg-monitor-controls" style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
             <div className="vg-callmode-toggle" style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
             <RecButton isRecording={isRecording} onClick={()=>setIsRecording(r=>!r)} />
@@ -318,8 +333,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         {voiceDemo&&<AnalysisProgressBar progress={demoProgress} threatColor={tColor}/>}
         <div className="vg-monitor-stats" style={{display:'flex',gap:8,flexWrap:'wrap'}}><StatCard label="THREATS" value={alerts.length} color="#ff2d55" icon="⚠"/><StatCard label="PATTERNS" value="50+" color="#00d4ff" icon="◎"/><StatCard label="LATENCY" value="<80ms" color="#30d158" icon="⚡"/><StatCard label="CONFIDENCE" value={avgConf?`${avgConf}%`:'—'} color="#7b61ff" icon="◆"/></div>
       </PBox>
-      <PBox color="rgba(255,214,10,.2)" style={{padding:16,background:'rgba(255,214,10,.01)'}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{width:6,height:6,background:'#ffd60a',animation:'blink 1s step-end infinite'}}/><span style={{fontFamily:PF,fontSize:7,color:'#ffd60a',letterSpacing:1}}>VOICE DEMO SCRIPTS</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.45)'}}>— {language.toUpperCase()}</span></div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.35)',marginBottom:12,paddingLeft:14}}>🔊 2-way dialog (ME + CALLER) · Auto-stop · Use 🔇 MUTE for text-only mode</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{availableScripts.map(s=>(<button key={s.id} onClick={()=>setScript(script?.id===s.id?null:s)} style={{fontFamily:MF,fontSize:10,padding:'7px 14px',cursor:'pointer',border:`1px solid ${script?.id===s.id?'#ffd60a':'rgba(255,214,10,.22)'}`,background:script?.id===s.id?'rgba(255,214,10,.12)':'transparent',color:script?.id===s.id?'#ffd60a':'rgba(255,214,10,.52)',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>{s.label}{script?.id===s.id&&<span style={{fontSize:8}}>✓</span>}</button>))}</div></PBox>
-      <PBox color={alerts.length>0?'#ff2d55':'rgba(0,212,255,.15)'} style={{padding:20,background:'rgba(0,0,0,.2)',flex:1}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,flexWrap:'wrap',gap:8}}><div><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff'}}>REAL-TIME ALERTS</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(0,212,255,.45)',marginTop:5}}>{now}</div></div>{alerts.length>0&&<div style={{fontFamily:PF,fontSize:7,padding:'5px 12px',border:'2px solid #ff2d55',color:'#ff2d55',background:'rgba(255,45,85,.08)',animation:'ppulse 1.5s infinite',flexShrink:0}}>{alerts.length} DETECTED</div>}</div>{alerts.length===0?(<div style={{textAlign:'center',padding:'52px 0'}}><div style={{fontSize:38,marginBottom:14,color:'rgba(0,212,255,.15)'}}>🛡</div><div style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,.2)',lineHeight:2.5}}>{monitoring?'LISTENING...\nANALYZING':'SELECT DEMO\nTHEN START'}</div></div>):(<div style={{maxHeight:380,overflowY:'auto',paddingRight:4}}>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</div>)}</PBox>
+      <PBox color="rgba(255,214,10,.2)" style={{padding:16,background:'rgba(255,214,10,.01)'}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{width:6,height:6,background:'#ffd60a',animation:'blink 1s step-end infinite'}}/><span style={{fontFamily:PF,fontSize:7,color:'#ffd60a',letterSpacing:1}}>VOICE DEMO SCRIPTS</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.45)'}}>— {language.toUpperCase()}</span></div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.35)',marginBottom:12,paddingLeft:14}}>🔊 2-way dialog (ME + CALLER) · Auto-stop · Use 🔇 MUTE for text-only mode</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{availableScripts.map(s=>{const isActive=script?.id===s.id;return(<button key={s.id} onClick={()=>setScript(isActive?null:s)} className="vg-demo-script-btn" style={{fontFamily:MF,fontSize:10,padding:'7px 14px',cursor:'pointer',border:`1px solid ${isActive?'#ffd60a':'rgba(255,214,10,.22)'}`,background:isActive?'rgba(255,214,10,.12)':'transparent',color:isActive?'#ffd60a':'rgba(255,214,10,.52)',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>{s.label}{isActive&&<span style={{fontSize:8}}>✓</span>}</button>)})}</div></PBox>
+      <PBox color={alerts.length>0?'#ff2d55':'rgba(0,212,255,.15)'} style={{padding:20,background:'rgba(0,0,0,.2)',flex:1}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,flexWrap:'wrap',gap:8}}><div><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff'}}>REAL-TIME ALERTS</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(0,212,255,.55)',marginTop:5}}>{now}</div></div>{alerts.length>0&&<div style={{fontFamily:PF,fontSize:7,padding:'5px 12px',border:'2px solid #ff2d55',color:'#ff2d55',background:'rgba(255,45,85,.08)',animation:'ppulse 1.5s infinite',flexShrink:0}}>{alerts.length} DETECTED</div>}</div>{alerts.length===0?(<div style={{textAlign:'center',padding:'52px 0'}}><div style={{fontSize:38,marginBottom:14,color:'rgba(0,212,255,.15)'}}>🛡</div><div style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,.2)',lineHeight:2.5}}>{monitoring?'LISTENING...\nANALYZING':'SELECT DEMO\nTHEN START'}</div></div>):(<div style={{maxHeight:380,overflowY:'auto',paddingRight:4}}>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</div>)}</PBox>
     </div>
 
     {/* ── SIDEBAR — now responsive ── */}

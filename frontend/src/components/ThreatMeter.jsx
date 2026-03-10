@@ -12,6 +12,11 @@ export function ThreatMeter({ score }) {
 
   const filled = Math.round((score / 100) * SEGMENTS)
 
+  /* Sub-scores derive from main score but stay at 0 when score is 0 */
+  const voice    = score === 0 ? 0 : Math.min(100, score + 8)
+  const language = score === 0 ? 0 : Math.max(0, score - 5)
+  const behavior = score === 0 ? 0 : Math.min(100, score + 14)
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
 
@@ -53,28 +58,28 @@ export function ThreatMeter({ score }) {
         </div>
       </div>
 
-      {/* Sub-score bars — premium 3-color gradient */}
+      {/* Sub-score bars */}
       {[
-        { l: 'VOICE',    v: Math.min(100, score + 8),  colors: ['#881133','#cc2244','#ff5577'] },
-        { l: 'LANGUAGE', v: Math.max(0,   score - 5),  colors: ['#885500','#cc8800','#ffbb44'] },
-        { l: 'BEHAVIOR', v: Math.min(100, score + 14), colors: ['#3d2099','#5b3dbb','#7b61ff'] },
+        { l: 'VOICE',    v: voice,    colors: ['#881133','#cc2244','#ff5577'] },
+        { l: 'LANGUAGE', v: language,  colors: ['#885500','#cc8800','#ffbb44'] },
+        { l: 'BEHAVIOR', v: behavior, colors: ['#3d2099','#5b3dbb','#7b61ff'] },
       ].map(item => (
         <div key={item.l} style={{ width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.35)', letterSpacing: 1 }}>{item.l}</span>
-            <span style={{ fontFamily: MF, fontSize: 9, color: item.colors[2] }}>{item.v}%</span>
+            <span style={{ fontFamily: MF, fontSize: 9, color: item.v === 0 ? 'rgba(255,255,255,0.25)' : item.colors[2] }}>{item.v}%</span>
           </div>
           <div style={{ display: 'flex', gap: 2 }}>
             {Array.from({ length: 14 }).map((_, i) => {
-              const filled = i < Math.round(item.v / 100 * 14)
+              const on = i < Math.round(item.v / 100 * 14)
               const colorIdx = i < 5 ? 0 : i < 10 ? 1 : 2
               return (
                 <div
                   key={i}
                   style={{
                     flex: 1, height: 5,
-                    background: filled ? item.colors[colorIdx] : item.colors[2] + '20',
-                    boxShadow: filled ? `0 0 4px ${item.colors[colorIdx]}` : 'none',
+                    background: on ? item.colors[colorIdx] : item.colors[2] + '20',
+                    boxShadow: on ? `0 0 4px ${item.colors[colorIdx]}` : 'none',
                     transition: 'all 0.5s ease',
                   }}
                 />

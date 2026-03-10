@@ -3,10 +3,11 @@ import { useState } from 'react'
 const PF = "'Press Start 2P', monospace"
 const MF = "'Share Tech Mono', 'Courier New', monospace"
 
-export function PBox({ color = '#00d4ff', children, style = {}, onClick }) {
+export function PBox({ color = '#00d4ff', children, style = {}, onClick, className = '' }) {
   const [hov, setHov] = useState(false)
   return (
     <div
+      className={className}
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}

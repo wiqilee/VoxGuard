@@ -16,7 +16,7 @@
 **The world's first real-time multimodal scam detection agent with active intervention.**
 Gemini Live API + Rust WASM + Psychological AI = Protection in <80ms.
 
-<a href="https://voxguard-kappa.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel" alt="Live Demo"/></a> <a href="https://youtube.com"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a> <a href="#-for-judges-2-minute-guide"><img src="https://img.shields.io/badge/For%20Judges-2%20Minute%20Guide-FF6B35?style=for-the-badge" alt="For Judges"/></a>
+<a href="https://voxguard-kappa.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel" alt="Live Demo"/></a> <a href="https://youtube.com"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a> <a href="YOUR_MEDIUM_URL_HERE"><img src="https://img.shields.io/badge/Article-Medium-000000?style=for-the-badge&logo=medium" alt="Medium Article"/></a> <a href="#-for-judges-2-minute-guide"><img src="https://img.shields.io/badge/For%20Judges-2%20Minute%20Guide-FF6B35?style=for-the-badge" alt="For Judges"/></a>
 
 </div>
 
@@ -92,7 +92,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 | Psychological manipulation scoring | No | No | No | **Yes (First)** |
 | Lie detection analysis | No | No | No | **Yes (First)** |
 | User vulnerability scoring | No | No | No | **Yes (First)** |
-| Multi-language support | Partial | Partial | SG only | Yes, 40+ languages |
+| Multi-language support | Partial | Partial | SG only | Yes, 40 languages |
 | Per-country recommended actions | No | No | No | **Yes (9 countries)** |
 | **Intervention history in forensic reports** | No | No | No | **Yes (First)** |
 | Session gallery with playback | No | No | No | **Yes** |
@@ -215,7 +215,7 @@ Every intervention event is tracked and preserved:
 
 **Backend (Google Cloud Run, Python FastAPI):** FastAPI serves `/ws/session` via WebSocket plus REST endpoints with auto-scaling. The Threat Engine applies `0.45 x Language + 0.35 x Behavioral + 0.20 x Visual` to produce a score from 0 to 100 every 500ms. The engine evaluates every alert for intervention eligibility, checking both cumulative score thresholds and instant-trigger patterns. Intervention events are emitted via WebSocket alongside threat alerts.
 
-**Google Gemini AI:** `gemini-2.0-flash-live` for real-time audio streaming with barge-in support, `gemini-2.0-flash` for screenshot analysis, transcript analysis, and combined psychological/lie detection scoring with intervention recommendations, plus a grounding database of 50+ verified patterns.
+**Google Gemini AI:** `gemini-2.5-flash-native-audio` for real-time audio streaming with barge-in support and enhanced audio quality, `gemini-2.5-flash` for screenshot analysis, transcript analysis, and combined psychological/lie detection scoring with intervention recommendations, plus a grounding database of 50+ verified patterns.
 
 ---
 
@@ -306,7 +306,7 @@ Every session generates a complete forensic report with:
 
 ### 9. 🌍 Multi-Language Support (40 Languages)
 
-Gemini Live API supports 40+ languages natively. VoxGuard includes region-specific scam patterns, localized alerts, **localized intervention UI, scenario-based verification challenges, and safe exit actions**.
+Gemini Live API supports 40 languages natively. VoxGuard includes region-specific scam patterns, localized alerts, **localized intervention UI, scenario-based verification challenges, and safe exit actions**.
 
 #### Fully Native Support (demo scripts + localized alerts + intervention):
 
@@ -351,7 +351,7 @@ voxguard/
 │   │   │   ├── InterventionOverlay.jsx    # Live Scam Intervention: WARN/BLOCK/LOCKDOWN overlay
 │   │   │   ├── ThreatMeter.jsx            # SVG arc gauge: composite threat score 0-100
 │   │   │   ├── WaveformVisualizer.jsx     # Real-time audio waveform bar visualization
-│   │   │   └── LanguageSelector.jsx       # Language dropdown (40+ languages)
+│   │   │   └── LanguageSelector.jsx       # Language dropdown (40 languages)
 │   │   ├── pages/
 │   │   │   ├── MonitorTab.jsx             # Main dashboard: waveform, alerts, intervention state
 │   │   │   └── Tabs.jsx                   # Psych, Patterns, Report (with intervention history), About
@@ -488,7 +488,8 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 ### Technical Implementation (30%)
 
 - **Google GenAI SDK:** All Gemini calls use the official `google-generativeai` Python SDK
-- **Gemini Live API:** `gemini-2.0-flash-live` for real-time audio streaming with barge-in
+- **Gemini Live API:** `gemini-2.5-flash-native-audio` for real-time audio streaming with barge-in and enhanced audio quality
+- **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, and psychological scoring
 - **Rust WASM:** Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency
 - **Cloud Run:** Fully containerized, auto-scaling, health check endpoints
 - **Grounding:** Reasoning against 50+ verified patterns with zero hallucination
@@ -506,7 +507,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 - **Demo Mode on Vercel:** The live demo runs with simulated 2-way dialog and TTS alerts. Full real-time analysis requires a running backend with a valid Gemini API key.
 - **Browser Speech Synthesis:** Demo voice quality varies by browser/OS. A MUTE button + volume slider are available.
-- **English fallback:** 30+ languages use English voice and alerts in demo. 9 languages have full native support (EN, ID, ZH, JA, KO, ES, FR, HI, AR).
+- **English fallback:** 31 languages use English voice and alerts in demo. 9 languages have full native support (EN, ID, ZH, JA, KO, ES, FR, HI, AR).
 - **Browser-only:** No native mobile or desktop clients yet.
 - **Latency depends on network:** <80ms measured locally; 100-300ms over public internet with Cloud Run.
 - **No persistent storage in demo:** Session reports use localStorage only.
@@ -525,7 +526,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 - **Auto-detect call platform:** Automatically identify if user is on phone, Zoom, WhatsApp, or Teams.
 - **Emotional contagion scoring:** Measure how the caller's emotional state transfers to the victim.
 - **Intervention learning:** Track which intervention levels and challenge questions are most effective at stopping victims from complying with scammers, and adapt the system over time.
-- **Full native support for 40+ languages:** Extend localized demo scripts, alerts, and intervention UI beyond the current 9 languages.
+- **Full native support for all 40 languages:** Extend localized demo scripts, alerts, and intervention UI beyond the current 9 languages.
 
 ---
 
@@ -536,6 +537,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 <a href="https://x.com/wiqi_lee"><img src="https://img.shields.io/badge/-@wiqi__lee-000000?style=for-the-badge&logo=x&logoColor=white" alt="X"/></a>
 <a href="https://discord.com/users/209385020912173066"><img src="https://img.shields.io/badge/-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/></a>
 <a href="https://github.com/wiqilee"><img src="https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/></a>
+<a href="https://g.dev/wiqilee"><img src="https://img.shields.io/badge/-Google%20Developer-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="GDG"/></a>
 
 </div>
 
@@ -555,10 +557,10 @@ Submitted to: **Gemini Live Agent Challenge 2026** `#GeminiLiveAgentChallenge`
 |--------|-----|-------|
 | FBI IC3 2024 Annual Report | [ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf](https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf) | Statistics ($16.6B), scam categories |
 | FBI IC3 Annual Reports Index | [ic3.gov/annualreport/reports](https://www.ic3.gov/annualreport/reports) | All yearly reports archive |
-| FTC Consumer Sentinel | [ftc.gov/enforcement](https://ftc.gov/enforcement/consumer-sentinel-network) | Pattern taxonomy, linguistic markers |
-| GASA Global Scam Report | [gasa.org](https://gasa.org) | Global $1T+ loss estimates |
-| MAS ScamShield (SG) | [scamshield.org.sg](https://scamshield.org.sg) | Southeast Asian variants |
-| ACCC ScamWatch | [scamwatch.gov.au](https://scamwatch.gov.au) | Australian variant patterns |
+| FTC Consumer Sentinel | [ftc.gov/enforcement/consumer-sentinel-network](https://www.ftc.gov/enforcement/consumer-sentinel-network) | Pattern taxonomy, linguistic markers |
+| GASA Global Scam Report | [gasa.org](https://www.gasa.org) | Global $1T+ loss estimates |
+| MAS ScamShield (SG) | [scamshield.org.sg](https://www.scamshield.org.sg) | Southeast Asian variants |
+| ACCC ScamWatch (AU) | [scamwatch.gov.au](https://www.scamwatch.gov.au) | Australian variant patterns |
 
 No proprietary or licensed data. No personal victim data. All examples reconstructed from published public reports.
 

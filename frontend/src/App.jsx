@@ -217,15 +217,17 @@ export default function App() {
             white-space:nowrap;
             flex-shrink:0;
           }
-          .vg-content{padding:14px!important}
+          .vg-content{padding:14px!important;overflow-x:hidden!important}
           .vg-footer-inner{
             flex-direction:column!important;
             padding:12px 14px!important;
             text-align:center!important;
             gap:10px!important;
+            align-items:center!important;
           }
-          .vg-footer-inner>*{justify-content:center!important}
+          .vg-footer-inner>*{justify-content:center!important;text-align:center!important}
           .vg-footer-socials{flex-wrap:wrap!important;justify-content:center!important}
+          .vg-footer-powered{text-align:center!important}
         }
         @media(max-width:480px){
           .vg-header-inner{padding:8px 10px!important}
@@ -340,7 +342,7 @@ export default function App() {
                 <div style={{ width:1,height:18,background:'rgba(255,255,255,0.12)',margin:'0 3px' }} />
                 <SocialLink href="https://geminiliveagentchallenge.devpost.com" icon={null} label="#GeminiLiveAgentChallenge" c="#ffd60a" bc="rgba(255,214,10,0.25)" bg="rgba(255,214,10,0.06)" hc="#ffe55a" hbg="rgba(255,214,10,0.12)" />
               </div>
-              <div style={{ fontFamily:PF,fontSize:6,color:'rgba(0,255,255,0.8)',letterSpacing:1.5,textAlign:'right',lineHeight:1.9,textShadow:'0 0 6px rgba(0,255,255,0.3)' }}>
+              <div className="vg-footer-powered" style={{ fontFamily:PF,fontSize:6,color:'rgba(0,255,255,0.8)',letterSpacing:1.5,textAlign:'right',lineHeight:1.9,textShadow:'0 0 6px rgba(0,255,255,0.3)' }}>
                 POWERED BY<br/><span style={{ color:'#5da9ff',textShadow:'0 0 10px #4285F4aa',fontSize:6 }}>GEMINI LIVE API</span>
               </div>
             </div>
