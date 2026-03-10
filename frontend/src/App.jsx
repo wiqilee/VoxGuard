@@ -51,7 +51,7 @@ export default function App() {
   const [tab,setTab]=useState('monitor')
   const [monitoring,setMonitoring]=useState(false)
   const [sessionTime,setSessionTime]=useState(0)
-  const [threatScore,setThreatScore]=useState(8)
+  const [threatScore,setThreatScore]=useState(0)
   const [threatLevel,setThreatLevel]=useState('safe')
   const [alerts,setAlerts]=useState([])
   const [psychScores,setPsychScores]=useState({SCARCITY:0,AUTHORITY:0,FEAR:0,RECIPROCITY:0,ISOLATION:0,COMMITMENT:0})
