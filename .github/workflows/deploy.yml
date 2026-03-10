@@ -24,10 +24,6 @@ jobs:
       - name: Set project
         run: gcloud config set project voxguard-489803
 
-      - name: Enable required APIs
-        run: |
-          gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com
-
       - name: Deploy backend to Cloud Run
         run: |
           gcloud run deploy voxguard-backend \
