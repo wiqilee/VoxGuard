@@ -17,6 +17,7 @@ export function PBox({ color = '#00d4ff', children, style = {}, onClick }) {
           : `inset 0 0 12px ${color}04`,
         position: 'relative',
         transition: 'all 0.2s ease',
+        animation: hov ? 'retroBorderCycle 3s ease infinite' : 'none',
         ...style,
       }}
     >
@@ -30,23 +31,24 @@ export function PBox({ color = '#00d4ff', children, style = {}, onClick }) {
       </div>
       <div style={{ position:'absolute',top:-1,right:-1,width:5,height:5,background:hov?color+'bb':color+'44',transition:'background 0.2s',zIndex:2 }} />
       <div style={{ position:'absolute',bottom:-1,left:-1,width:5,height:5,background:hov?color+'bb':color+'44',transition:'background 0.2s',zIndex:2 }} />
+      {/* Retro scanline on hover */}
+      {hov && <div style={{ position:'absolute',inset:0,pointerEvents:'none',zIndex:1,opacity:0.03,backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.4) 2px,rgba(255,255,255,0.4) 3px)',backgroundSize:'100% 4px' }} />}
       {children}
     </div>
   )
 }
 
-export function PBtn({ children, onClick, color = '#00d4ff', danger = false, disabled = false, style = {} }) {
+export function PBtn({ children, onClick, color = '#00d4ff', danger = false, disabled = false, style = {}, className = '' }) {
   const [hov, setHov] = useState(false)
   const [pressed, setPressed] = useState(false)
   const c = disabled ? 'rgba(255,255,255,0.15)' : danger ? '#ff2d55' : color
 
-  // Hover text: brighten the color instead of going full white
-  // This keeps red buttons readable and all buttons on-brand
   const hoverTextColor = disabled ? c : '#fff'
   const idleTextColor = c
 
   return (
     <button
+      className={className}
       onClick={disabled ? undefined : onClick}
       onMouseEnter={() => !disabled && setHov(true)}
       onMouseLeave={() => { setHov(false); setPressed(false) }}
@@ -55,7 +57,6 @@ export function PBtn({ children, onClick, color = '#00d4ff', danger = false, dis
       style={{
         fontFamily: PF, fontSize: 8, letterSpacing: 2, padding: '12px 24px',
         border: `1px solid ${hov && !disabled ? c : c + '55'}`,
-        // Stronger fill on hover so white text has enough contrast
         background: hov && !disabled
           ? `linear-gradient(135deg, ${c}44, ${c}22)`
           : `linear-gradient(135deg, ${c}0e, transparent)`,
@@ -70,6 +71,7 @@ export function PBtn({ children, onClick, color = '#00d4ff', danger = false, dis
         transition: 'all 0.14s ease', textTransform: 'uppercase',
         position: 'relative', opacity: disabled ? 0.35 : 1, overflow: 'hidden',
         textShadow: hov && !disabled ? `0 0 8px ${c}, 0 0 16px ${c}66` : 'none',
+        animation: hov && !disabled ? 'retroFlicker 0.3s ease 1' : 'none',
         ...style,
       }}
     >
@@ -96,11 +98,14 @@ export function StatCard({ label, value, color, icon }) {
         background:hov?`linear-gradient(135deg,${color}18,${color}06)`:`linear-gradient(135deg,${color}08,transparent)`,
         boxShadow:hov?`0 0 28px ${color}30,inset 0 0 20px ${color}0a`:'none',
         transition:'all 0.18s ease', position:'relative', overflow:'hidden',
+        animation: hov ? 'retroBorderCycle 2.5s ease infinite' : 'none',
       }}
     >
       <div style={{ position:'absolute',top:0,left:0,width:12,height:1,background:color,opacity:hov?1:0.4,transition:'opacity 0.2s' }} />
       <div style={{ position:'absolute',top:0,left:0,width:1,height:12,background:color,opacity:hov?1:0.4,transition:'opacity 0.2s' }} />
-      <div style={{ fontFamily:MF,fontSize:15,marginBottom:6,filter:hov?`drop-shadow(0 0 6px ${color})`:'none',transition:'filter 0.2s' }}>{icon}</div>
+      {/* Retro scanline on hover */}
+      {hov && <div style={{ position:'absolute',inset:0,pointerEvents:'none',zIndex:1,opacity:0.03,backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.4) 2px,rgba(255,255,255,0.4) 3px)',backgroundSize:'100% 4px' }} />}
+      <div style={{ fontFamily:MF,fontSize:15,marginBottom:6,filter:hov?`drop-shadow(0 0 6px ${color})`:'none',transition:'filter 0.2s',animation:hov?'retroFlicker 0.4s ease 1':'none' }}>{icon}</div>
       <div style={{ fontFamily:PF,fontSize:15,color,textShadow:hov?`0 0 16px ${color}`:`0 0 6px ${color}66`,lineHeight:1 }}>{value}</div>
       <div style={{ fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.4)',marginTop:7,letterSpacing:1.5 }}>{label}</div>
     </div>

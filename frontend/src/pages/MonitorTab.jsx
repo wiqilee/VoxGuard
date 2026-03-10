@@ -234,7 +234,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   const handleStartWithVoice=()=>{onStart();if(script)setTimeout(()=>startVoiceDemo(script),500)},handleStop=()=>{window.speechSynthesis?.cancel();speechTimers.current.forEach(t=>clearTimeout(t));onStop()}
 
   /* ══════════════════════════════════════════════════════════
-     Mobile responsive grid.
+     FIX: Mobile responsive grid.
      - Desktop: 2-column layout (main + sidebar 296px)
      - Tablet (<=900px): single column, sidebar moves below
      - Phone (<=480px): tighter padding, smaller buttons
@@ -255,11 +255,18 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       }
       @media(max-width:600px){
         .vg-monitor-sidebar-inner{grid-template-columns:1fr!important}
-        .vg-monitor-controls{gap:6px!important}
-        .vg-monitor-controls>*{font-size:6px!important;padding:6px 10px!important}
+        .vg-monitor-controls{gap:6px!important;justify-content:stretch!important}
+        .vg-monitor-controls>*{flex:1 1 auto!important;min-width:0!important}
+        .vg-monitor-controls>button{font-size:5px!important;padding:8px 8px!important;letter-spacing:1px!important}
+        .vg-monitor-controls .vg-callmode-toggle{flex:0 0 auto!important}
         .vg-monitor-header{flex-direction:column!important;align-items:stretch!important}
         .vg-monitor-stats{flex-wrap:wrap!important}
-        .vg-monitor-stats>*{min-width:calc(50% - 4px)!important;flex:none!important}
+        .vg-monitor-stats>*{min-width:calc(50% - 4px)!important;flex:1 1 calc(50% - 4px)!important}
+      }
+      @media(max-width:400px){
+        .vg-monitor-controls{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important}
+        .vg-monitor-controls .vg-callmode-toggle{grid-column:span 2}
+        .vg-monitor-controls .vg-btn-start{grid-column:span 2}
       }
     `}</style>
 
@@ -280,11 +287,11 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         <div className="vg-monitor-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:10,position:'relative',zIndex:2}}>
           <div><div style={{fontFamily:PF,fontSize:10,color:'#00d4ff',marginBottom:6,textShadow:'0 0 14px #00d4ff'}}>LIVE SESSION MONITOR</div><div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,.48)'}}>{monitoring?voiceDemo?`► VOICE DEMO — ${fmt(sessionTime)} — ${demoProgress}%`:`► ANALYZING — ${fmt(sessionTime)}`:'■ READY — SELECT DEMO → START'}</div></div>
           <div className="vg-monitor-controls" style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
-            <div style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
+            <div className="vg-callmode-toggle" style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
             <RecButton isRecording={isRecording} onClick={()=>setIsRecording(r=>!r)} />
             {voiceDemo&&<PBtn onClick={()=>{setVoiceMuted(m=>!m);if(!voiceMuted)window.speechSynthesis?.cancel()}} color={voiceMuted?'#ff9500':'#30d158'} style={{padding:'10px 14px'}}>{voiceMuted?'🔇 UNMUTE':'🔊 MUTE'}</PBtn>}
             <PBtn onClick={onToggleScreen} color={screenOn?'#7b61ff':'#7b61ff'}>{screenOn?'■ SCREEN OFF':'◈ SCREEN WATCH'}</PBtn>
-            {!monitoring?<PBtn onClick={handleStartWithVoice} color="#30d158">{script?'▶ START VOICE DEMO':'▶ START'}</PBtn>:<PBtn onClick={handleStop} danger>■ STOP</PBtn>}
+            {!monitoring?<PBtn className="vg-btn-start" onClick={handleStartWithVoice} color="#30d158">{script?'▶ START VOICE DEMO':'▶ START'}</PBtn>:<PBtn className="vg-btn-start" onClick={handleStop} danger>■ STOP</PBtn>}
           </div>
         </div>
         <CallerVisual mode={callMode} active={voiceDemo&&monitoring} screenWatchOn={screenOn} isRecording={isRecording}/>
@@ -312,14 +319,14 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         <div className="vg-monitor-stats" style={{display:'flex',gap:8,flexWrap:'wrap'}}><StatCard label="THREATS" value={alerts.length} color="#ff2d55" icon="⚠"/><StatCard label="PATTERNS" value="50+" color="#00d4ff" icon="◎"/><StatCard label="LATENCY" value="<80ms" color="#30d158" icon="⚡"/><StatCard label="CONFIDENCE" value={avgConf?`${avgConf}%`:'—'} color="#7b61ff" icon="◆"/></div>
       </PBox>
       <PBox color="rgba(255,214,10,.2)" style={{padding:16,background:'rgba(255,214,10,.01)'}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{width:6,height:6,background:'#ffd60a',animation:'blink 1s step-end infinite'}}/><span style={{fontFamily:PF,fontSize:7,color:'#ffd60a',letterSpacing:1}}>VOICE DEMO SCRIPTS</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.45)'}}>— {language.toUpperCase()}</span></div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.35)',marginBottom:12,paddingLeft:14}}>🔊 2-way dialog (ME + CALLER) · Auto-stop · Use 🔇 MUTE for text-only mode</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{availableScripts.map(s=>(<button key={s.id} onClick={()=>setScript(script?.id===s.id?null:s)} style={{fontFamily:MF,fontSize:10,padding:'7px 14px',cursor:'pointer',border:`1px solid ${script?.id===s.id?'#ffd60a':'rgba(255,214,10,.22)'}`,background:script?.id===s.id?'rgba(255,214,10,.12)':'transparent',color:script?.id===s.id?'#ffd60a':'rgba(255,214,10,.52)',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>{s.label}{script?.id===s.id&&<span style={{fontSize:8}}>✓</span>}</button>))}</div></PBox>
-      <PBox color={alerts.length>0?'#ff2d55':'rgba(0,212,255,.15)'} style={{padding:20,background:'rgba(0,0,0,.2)',flex:1}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,flexWrap:'wrap',gap:8}}><div><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff'}}>REAL-TIME ALERTS</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,.3)',marginTop:5}}>{now}</div></div>{alerts.length>0&&<div style={{fontFamily:PF,fontSize:7,padding:'5px 12px',border:'2px solid #ff2d55',color:'#ff2d55',background:'rgba(255,45,85,.08)',animation:'ppulse 1.5s infinite',flexShrink:0}}>{alerts.length} DETECTED</div>}</div>{alerts.length===0?(<div style={{textAlign:'center',padding:'52px 0'}}><div style={{fontSize:38,marginBottom:14,color:'rgba(0,212,255,.15)'}}>🛡</div><div style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,.2)',lineHeight:2.5}}>{monitoring?'LISTENING...\nANALYZING':'SELECT DEMO\nTHEN START'}</div></div>):(<div style={{maxHeight:380,overflowY:'auto',paddingRight:4}}>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</div>)}</PBox>
+      <PBox color={alerts.length>0?'#ff2d55':'rgba(0,212,255,.15)'} style={{padding:20,background:'rgba(0,0,0,.2)',flex:1}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,flexWrap:'wrap',gap:8}}><div><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff'}}>REAL-TIME ALERTS</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(0,212,255,.45)',marginTop:5}}>{now}</div></div>{alerts.length>0&&<div style={{fontFamily:PF,fontSize:7,padding:'5px 12px',border:'2px solid #ff2d55',color:'#ff2d55',background:'rgba(255,45,85,.08)',animation:'ppulse 1.5s infinite',flexShrink:0}}>{alerts.length} DETECTED</div>}</div>{alerts.length===0?(<div style={{textAlign:'center',padding:'52px 0'}}><div style={{fontSize:38,marginBottom:14,color:'rgba(0,212,255,.15)'}}>🛡</div><div style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,.2)',lineHeight:2.5}}>{monitoring?'LISTENING...\nANALYZING':'SELECT DEMO\nTHEN START'}</div></div>):(<div style={{maxHeight:380,overflowY:'auto',paddingRight:4}}>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</div>)}</PBox>
     </div>
 
     {/* ── SIDEBAR — now responsive ── */}
     <div className="vg-monitor-sidebar" style={{display:'flex',flexDirection:'column',gap:16}}>
       <div className="vg-monitor-sidebar-inner" style={{display:'flex',flexDirection:'column',gap:16}}>
         <PBox color="#7b61ff" style={{padding:20,background:'rgba(0,0,0,.2)'}}><div style={{fontFamily:PF,fontSize:8,color:'#7b61ff',marginBottom:16,textShadow:'0 0 10px #7b61ff'}}>THREAT SCORE</div><ThreatMeter score={threatScore}/></PBox>
-        <PBox color="rgba(0,212,255,.12)" style={{padding:16,background:'rgba(0,0,0,.1)'}}><div style={{fontFamily:PF,fontSize:7,color:'rgba(0,212,255,.55)',marginBottom:12,letterSpacing:1}}>TECH STACK</div>{TECH_ITEMS.map(item=><TechChip key={item.name} item={item}/>)}</PBox>
+        <PBox color="#00d4ff" style={{padding:16,background:'rgba(0,0,0,.1)'}}><div style={{fontFamily:PF,fontSize:7,color:'rgba(0,212,255,.55)',marginBottom:12,letterSpacing:1}}>TECH STACK</div>{TECH_ITEMS.map(item=><TechChip key={item.name} item={item}/>)}</PBox>
       </div>
     </div>
   </div>)

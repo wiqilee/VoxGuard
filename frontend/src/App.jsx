@@ -132,7 +132,7 @@ export default function App() {
   useEffect(()=>{ if(monitoring)timerRef.current=setInterval(()=>setSessionTime(t=>t+1),1000); else clearInterval(timerRef.current); return()=>clearInterval(timerRef.current) },[monitoring])
 
   const handleStart=()=>{
-    setMonitoring(true);setAlerts([]);setThreatScore(8);setThreatLevel('safe')
+    setMonitoring(true);setAlerts([]);setThreatScore(0);setThreatLevel('safe')
     setSessionTime(0);setPsychScores({SCARCITY:0,AUTHORITY:0,FEAR:0,RECIPROCITY:0,ISOLATION:0,COMMITMENT:0})
     setDetectedIds([]);alertIdxRef.current=0
     setTranscript([])
@@ -172,8 +172,13 @@ export default function App() {
         @keyframes counterUp{from{opacity:0;transform:scale(0.8) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
         @keyframes colorCycle{0%{color:#00ffff;text-shadow:0 0 8px #00ffff}25%{color:#a78bfa;text-shadow:0 0 8px #a78bfa}50%{color:#4ade80;text-shadow:0 0 8px #4ade80}75%{color:#ffaa00;text-shadow:0 0 8px #ffaa00}100%{color:#00ffff;text-shadow:0 0 8px #00ffff}}
         @keyframes borderGlow{0%{border-color:#00ffff44}33%{border-color:#a78bfa44}66%{border-color:#ff4d8d44}100%{border-color:#00ffff44}}
+
+        /* ── RETRO HOVER EFFECTS — CRT flicker on interactive elements ── */
+        @keyframes retroFlicker{0%{opacity:1}5%{opacity:0.85}10%{opacity:1}15%{opacity:0.9}20%{opacity:1}100%{opacity:1}}
+        @keyframes retroBorderCycle{0%{border-color:#00ffff66;box-shadow:0 0 8px #00ffff22,inset 0 0 12px #00ffff06}33%{border-color:#a78bfa66;box-shadow:0 0 8px #a78bfa22,inset 0 0 12px #a78bfa06}66%{border-color:#ff4d8d66;box-shadow:0 0 8px #ff4d8d22,inset 0 0 12px #ff4d8d06}100%{border-color:#00ffff66;box-shadow:0 0 8px #00ffff22,inset 0 0 12px #00ffff06}}
+        @keyframes retroTextGlow{0%{text-shadow:0 0 4px #00ffff}33%{text-shadow:0 0 4px #a78bfa}66%{text-shadow:0 0 4px #ff4d8d}100%{text-shadow:0 0 4px #00ffff}}
         .tab-btn{color:rgba(255,255,255,0.6)!important;transition:all 0.15s ease;position:relative}
-        .tab-btn:hover{color:rgba(255,255,255,0.95)!important;text-shadow:0 0 12px rgba(255,255,255,0.4)!important;background:rgba(255,255,255,0.04)!important}
+        .tab-btn:hover{color:rgba(255,255,255,0.95)!important;text-shadow:0 0 12px rgba(255,255,255,0.4)!important;background:rgba(255,255,255,0.04)!important;animation:retroFlicker 0.4s ease 1}
         .tab-btn.active-tab{color:#00ffff!important;text-shadow:0 0 16px #00ffff,0 0 32px rgba(0,255,255,0.4)!important}
 
         /* ── Custom cursor only on desktop (touch devices ignore) ── */
