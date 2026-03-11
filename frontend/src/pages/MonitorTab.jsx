@@ -16,8 +16,12 @@ const GEMINI_TTS_MODEL = import.meta.env.VITE_GEMINI_TTS_MODEL || 'gemini-2.5-fl
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
 
 // Voice profiles — Gemini TTS prebuilt voices
-// Kore = clear female, Puck = warm male, Charon = deep authoritative
-const GEMINI_VOICE_MAP = {
+// Charon = deep authoritative (scammer), Kore = clear female (warning/user), Puck = warm male
+const GEMINI_CALLER_VOICE = {
+  en: 'Charon', id: 'Charon', zh: 'Charon', ja: 'Charon', ko: 'Charon',
+  es: 'Charon', fr: 'Charon', hi: 'Charon', ar: 'Charon',
+}
+const GEMINI_ME_VOICE = {
   en: 'Kore', id: 'Kore', zh: 'Kore', ja: 'Kore', ko: 'Kore',
   es: 'Kore', fr: 'Kore', hi: 'Kore', ar: 'Kore',
 }
@@ -25,15 +29,16 @@ const GEMINI_VOICE_MAP = {
 // Cache for generated audio to avoid re-calling API for same text
 const _ttsCache = new Map()
 
-async function generateGeminiTTS(text, lang = 'en') {
+async function generateGeminiTTS(text, lang = 'en', speaker = 'caller') {
   if (!GEMINI_API_KEY) return null
 
   // Check cache
-  const cacheKey = `${lang}:${text}`
+  const cacheKey = `${lang}:${speaker}:${text}`
   if (_ttsCache.has(cacheKey)) return _ttsCache.get(cacheKey)
 
   try {
-    const voice = GEMINI_VOICE_MAP[lang?.split('-')[0]] || 'Kore'
+    const voiceMap = speaker === 'me' ? GEMINI_ME_VOICE : GEMINI_CALLER_VOICE
+    const voice = voiceMap[lang?.split('-')[0]] || 'Charon'
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
       {
@@ -83,9 +88,44 @@ async function generateGeminiTTS(text, lang = 'en') {
   }
 }
 
-/* ── Browser voice selection ── */
+/* ── Browser voice selection — prefer high-quality voices ── */
 const VOICE_PREFS={en:{langPrefix:['en-US','en-GB','en']},id:{langPrefix:['id-ID','id']},zh:{langPrefix:['zh-CN','zh-TW','zh']},ja:{langPrefix:['ja-JP','ja']},ko:{langPrefix:['ko-KR','ko']},es:{langPrefix:['es-ES','es-MX','es']},fr:{langPrefix:['fr-FR','fr']},de:{langPrefix:['de-DE','de']},hi:{langPrefix:['hi-IN','hi']},ar:{langPrefix:['ar-SA','ar-EG','ar']},pt:{langPrefix:['pt-BR','pt-PT','pt']},ru:{langPrefix:['ru-RU','ru']},th:{langPrefix:['th-TH','th']},vi:{langPrefix:['vi-VN','vi']},ms:{langPrefix:['ms-MY','ms']},tr:{langPrefix:['tr-TR','tr']},it:{langPrefix:['it-IT','it']},nl:{langPrefix:['nl-NL','nl']},pl:{langPrefix:['pl-PL','pl']},sv:{langPrefix:['sv-SE','sv']}}
-function getVoiceForLang(lang){const voices=window.speechSynthesis.getVoices();if(!voices.length)return null;const prefs=VOICE_PREFS[lang]||VOICE_PREFS['en'];for(const prefix of prefs.langPrefix){const match=voices.find(v=>v.lang.startsWith(prefix));if(match)return match}return voices.find(v=>v.lang.startsWith('en'))||voices[0]}
+
+// Quality keywords to prefer (Google HD, Microsoft Natural, Apple, etc.)
+const QUALITY_KEYWORDS = ['google', 'natural', 'premium', 'enhanced', 'neural', 'wavenet']
+const ANTI_KEYWORDS = ['compact', 'espeak', 'mbrola']
+
+function getVoiceForLang(lang) {
+  const voices = window.speechSynthesis.getVoices()
+  if (!voices.length) return null
+  const prefs = VOICE_PREFS[lang] || VOICE_PREFS['en']
+
+  // Collect all matching voices for this language
+  let candidates = []
+  for (const prefix of prefs.langPrefix) {
+    const matches = voices.filter(v => v.lang.startsWith(prefix))
+    candidates.push(...matches)
+  }
+  if (candidates.length === 0) {
+    // Fallback to any English voice
+    candidates = voices.filter(v => v.lang.startsWith('en'))
+  }
+  if (candidates.length === 0) return voices[0] || null
+
+  // Filter out low-quality voices
+  let filtered = candidates.filter(v => !ANTI_KEYWORDS.some(k => v.name.toLowerCase().includes(k)))
+  if (filtered.length === 0) filtered = candidates
+
+  // Prefer high-quality voices (Google, Natural, Premium, etc.)
+  const premium = filtered.filter(v => QUALITY_KEYWORDS.some(k => v.name.toLowerCase().includes(k)))
+  if (premium.length > 0) return premium[0]
+
+  // Prefer non-local (network) voices which are usually higher quality
+  const remote = filtered.filter(v => !v.localService)
+  if (remote.length > 0) return remote[0]
+
+  return filtered[0]
+}
 
 /* ── Active Gemini TTS audio refs for cleanup ── */
 let _activeGeminiAudio = null
@@ -363,11 +403,38 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
      + Skip TTS during active intervention (caller muted)
      + Realistic dialog pauses between sentences
   ══════════════════════════════════════════════════════════ */
-  const startVoiceDemo=useCallback((sel)=>{if(!sel)return;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}setVoiceDemo(true);setTranscriptLines([]);setDemoProgress(0);finished.current=false;startTimeRef.current=Date.now();const sents=sel.sentences,tc=sents.filter(s=>s.speaker==='caller').length;pendingCount.current=tc;const go=()=>{const browserVoice=getVoiceForLang(language);sents.forEach((s,idx)=>{
+  const startVoiceDemo=useCallback((sel)=>{if(!sel)return;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}setVoiceDemo(true);setTranscriptLines([]);setDemoProgress(0);finished.current=false;startTimeRef.current=Date.now();const sents=sel.sentences,tc=sents.filter(s=>s.speaker==='caller').length;pendingCount.current=tc;const go=()=>{const browserVoice=getVoiceForLang(language);if(browserVoice)console.log(`[VoxGuard TTS] Using voice: "${browserVoice.name}" (${browserVoice.lang}) remote=${!browserVoice.localService}`);sents.forEach((s,idx)=>{
     // [FIX] Add realistic jeda: extra random pause (200-800ms) on top of script delay
     const jedaMs = Math.floor(Math.random() * 600) + 200
     const effectiveDelay = s.delay + (idx > 0 ? jedaMs : 0)
-    const timer=setTimeout(()=>{const el=Date.now()-startTimeRef.current,ts=fmt(Math.floor(el/1000)),line={text:s.text,time:ts,flagged:!!s.alert,speaker:s.speaker||'caller'};setTranscriptLines(p=>[...p,line]);if(onTranscriptLine)onTranscriptLine(line);if(s.speaker==='me'){if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},500);speechTimers.current.push(at)};return}
+    const timer=setTimeout(()=>{const el=Date.now()-startTimeRef.current,ts=fmt(Math.floor(el/1000)),line={text:s.text,time:ts,flagged:!!s.alert,speaker:s.speaker||'caller'};setTranscriptLines(p=>[...p,line]);if(onTranscriptLine)onTranscriptLine(line);if(s.speaker==='me'){
+      // [FIX] Speak "me" lines too with user voice for realistic 2-way dialog
+      if(!voiceMuted && !interventionActiveRef.current){
+        ;(async()=>{
+          const audioBlob = await generateGeminiTTS(s.text, language, 'me')
+          if(audioBlob){
+            const url = URL.createObjectURL(audioBlob)
+            const audio = new Audio(url)
+            _activeGeminiAudio = audio
+            audio.volume = volumeRef.current * 0.85
+            audio.onplay = ()=>setSpeaking(true)
+            audio.onended = ()=>{URL.revokeObjectURL(url);_activeGeminiAudio=null;setSpeaking(false)}
+            audio.onerror = ()=>{URL.revokeObjectURL(url);_activeGeminiAudio=null;fallbackMe()}
+            audio.play().catch(()=>{URL.revokeObjectURL(url);_activeGeminiAudio=null;fallbackMe()})
+          } else { fallbackMe() }
+          function fallbackMe(){
+            if(!window.speechSynthesis)return
+            const u=new SpeechSynthesisUtterance(s.text)
+            if(browserVoice)u.voice=browserVoice
+            u.rate=0.95;u.pitch=1.1;u.volume=Math.min(1, volumeRef.current * 0.9)
+            u.onstart=()=>setSpeaking(true)
+            u.onend=()=>setSpeaking(false)
+            u.onerror=()=>setSpeaking(false)
+            window.speechSynthesis.speak(u)
+          }
+        })()
+      }
+      if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},500);speechTimers.current.push(at)};return}
 
           /* ── [FIX] Speech: skip TTS during intervention, try Gemini TTS, fallback browser ── */
           // If intervention overlay is active, skip TTS but still count progress
@@ -387,7 +454,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
 
             // Try Gemini TTS first (async)
             ;(async()=>{
-              const audioBlob = await generateGeminiTTS(s.text, language)
+              const audioBlob = await generateGeminiTTS(s.text, language, s.speaker || 'caller')
               if(audioBlob){
                 // Play Gemini audio
                 const url = URL.createObjectURL(audioBlob)
@@ -406,7 +473,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
                 if(!window.speechSynthesis)return onSpeechDone()
                 const u=new SpeechSynthesisUtterance(s.text)
                 if(browserVoice)u.voice=browserVoice
-                u.rate=0.95;u.pitch=1;u.volume=volumeRef.current
+                // [FIX] More natural speech params — slightly slower, natural pitch
+                u.rate=0.92;u.pitch=1.05;u.volume=Math.min(1, volumeRef.current * 1.15)
                 u.onstart=()=>setSpeaking(true)
                 u.onend=onSpeechDone
                 u.onerror=onSpeechDone

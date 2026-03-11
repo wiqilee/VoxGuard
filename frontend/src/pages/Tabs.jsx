@@ -91,7 +91,7 @@ function getInterpretation(score) {
   return { level:'CRITICAL', color:'#ff2d55', text:'Maximum intensity. This is a confirmed manipulation tactic — disengage immediately.' }
 }
 
-/* ── Pie Chart — pseudo-3D with labels ── */
+/* ── Pie Chart — pseudo-3D with labels showing ABSOLUTE % matching bars ── */
 function PieChart({ data, size=120, title }) {
   const total = data.reduce((s,d)=>s+d.value,0) || 1
   let cum = 0
@@ -100,7 +100,8 @@ function PieChart({ data, size=120, title }) {
     cum += d.value
     const end = cum / total * 360
     const mid = (start+end)/2
-    return { ...d, start, end, mid, pct: Math.round(d.value/total*100) }
+    // [FIX] Show the absolute % (same as bar) instead of relative pie proportion
+    return { ...d, start, end, mid, pct: d.value, relPct: Math.round(d.value/total*100) }
   })
   const r = size/2 - 16
   const cx = size/2, cy = size/2
@@ -121,9 +122,10 @@ function PieChart({ data, size=120, title }) {
         <circle cx={cx} cy={cy} r={r} fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
         {slices.map((s,i)=>{
           const p = labelPos(s.mid)
+          // Show absolute % (matching bar) — only if slice is big enough to fit label
           return <g key={i}>
             <path d={arc(s.start,s.end)} fill={s.color+'cc'} stroke="#020408" strokeWidth="1.5" style={{ filter:`drop-shadow(0 0 4px ${s.color}44)` }}/>
-            {s.pct >= 8 && <text x={p.x} y={p.y+3} textAnchor="middle" fill="#fff" fontSize="8" fontFamily="monospace" fontWeight="bold" style={{ textShadow:'0 1px 2px rgba(0,0,0,0.8)' }}>{s.pct}%</text>}
+            {s.relPct >= 8 && <text x={p.x} y={p.y+3} textAnchor="middle" fill="#fff" fontSize="8" fontFamily="monospace" fontWeight="bold" style={{ textShadow:'0 1px 2px rgba(0,0,0,0.8)' }}>{s.pct}%</text>}
           </g>
         })}
         {total===0&&<text x={cx} y={cy+3} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">N/A</text>}
@@ -132,7 +134,7 @@ function PieChart({ data, size=120, title }) {
         {data.filter(d=>d.value>0).map((d,i)=>(
           <div key={i} style={{ display:'flex',alignItems:'center',gap:3,padding:'2px 5px' }}>
             <div style={{ width:6,height:6,background:d.color,flexShrink:0,boxShadow:`0 0 4px ${d.color}44` }}/>
-            <span style={{ fontFamily:MF,fontSize:7,color:d.color+'cc' }}>{d.label?.split(' ')[0]||''}</span>
+            <span style={{ fontFamily:MF,fontSize:7,color:d.color+'cc' }}>{d.label?.split(' ')[0]||''} {d.value}%</span>
           </div>
         ))}
       </div>
