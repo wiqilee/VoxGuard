@@ -1,17 +1,22 @@
 """
-VoxGuard FastAPI Backend
-────────────────────────
-Real-time AI-powered scam detection API.
+VoxGuard FastAPI Backend v2.0
+─────────────────────────────
+Real-time AI-powered scam detection API with:
+  - Natural voice intervention (Gemini TTS)
+  - Multimodal explanation cards
+  - Guided anti-scam action agent
 
 Endpoints:
-  WS  /ws/session     Real-time session (audio + screen analysis)
-  GET /health         Health check for Cloud Run
-  GET /api/patterns   Scam pattern library as JSON
-  GET /api/stats      Global stats
+  WS  /ws/session       Real-time session (audio + screen + intervention + TTS)
+  GET /health           Health check for Cloud Run
+  GET /api/patterns     Scam pattern library as JSON
+  GET /api/stats        Global stats
+  GET /api/countries    Supported countries for action agent
 """
 
 import logging
 import json
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -31,7 +36,7 @@ settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Real-time AI-powered scam detection. Gemini Live Agent Challenge 2026.",
+    description="Real-time AI-powered scam detection with voice intervention. Gemini Live Agent Challenge 2026.",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -53,6 +58,7 @@ async def health():
         "status": "healthy",
         "service": settings.app_name,
         "version": settings.app_version,
+        "features": ["tts", "explanation_cards", "action_agent"],
     }
 
 
@@ -71,14 +77,39 @@ async def get_stats():
         "data_sources": ["FTC Sentinel", "FBI IC3 2024", "GASA 2024", "MAS ScamShield", "ACCC ScamWatch"],
         "latency_ms": "<80",
         "model": settings.gemini_model,
+        "tts_model": settings.gemini_tts_model,
+        "features": {
+            "voice_intervention": True,
+            "explanation_cards": True,
+            "action_agent": True,
+            "supported_countries": 9,
+        },
+    }
+
+
+@app.get("/api/countries")
+async def get_countries():
+    """Returns supported countries for the action agent."""
+    from app.services.action_agent import COUNTRY_RESOURCES
+
+    return {
+        "countries": [
+            {"code": code, "name": data["name"], "flag": data["flag"], "emergency": data["emergency"]}
+            for code, data in COUNTRY_RESOURCES.items()
+        ],
+        "count": len(COUNTRY_RESOURCES),
     }
 
 
 @app.on_event("startup")
 async def startup():
-    logger.info(f"VoxGuard API v{settings.app_version} started")
-    logger.info(f"  Gemini model: {settings.gemini_model}")
-    logger.info(f"  CORS origins: {settings.cors_origins_list}")
+    port = os.environ.get("PORT", settings.backend_port)
+    logger.info(f"VoxGuard API v{settings.app_version} started on port {port}")
+    logger.info(f"  Gemini model:  {settings.gemini_model}")
+    logger.info(f"  Vision model:  {settings.gemini_vision_model}")
+    logger.info(f"  TTS model:     {settings.gemini_tts_model}")
+    logger.info(f"  CORS origins:  {settings.cors_origins_list}")
+    logger.info(f"  Features:      Voice TTS, Explanation Cards, Action Agent")
 
 
 @app.on_event("shutdown")

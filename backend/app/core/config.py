@@ -10,12 +10,13 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     app_name: str = "VoxGuard"
-    app_version: str = "1.0.0"
+    app_version: str = "2.0.0"
 
     # Gemini
     google_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash-live-001"
-    gemini_vision_model: str = "gemini-2.0-flash-001"
+    gemini_model: str = "gemini-2.5-flash-native-audio"
+    gemini_vision_model: str = "gemini-2.5-flash"
+    gemini_tts_model: str = "gemini-2.5-flash-preview-tts"
 
     # Server
     backend_host: str = "0.0.0.0"
