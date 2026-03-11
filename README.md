@@ -1,6 +1,6 @@
 # VoxGuard 🛡️
-### Real-Time Multimodal AI Scam Detection + Live Intervention. 
-### During Your Call, Not After. If a scammer asks for your OTP, VoxGuard steps in before you can share it.
+### Real-Time Multimodal AI Scam Detection with Live Intervention
+### Protecting you during the call, not after. When a scammer asks for your OTP, VoxGuard steps in before you hand it over.
 
 <div align="center">
 
@@ -14,7 +14,7 @@
 [![Built for](https://img.shields.io/badge/Built%20for-Gemini%20Live%20Agent%20Challenge-FF6B35?style=flat-square)](https://geminiliveagentchallenge.devpost.com)
 
 **The world's first real-time multimodal scam detection agent with active intervention.**
-Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection in <80ms.
+Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection in under 80ms.
 
 <a href="https://voxguard-kappa.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel" alt="Live Demo"/></a> <a href="https://youtube.com"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a> <a href="YOUR_MEDIUM_URL_HERE"><img src="https://img.shields.io/badge/Article-Medium-000000?style=for-the-badge&logo=medium" alt="Medium Article"/></a> <a href="#-for-judges-2-minute-guide"><img src="https://img.shields.io/badge/For%20Judges-2%20Minute%20Guide-FF6B35?style=for-the-badge" alt="For Judges"/></a>
 
@@ -24,7 +24,7 @@ Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection 
 
 ## 🎯 For Judges: 2-Minute Guide
 
-> **TL;DR:** Open the demo, click START, pick a demo script, watch real-time scam detection happen, then watch the system **intervene and block you** from giving away your money — with a **natural human voice** warning you in your language.
+> **TL;DR:** Open the demo, click START, pick a demo script, watch real-time scam detection happen, then watch the system **intervene and block you** from giving away your money - with a **natural human voice** warning you in your language.
 
 ### In 30 seconds (Demo Mode, no microphone needed):
 
@@ -53,19 +53,19 @@ Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection 
 | **ABOUT** | Architecture + data sources + why this is unprecedented |
 
 ### Innovation in one sentence:
-> *Every other tool blocks calls before they happen or alerts you passively. VoxGuard protects you **while** the scammer is talking — with a natural human voice that **speaks to you**, an AI that **explains why** this is dangerous, and an agent that **guides you** step-by-step to safety.*
+> *Every other tool either blocks calls before they connect or sends a passive alert after the damage is done. VoxGuard is the first system that protects you **while** the scammer is talking - with a natural voice that **warns you**, an AI that **explains why** this is dangerous, and an agent that **walks you** step-by-step to safety.*
 
 ---
 
 ## ⚠️ The Problem
 
-Every 30 seconds, someone in the world loses money to a phone or video call scam.
+Every 30 seconds, someone somewhere in the world loses money to a phone or video call scam.
 
 <div align="center">
 <img src="docs/svgs/threat-demo.svg" alt="Threat Score Demo" width="280"/>
 </div>
 
-According to the **FBI IC3 2024 Annual Report**, internet crime losses in the United States reached **$16.6 billion** in 2024, with phone and video call fraud being the fastest-growing category. Globally, GASA estimates losses exceeding **$1.026 trillion** annually.
+According to the **FBI IC3 2024 Annual Report**, internet crime losses in the United States hit **$16.6 billion** in 2024, with phone and video call fraud growing faster than any other category. Globally, GASA puts estimated losses at over **$1.026 trillion** per year.
 
 Every existing tool shares one fatal flaw: **they act after the damage is done.**
 
@@ -115,9 +115,9 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 <img src="docs/svgs/intervention.svg" alt="Live Scam Intervention Demo" width="100%"/>
 </div>
 
-No other tool does this. That's what sets VoxGuard apart.
+No other tool does this. This is what sets VoxGuard apart.
 
-When VoxGuard's threat engine determines you are about to take a fatal action, the system **does not wait for you to check a dashboard**. It takes over your screen, **speaks to you in a natural human voice**, explains exactly why this is dangerous, and forces a decision point.
+When VoxGuard's threat engine determines you are about to take an irreversible action, it does not wait for you to check a dashboard. It takes over your screen, **speaks to you in a natural human voice**, explains exactly why this is dangerous, and forces a decision point.
 
 ### Three Escalation Levels
 
@@ -142,9 +142,9 @@ This works across all supported languages. If the caller asks for your OTP in In
 
 ### 🔊 Natural Voice Intervention (Gemini TTS)
 
-**VoxGuard doesn't just show you a warning — it speaks to you.**
+**VoxGuard doesn't just show you a warning - it speaks to you.**
 
-When an intervention fires, `gemini-2.5-flash-preview-tts` generates a natural human voice warning that matches the detected scam type, the urgency level, and the user's language. This is not robotic text-to-speech — it sounds like a real person warning you.
+When an intervention fires, `gemini-2.5-flash-preview-tts` generates a natural human voice warning that matches the detected scam type, the urgency level, and the user's language. This is not robotic text-to-speech - it sounds like a real person warning you.
 
 | Level | Voice Profile | Example |
 |-------|--------------|---------|
@@ -153,29 +153,29 @@ When an intervention fires, `gemini-2.5-flash-preview-tts` generates a natural h
 | **LOCKDOWN** | Sharp, commanding (Charon) | *"Emergency. VoxGuard has confirmed this is a scam. This call will disconnect in 30 seconds."* |
 
 Voice warnings are:
-- **Contextual** — different scripts for bank impersonation, OTP extraction, gift card demand, government scam, tech support, and more
-- **Localized** — fully scripted in 9 languages (EN, ID, ZH, JA, KO, ES, FR, HI, AR)
-- **Graceful fallback** — if Gemini TTS is unavailable, falls back to browser speech synthesis automatically
+- **Contextual** - different scripts for bank impersonation, OTP extraction, gift card demand, government scam, tech support, and more
+- **Localized** - fully scripted in 9 languages (EN, ID, ZH, JA, KO, ES, FR, HI, AR)
+- **Graceful fallback** - if Gemini TTS is unavailable, falls back to browser speech synthesis automatically
 
 ### 📋 Multimodal Explanation Cards
 
-After a high-severity alert, VoxGuard generates an **Explanation Card** that tells you in plain language **why** this is dangerous — combining evidence from both audio and visual analysis.
+After a high-severity alert, VoxGuard generates an **Explanation Card** that tells you in plain language **why** this is dangerous - combining evidence from both audio and visual analysis.
 
 **Example Explanation Card:**
 > 🚨 **CRITICAL: Bank Impersonation + Fake Login Page**
 >
 > 🎙️ Audio | 🖥️ Screen | 95% confidence
 >
-> The caller claims to be from your bank's fraud department (Authority tactic) while your screen shows a login page at 'bank-secure-verify.com' — this is NOT your real bank's domain. The combination of voice impersonation and a phishing page is a confirmed scam technique.
+> The caller claims to be from your bank's fraud department (Authority tactic) while your screen shows a login page at 'bank-secure-verify.com' - this is NOT your real bank's domain. The combination of voice impersonation and a phishing page is a confirmed scam technique.
 >
 > ✅ End this call and call your bank using the number on the BACK of your card.
 
 Each card shows:
-- **Signal badges** — which sources detected the threat (Audio, Screen, or both)
-- **Confidence score** — how certain VoxGuard is
-- **Expandable signals** — detailed breakdown of each detected pattern with source and severity
-- **Risk factors** — specific quotes or elements that triggered the alert
-- **Recommended action** — one clear thing to do right now
+- **Signal badges** - which sources detected the threat (Audio, Screen, or both)
+- **Confidence score** - how certain VoxGuard is
+- **Expandable signals** - detailed breakdown of each detected pattern with source and severity
+- **Risk factors** - specific quotes or elements that triggered the alert
+- **Recommended action** - one clear thing to do right now
 
 ### Scenario-Based Verification Challenge
 
@@ -252,19 +252,19 @@ Instead of just saying "call your bank", VoxGuard generates a **personalized, st
 |---------|------|-----------|--------------------|
 | United States | 🇺🇸 | 911 | FTC, FBI IC3, Credit bureaus |
 | Indonesia | 🇮🇩 | 110 | OJK, Bareskrim, Bank Indonesia |
-| Singapore | 🇸🇬 | 999 | SPF, ScamShield app, NCPC |
 | China | 🇨🇳 | 110 | National Anti-Fraud Center app |
 | Japan | 🇯🇵 | 110 | NPA #9110, Consumer Hotline 188 |
 | South Korea | 🇰🇷 | 112 | FSS 1332, Cyber investigation |
 | Spain | 🇪🇸 | 112 | Guardia Civil, INCIBE 017 |
 | France | 🇫🇷 | 17 | PHAROS, Info Escroqueries |
-| India | 🇮🇳 | 112 | Cybercrime 1930, Chakshu portal, RBI |
+| India | 🇮🇳 | 112 | Cybercrime 1930, cybercrime.gov.in |
+| Saudi Arabia | 🇸🇦 | 911 | Kulluna Amn app, SAMA |
 
 Action plans are:
-- **Personalized** — steps prioritized based on what was detected (OTP extraction gets bank-first, gift card gets report-first)
-- **AI-enhanced** — Gemini adds personalized advice based on the specific call transcript
-- **Interactive** — checkbox progress tracking with completion percentage
-- **Localized** — action text in the user's language with local phone numbers and websites
+- **Personalized** - steps prioritized based on what was detected (OTP extraction gets bank-first, gift card gets report-first)
+- **AI-enhanced** - Gemini adds personalized advice based on the specific call transcript
+- **Interactive** - checkbox progress tracking with completion percentage
+- **Localized** - action text in the user's language with local phone numbers and websites
 
 ### Safe Exit Actions
 
@@ -279,15 +279,15 @@ These are available in English, Indonesian, Chinese, Japanese, Korean, Spanish, 
 
 ### Why This Matters
 
-Scammers succeed because they keep victims in a state of panic that prevents rational thinking. The caller creates urgency ("your account will be frozen in 10 minutes"), establishes false authority ("I am calling from the fraud department"), and demands isolation ("do not contact your bank directly").
+Scammers succeed because they keep victims in a state of panic that shuts down rational thinking. The caller manufactures urgency ("your account will be frozen in 10 minutes"), establishes false authority ("I am calling from the fraud department"), and enforces isolation ("do not contact your bank directly").
 
 VoxGuard's three-layer defense breaks that panic loop:
 
 1. **Voice Intervention** physically interrupts the scammer's narrative with a calm, authoritative human voice speaking directly to the victim
-2. **Explanation Card** replaces confusion with clarity — showing exactly which signals triggered the alert and why
-3. **Action Agent** replaces helplessness with a concrete plan — step-by-step instructions with local emergency numbers
+2. **Explanation Card** replaces confusion with clarity, showing exactly which signals triggered the alert and why
+3. **Action Agent** replaces helplessness with a concrete plan, providing step-by-step instructions with local emergency numbers
 
-The intervention overlay physically breaks that panic loop. It pauses the conversation. It forces a moment of reflection. The scenario-based verification challenge makes the victim confront the reality of what is happening with questions specific to the scam type they are experiencing. And if the victim is too far gone to respond, the 30-second lockdown countdown ends the call automatically.
+The intervention overlay physically breaks that panic loop. It pauses the conversation. It forces a moment of reflection. The scenario-based verification challenge makes the victim confront the reality of what is happening, with questions tailored to the specific scam type they are experiencing. And if the victim is too far gone to respond, the 30-second lockdown countdown ends the call automatically.
 
 No other scam detection tool does this. Every other system either blocks calls before they connect (which misses new numbers) or sends a passive notification after the call ends (which is too late). VoxGuard is the first system that intervenes **during** the critical moment when the victim is about to hand over their money.
 
@@ -310,13 +310,87 @@ Every intervention event is tracked and preserved:
 <img src="docs/svgs/architecture.svg" alt="System Architecture" width="100%"/>
 </div>
 
-**Input Sources:** The adversary's voice/video (phone, WhatsApp, Zoom, Teams, anything), the protected party's microphone (via Web Audio API), and optional screen capture for visual scam detection.
+### System Overview
 
-**Browser Layer (Rust WASM + React):** React (Vite 5 + JSX) renders the 5-tab UI plus the intervention overlay system with TTS audio playback. The Rust WASM engine handles spectral analysis, Wiener noise reduction, Float32 PCM at <100ms latency with zero-copy. Web Audio API captures 16kHz Mono PCM in 250ms frames. WebSocket connects to the backend with exponential backoff reconnect.
+VoxGuard is a four-layer real-time pipeline that processes audio, video, and screen input from any call platform and delivers protection in under 80 milliseconds.
 
-**Backend (Google Cloud Run, Python FastAPI):** FastAPI serves `/ws/session` via WebSocket plus REST endpoints with auto-scaling. The Threat Engine applies `0.45 x Language + 0.35 x Behavioral + 0.20 x Visual` to produce a score from 0 to 100 every 500ms. The engine evaluates every alert for intervention eligibility, checking both cumulative score thresholds and instant-trigger patterns. Intervention events are emitted via WebSocket alongside threat alerts, TTS audio, explanation cards, and action plans.
+### Layer 1: Input Sources
 
-**Google Gemini AI:** `gemini-2.5-flash-native-audio` for real-time audio streaming with barge-in support and enhanced audio quality, `gemini-2.5-flash` for screenshot analysis, transcript analysis, combined psychological/lie detection scoring, and multimodal explanation generation, `gemini-2.5-flash-preview-tts` for natural voice intervention with contextual scripts and voice profiles, plus a grounding database of 50+ verified patterns.
+Three concurrent input streams feed the system:
+
+- **Caller Audio** - the scammer's voice or video call (phone, WhatsApp, Zoom, Teams, any platform)
+- **User Microphone** - the protected party's microphone via Web Audio API for 2-way transcript
+- **Screen Share** - optional screen capture (JPEG 1280px every 2 seconds) for visual scam detection
+
+### Layer 2: Browser Layer (Client)
+
+| Component | Technology | Role |
+|-----------|-----------|------|
+| **React UI** | Vite 5 + JSX | 5-tab interface, live alerts, intervention overlay, action plan display |
+| **Rust WASM** | wasm-pack, Wiener NR | Spectral subtraction, Float32 PCM, zero-copy audio at <100ms latency |
+| **Web Audio** | MediaStream API | 16kHz Mono PCM capture in 250ms frames via ScriptProcessor |
+| **WebSocket** | useWebSocket hook | Bidirectional: sends audio/screen, receives alerts/TTS/explanations/actions |
+| **Intervention** | InterventionOverlay.jsx | WARN / BLOCK / LOCKDOWN overlay with verification challenge and auto-disconnect |
+| **Action Agent** | ActionAgent.jsx | Post-session guided recovery: 9 languages, 9 countries, step-by-step checklist |
+| **Screen Capture** | getDisplayMedia API | Opt-in only, Base64 JPEG, 2-second interval |
+
+### Layer 3: Backend (Google Cloud Run, Python FastAPI)
+
+| Service | File | Role |
+|---------|------|------|
+| **FastAPI** | main.py | REST + WebSocket `/ws/session`, auto-scaling on Cloud Run, health check, CORS |
+| **Threat Engine** | threat_engine.py | Weighted scoring (0.45 Language + 0.35 Behavioral + 0.20 Visual), 500ms cycle, intervention triggers at score 55/75/90 + instant pattern matching |
+| **Audio Analyzer** | audio_analyzer.py | VAD + buffer management, streams to Gemini Live API for real-time transcription |
+| **Vision Analyzer** | vision_analyzer.py | Screenshot analysis via Gemini Vision: fake login pages, phishing domains, QR codes |
+| **Psych Analyzer** | psych_analyzer.py | Single Gemini call returns 6 Cialdini vectors + 5 lie detection indicators + intervention recommendation |
+| **TTS Service** | tts_service.py | Natural voice intervention via Gemini TTS with 3 voice profiles (Kore/Puck/Charon) |
+| **Explanation Service** | explanation_service.py | Combines audio + visual analysis into plain-language explanation cards |
+| **Action Agent** | action_agent.py | Generates personalized recovery plans with country-specific emergency contacts and reporting channels for 9 countries |
+
+### Layer 4: Google Gemini AI
+
+| Model | Version | Purpose |
+|-------|---------|---------|
+| **Gemini Live API** | gemini-2.5-flash-native-audio | Real-time audio streaming with barge-in, enhanced audio quality, NLF pattern detection |
+| **Gemini Vision** | gemini-2.5-flash | Screenshot analysis: fake UI detection, phishing domain identification, QR code scanning |
+| **Gemini Text** | gemini-2.5-flash | Transcript analysis, psychological scoring, 50+ pattern matching, explanation generation |
+| **Gemini TTS** | gemini-2.5-flash-preview-tts | Natural voice intervention with contextual scripts in 9 languages |
+| **Grounding DB** | scam_patterns.json | 50+ verified patterns from FTC, FBI IC3, GASA, MAS, ACCC - zero hallucination |
+
+### Data Flow
+
+```
+Caller Voice ─┐
+              ├─→ Rust WASM (spectral analysis, noise reduction)
+User Mic ─────┘         │
+                        ▼
+              WebSocket (audio chunks + screen frames)
+                        │
+                        ▼
+              FastAPI Backend (Cloud Run)
+              ┌─────────┼─────────┐
+              ▼         ▼         ▼
+         Audio SVC  Vision SVC  Psych SVC
+         (Gemini    (Gemini     (Gemini
+          Live)      Vision)     Text)
+              └─────────┼─────────┘
+                        ▼
+              Threat Engine (scoring + intervention triggers)
+                        │
+              ┌─────────┼──────────────┐
+              ▼         ▼              ▼
+          Alert     Intervention   Explanation
+          Event     Event + TTS    Card Event
+              └─────────┼──────────────┘
+                        ▼
+              WebSocket (back to browser)
+                        │
+              ┌─────────┼──────────────┐
+              ▼         ▼              ▼
+          AlertCard  Intervention   Explanation
+          (live)     Overlay +      Card +
+                     Voice Warning  Action Agent
+```
 
 ---
 
@@ -602,7 +676,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 - **Google GenAI SDK:** All Gemini calls use the official `google-generativeai` Python SDK
 - **Gemini Live API:** `gemini-2.5-flash-native-audio` for real-time audio streaming with barge-in and enhanced audio quality
 - **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation
-- **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Kore/Puck/Charon) and contextual scripts in 9 languages
+- **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages
 - **Rust WASM:** Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency
 - **Cloud Run:** Fully containerized, auto-scaling, health check endpoints, session affinity for WebSocket
 - **Grounding:** Reasoning against 50+ verified patterns with zero hallucination
@@ -658,9 +732,9 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 </div>
 
-**Wiqi Lee** · Data Scientist, AI/ML Researcher, Software Engineer, Cellist
+**Wiqi Lee** - Data Scientist, AI/ML Researcher, Software Engineer, Cellist
 
-Programming languages: Python, Java, Rust, Julia
+Languages: Python, Java, Rust, Julia
 
 Submitted to: **Gemini Live Agent Challenge 2026** `#GeminiLiveAgentChallenge`
 
