@@ -57,6 +57,16 @@ const tabsCSS = `
 .rpt-alert-wrap { transition: all 0.2s ease; }
 .rpt-alert-wrap:hover { transform: translateX(3px); filter: brightness(1.1); }
 
+/* ── Psych Tab hover border animations ── */
+@keyframes psych-border-glow {
+  0%   { border-color: rgba(255,149,0,0.3); box-shadow: 0 0 10px rgba(255,149,0,0.05), inset 0 0 12px rgba(255,149,0,0.03); }
+  33%  { border-color: rgba(0,212,255,0.35); box-shadow: 0 0 10px rgba(0,212,255,0.05), inset 0 0 12px rgba(0,212,255,0.03); }
+  66%  { border-color: rgba(123,97,255,0.3); box-shadow: 0 0 10px rgba(123,97,255,0.05), inset 0 0 12px rgba(123,97,255,0.03); }
+  100% { border-color: rgba(255,149,0,0.3); box-shadow: 0 0 10px rgba(255,149,0,0.05), inset 0 0 12px rgba(255,149,0,0.03); }
+}
+.psych-section { transition: all 0.3s ease; }
+.psych-section:hover { animation: psych-border-glow 3s ease infinite; transform: translateY(-1px); }
+
 /* ── MOBILE RESPONSIVE for Tabs (Psych, Patterns, Report, About) ── */
 @media(max-width:768px){
   .vg-psych-frameworks{grid-template-columns:1fr!important}
@@ -207,12 +217,62 @@ function InterventionHistorySection({ interventions, language }) {
 function genHTML(report) {
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
   const actionsData=getActionsForLang(report.language||'en')
+
+  /* ── Pie Chart SVG generator for print ── */
+  const genPieSVG=(entries,title,size=140)=>{
+    if(!entries||entries.length===0) return ''
+    const items=entries.filter(([k,v])=>v>0)
+    if(items.length===0) return ''
+    const total=items.reduce((s,[k,v])=>s+v,0)||1
+    const colors=['#cc0000','#cc7700','#228833','#005599','#884488','#cc4400']
+    let cum=0
+    const r=size/2-18, cx=size/2, cy=size/2
+    const arc=(s,e)=>{const sa=(s-90)*Math.PI/180,ea=(e-90)*Math.PI/180;const x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa),x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);const large=e-s>180?1:0;return `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`}
+    let sliceHTML=''
+    let legendHTML=''
+    items.forEach(([k,v],i)=>{
+      const start=cum/total*360;cum+=v;const end=cum/total*360
+      const mid=(start+end)/2,rad=(mid-90)*Math.PI/180
+      const lx=cx+(r*0.6)*Math.cos(rad),ly=cy+(r*0.6)*Math.sin(rad)
+      const c=colors[i%colors.length]
+      sliceHTML+=`<path d="${arc(start,end)}" fill="${c}" stroke="#fff" stroke-width="1.5"/>`
+      if((end-start)/360*100>=8) sliceHTML+=`<text x="${lx}" y="${ly+3}" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold" font-family="monospace" style="text-shadow:0 1px 2px rgba(0,0,0,0.8)">${v}%</text>`
+      legendHTML+=`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 8px 2px 0"><span style="display:inline-block;width:10px;height:10px;background:${c};border:1px solid #ddd"></span><span style="font-size:9px;color:#333;font-weight:bold">${k} ${v}%</span></span>`
+    })
+    return `<div style="text-align:center;margin:12px 0"><svg width="${size}" height="${size}" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.15))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0f0f0" stroke="#ddd" stroke-width="1"/>${sliceHTML}</svg><div style="margin-top:6px;font-size:9px">${legendHTML}</div></div>`
+  }
+
   const barHTML=(entries,title)=>{
     if(!entries||entries.length===0) return ''
     return `<h2>${title}</h2>${entries.map(([k,v])=>{
       const c=v>60?'#cc0000':v>30?'#cc7700':v>0?'#228833':'#999'
       return `<div class="bar"><span class="bl">${k}</span><div class="bt"><div class="bf" style="width:${v}%;background:${c}"></div></div><span class="bv" style="color:${c}">${v}%</span></div>`
     }).join('')}`
+  }
+
+  /* ── Action Plan HTML for export ── */
+  const actionPlanHTML=(report)=>{
+    if(!report.actionPlan&&!(report.alerts||[]).length) return ''
+    const lang=(report.language||'en').split('-')[0]
+    const COUNTRY_DATA={en:{name:'United States',flag:'🇺🇸',emergency:'911'},id:{name:'Indonesia',flag:'🇮🇩',emergency:'110'},zh:{name:'China',flag:'🇨🇳',emergency:'110'},ja:{name:'Japan',flag:'🇯🇵',emergency:'110'},ko:{name:'South Korea',flag:'🇰🇷',emergency:'112'},es:{name:'Spain',flag:'🇪🇸',emergency:'112'},fr:{name:'France',flag:'🇫🇷',emergency:'17'},hi:{name:'India',flag:'🇮🇳',emergency:'112'},ar:{name:'Saudi Arabia',flag:'🇸🇦',emergency:'911'}}
+    const country=COUNTRY_DATA[lang]||COUNTRY_DATA['en']
+    const plan=report.actionPlan
+    const urgency=plan?.urgency_level||(report.threatScore>=75?'CRITICAL':report.threatScore>=45?'HIGH':'MODERATE')
+    const urgColors={CRITICAL:'#cc0000',HIGH:'#cc7700',MODERATE:'#228833'}
+    const uc=urgColors[urgency]||'#228833'
+    const steps=plan?.steps||actionsData.actions.map((a,i)=>({step:i+1,icon:a.icon,action:a.text,urgency:a.priority==='critical'?'critical':a.priority==='high'?'high':'recommended'}))
+    const urgBadgeColors={immediate:'#cc0000',critical:'#cc0000',high:'#cc7700',recommended:'#228833'}
+    return `<h2 style="color:${uc};border-color:${uc}">🛡 ANTI-SCAM ACTION PLAN</h2>
+<div style="padding:12px 16px;border:2px solid ${uc};background:${uc}11;margin-bottom:12px">
+  <span style="display:inline-block;padding:3px 10px;background:${uc};color:#fff;font-size:9px;font-weight:bold;margin-right:8px">${urgency}</span>
+  <span style="font-size:10px;color:#333">${country.flag} ${country.name}</span>
+  <span style="font-size:9px;color:#666;margin-left:8px">⏱ ${plan?.estimated_time||'15-60 minutes'}</span>
+</div>
+${plan?.urgency_message?`<div style="padding:8px 14px;background:#fff8e1;border-left:3px solid ${uc};margin-bottom:10px;font-size:10px;color:#333;font-weight:bold">${plan.urgency_message}</div>`:''}
+${plan?.personalized_advice?`<div style="padding:8px 14px;background:#f0f7ff;border-left:3px solid #005599;margin-bottom:12px;font-size:10px;color:#333;line-height:1.6">🤖 ${plan.personalized_advice}</div>`:''}
+${steps.map(s=>{const bc=urgBadgeColors[s.urgency]||'#228833';return `<div class="action" style="border-left-color:${bc}"><span style="font-size:13px;margin-right:6px">${s.icon||'▸'}</span>${s.action}<span class="pri" style="color:${bc}">[${(s.urgency||'recommended').toUpperCase()}]</span></div>`}).join('')}
+<div style="padding:10px 14px;background:#fff0f0;border:1px solid #cc000033;margin-top:10px;text-align:center;font-size:10px;color:#cc0000;font-weight:bold">🚨 Emergency: Call ${country.emergency} if you feel in danger</div>
+${plan?.disclaimer?`<div style="font-size:8px;color:#888;margin-top:6px;font-style:italic">${plan.disclaimer}</div>`:''}`
   }
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>VoxGuard Forensic Report — ${report.id}</title>
@@ -292,8 +352,11 @@ ${(report.alerts||[]).map(a=>{
   return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#666;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
 }).join('')}
 ${barHTML(Object.entries(report.psychScores||{}),'PSYCHOLOGICAL VECTORS')}
+${genPieSVG(Object.entries(report.psychScores||{}),'Psych Distribution')}
 ${barHTML(Object.entries(report.lieScores||{}),'LIE DETECTION ANALYSIS')}
-<h2>RECOMMENDED ACTIONS — ${actionsData.country}</h2>
+${genPieSVG(Object.entries(report.lieScores||{}),'Lie Detection Distribution')}
+${actionPlanHTML(report)}
+<h2>RECOMMENDED ACTIONS - ${actionsData.country}</h2>
 ${actionsData.actions.map(a=>`<div class="action">${a.icon} ${a.text}<span class="pri pri-${a.priority}">[${a.priority.toUpperCase()}]</span></div>`).join('')}
 <div class="footer"><div class="brand">VOXGUARD</div><div style="margin-top:5px">Built by Wiqi Lee · © 2026 · MIT License · #GeminiLiveAgentChallenge</div><div style="margin-top:3px;color:#aaa">Powered by Gemini Live API · Page 1/1</div></div>
 </div></body></html>`
@@ -475,14 +538,14 @@ export function PsychTab({psychScores,lieScores={}}){
           {title:'FBI CBCA Method',desc:'Criteria-Based Content Analysis. Behavioral lie detection from interrogation research.',color:'#ff2d55',icon:'🔍'},
           {title:'Victim Vulnerability',desc:'Derived susceptibility model. How the manipulation is affecting YOUR decision-making.',color:'#00d4ff',icon:'🛡'},
         ].map(m=>(
-          <PBox key={m.title} color={m.color+'40'} style={{padding:14,background:m.color+'06'}}>
+          <PBox key={m.title} className="psych-section" color={m.color+'40'} style={{padding:14,background:m.color+'06'}}>
             <div style={{fontSize:20,marginBottom:6}}>{m.icon}</div>
             <div style={{fontFamily:PF,fontSize:6,color:m.color,marginBottom:6}}>{m.title}</div>
             <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)',lineHeight:1.6}}>{m.desc}</div>
           </PBox>
         ))}
       </div>
-      <div style={{marginBottom:24,padding:'12px 16px',border:'1px solid rgba(255,255,255,0.06)',background:'rgba(255,255,255,0.015)'}}>
+      <div className="psych-section" style={{marginBottom:24,padding:'12px 16px',border:'1px solid rgba(255,255,255,0.06)',background:'rgba(255,255,255,0.015)'}}>
         <div style={{fontFamily:PF,fontSize:6,color:'rgba(255,255,255,0.55)',marginBottom:8,letterSpacing:1}}>SCORING RUBRIC</div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
           {[{l:'0%',c:'rgba(255,255,255,0.25)',t:'Inactive'},{l:'1-20%',c:'#30d158',t:'Low'},{l:'21-40%',c:'#ffd60a',t:'Moderate'},{l:'41-60%',c:'#ff9500',t:'Elevated'},{l:'61-80%',c:'#ff2d55',t:'High'},{l:'81-100%',c:'#ff2d55',t:'Critical'}].map(r=>(
@@ -494,7 +557,7 @@ export function PsychTab({psychScores,lieScores={}}){
           ))}
         </div>
       </div>
-      <PBox color="#ff950044" style={{padding:20,marginBottom:16}}>
+      <PBox className="psych-section" color="#ff950044" style={{padding:20,marginBottom:16}}>
         <div className="vg-psych-section" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#ff9500',textShadow:'0 0 10px #ff9500',marginBottom:4}}>CALLER — MANIPULATION VECTORS</div>
@@ -507,7 +570,7 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-      <PBox color="#ff2d5544" style={{padding:20,marginBottom:16}}>
+      <PBox className="psych-section" color="#ff2d5544" style={{padding:20,marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',textShadow:'0 0 10px #ff2d55',marginBottom:4}}>LIE DETECTION ANALYSIS</div>
@@ -520,7 +583,7 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-      <PBox color="#00d4ff44" style={{padding:20,marginBottom:16}}>
+      <PBox className="psych-section" color="#00d4ff44" style={{padding:20,marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#00d4ff',textShadow:'0 0 10px #00d4ff',marginBottom:4}}>USER VULNERABILITY STATE</div>
@@ -616,9 +679,9 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const[saved,setSaved]=useState([]);const[msg,setMsg]=useState('')
   useEffect(()=>setSaved(loadReports()),[])
-  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,id:Date.now().toString(),savedAt:new Date().toISOString()}
+  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,id:Date.now().toString(),savedAt:new Date().toISOString()}
   const actionsData=getActionsForLang(language)
-  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,audioUrl});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
+  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,audioUrl});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
 
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
     <style>{tabsCSS}</style>

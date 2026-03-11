@@ -326,14 +326,15 @@ export default function App() {
     setInterventionHistory(prev => [...prev, event])
   }
 
-  // [FIX #4] Modified: generate action plan on safe exit
+  // [FIX] Generate action plan on safe exit + capture recording
   const handleSafeExit = () => {
     setMonitoring(false)
-    if (audio.recordingBlob) {
+    const recUrl = window.__voxguard_recording_url || null
+    if(recUrl) { setAudioUrl(recUrl); window.__voxguard_recording_url = null }
+    else if (audio.recordingBlob) {
       const url = URL.createObjectURL(audio.recordingBlob)
       setAudioUrl(url)
     }
-    // [FIX #4] Generate action plan for demo mode
     if (alerts.length > 0) {
       const plan = generateDemoActionPlan(alerts, language, threatScore, interventionHistory)
       setActionPlan(plan)
@@ -359,7 +360,10 @@ export default function App() {
   // [FIX #4] Modified: generate action plan on stop
   const handleStop=()=>{
     setMonitoring(false)
-    if(audio.recordingBlob) {
+    // Capture recording URL from MonitorTab's MediaRecorder (if user pressed REC)
+    const recUrl = window.__voxguard_recording_url || null
+    if(recUrl) { setAudioUrl(recUrl); window.__voxguard_recording_url = null }
+    else if(audio.recordingBlob) {
       const url = URL.createObjectURL(audio.recordingBlob)
       setAudioUrl(url)
     }

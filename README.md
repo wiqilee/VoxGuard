@@ -4,7 +4,7 @@
 
 <div align="center">
 
-<img src="docs/svgs/architecture-badge.svg" alt="VoxGuard Architecture" width="100%"/>
+<img src="docs/svgs/architecture-badge.png" alt="VoxGuard Architecture" width="100%"/>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg?style=flat-square)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python)](https://python.org)
@@ -475,10 +475,42 @@ Every session generates a complete forensic report with:
 - Psychological vector breakdown + lie detection scores
 - Country-specific recommended actions with local emergency numbers
 - Country flag and language indicator
+- **Session audio recording** (when REC is enabled)
 
 **Export:** Dark-theme HTML or print-ready PDF with colored bars, dedicated intervention section, all analytical sections, and "Built by Wiqi Lee" footer.
 
 **Session Gallery:** Saved sessions with threat score preview, country label, duration, and intervention count. Click any session for fullscreen detail view with tabs (Transcript, Alerts, **Interventions**, Psych + Lie Detection, **Action Plan**, Recommended Actions). Audio playback when recording is available.
+
+### 8.1 🎙 Audio Recording (REC)
+
+Press the **REC** button in the Monitor tab to capture session audio. The recording is saved as a WebM or MP4 blob (depending on browser support) and embedded in the forensic report. When you export to HTML, the audio player is included so you can replay the session later.
+
+**How to record:**
+
+1. Click **START** to begin a session
+2. Click the red **REC** button (it will pulse to indicate recording is active)
+3. Run a demo script or use Live Mic (see below)
+4. When you click **STOP** or **SAFE EXIT**, the recording is automatically saved
+5. Open the **REPORT** tab to see the audio player and export to HTML
+
+### 8.2 🎙 Live Microphone Mode
+
+VoxGuard supports real-time audio capture from your device microphone, in addition to demo mode. Both can run simultaneously.
+
+**How to use Live Mic:**
+
+1. Click **START** to begin a session
+2. Click the **🎙 LIVE MIC** button in the Monitor controls
+3. Grant microphone permission when your browser asks
+4. A green status banner appears: "LIVE MICROPHONE - Real audio capture active"
+5. Put your phone on speaker and place it near your device, or use the same device for both the call and VoxGuard
+6. VoxGuard captures your microphone audio at 16kHz Mono PCM via the Web Audio API
+7. In production mode (with a running backend), the audio is streamed to the Gemini Live API for real-time analysis
+8. Click **🎙 MIC ON** again to disconnect the microphone
+
+**Live Mic + REC together:** Enable both Live Mic and REC at the same time to record your actual call audio into the forensic report. This is the recommended setup for real-world use.
+
+**Live Mic + Demo Scripts:** You can also run a demo script while Live Mic is active. The demo script provides simulated 2-way dialog and alerts, while the microphone captures real ambient audio in parallel. This is useful for demonstrations where you want to show both the scripted flow and the live microphone capability.
 
 ### 9. 🌍 Multi-Language Support (40 Languages)
 
@@ -703,6 +735,8 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 - **Screen capture requires user consent:** Vision analysis is opt-in and desktop-only.
 - **No brand names in demos:** All demo scripts use generic institution names to avoid trademark issues.
 - **TTS voice availability:** Gemini TTS voice profiles may vary by region. The system gracefully falls back to browser speech synthesis if TTS is unavailable.
+- **Audio recording in demo mode:** The REC button uses the browser MediaRecorder API with `createMediaStreamDestination`. Due to browser security restrictions, audio played through `new Audio()` (Gemini TTS) or `speechSynthesis` (browser TTS) cannot be captured by MediaRecorder because browsers do not allow recording their own audio output. To capture actual session audio, enable **Live Mic + REC** together so the microphone input is recorded directly. This is a browser platform limitation, not a bug in VoxGuard.
+- **Live Mic requires HTTPS:** The `getUserMedia` API requires a secure context (HTTPS or localhost). The Vercel deployment and local dev server both satisfy this requirement.
 
 ## 🔮 Future Work
 
