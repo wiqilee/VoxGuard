@@ -48,32 +48,35 @@ function SocialLink({ href,icon,label,c,bc,bg,hc,hbg }) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   Mask phone / account numbers for safety display
-   "+62812xxxx3456" → "+62 812-****-3456"
-   "1234567890" → "******7890"
+   [FIX] Phone number masking utility
+   ────────────────────────────────────────────────────────
+   Masks phone numbers in transcript/quotes for privacy.
+   Handles international (+62 812 xxx), domestic (0812xxx),
+   and various separator formats.
 ══════════════════════════════════════════════════════════ */
-function maskPhone(num) {
-  if (!num) return '—'
-  const clean = num.replace(/[\s\-()]/g, '')
-  if (clean.length <= 4) return clean
-  const last4 = clean.slice(-4)
-  const masked = '*'.repeat(Math.max(0, clean.length - 4))
-  // Format nicely
-  if (clean.startsWith('+')) {
-    const cc = clean.slice(0, clean.length > 12 ? 3 : 2)
-    return `${cc} ${masked.slice(cc.length - 1)}${last4}`
-  }
-  return masked + last4
+function maskPhoneNumbers(text) {
+  if (!text) return text
+  let masked = text.replace(/(\+?\d{1,3}[\s\-.]?)\(?\d{2,4}\)?[\s\-.]?\d{3,4}[\s\-.]?\d{3,5}/g, (m) => {
+    const digits = m.replace(/\D/g, '')
+    if (digits.length < 7) return m
+    const last4 = digits.slice(-4)
+    const prefix = digits.length > 10 ? '+' + digits.slice(0, digits.length - 10) + ' ' : ''
+    return prefix + '●●●-●●●-' + last4
+  })
+  masked = masked.replace(/\b0\d{9,12}\b/g, (m) => {
+    const last4 = m.slice(-4)
+    return '0●●●-●●●-' + last4
+  })
+  return masked
 }
 
 /* ══════════════════════════════════════════════════════════
-   [FIX #4] Demo Action Plan Generator — 9 LANGUAGES FULL
+   [FIX] Demo Action Plan Generator — Full 9 Languages
    ────────────────────────────────────────────────────────
-   Generates a local action plan for demo mode since the
-   backend ActionAgentService is not called in demo.
-   Full native steps for EN, ID, ZH, JA, KO, ES, FR, HI, AR.
-   Includes masked phone references and country-specific
-   emergency contacts + reporting channels.
+   All 9 supported languages get native-language steps,
+   emergency numbers, country-specific reporting agencies,
+   localized urgency messages, personalized advice, and
+   localized disclaimer text. Phone numbers are masked.
 ══════════════════════════════════════════════════════════ */
 function generateDemoActionPlan(alerts, language, threatScore, interventionHistory) {
   const lang = language?.split('-')[0] || 'en'
@@ -81,172 +84,162 @@ function generateDemoActionPlan(alerts, language, threatScore, interventionHisto
   const severity = alerts[0]?.severity || 'high'
 
   const COUNTRY_DATA = {
-    en: { name: 'United States', flag: '🇺🇸', emergency: '911', reportLine: '1-877-382-4357', code: 'US', org: 'FTC', policeUrl: 'ic3.gov' },
-    id: { name: 'Indonesia', flag: '🇮🇩', emergency: '110', reportLine: '157', code: 'ID', org: 'OJK', policeUrl: 'patrolisiber.id' },
-    zh: { name: 'China', flag: '🇨🇳', emergency: '110', reportLine: '12321', code: 'CN', org: '工信部', policeUrl: '12321.cn' },
-    ja: { name: 'Japan', flag: '🇯🇵', emergency: '110', reportLine: '#9110', code: 'JP', org: '警察庁', policeUrl: 'npa.go.jp' },
-    ko: { name: 'South Korea', flag: '🇰🇷', emergency: '112', reportLine: '1332', code: 'KR', org: '금융감독원', policeUrl: 'ecrm.police.go.kr' },
-    es: { name: 'Spain', flag: '🇪🇸', emergency: '112', reportLine: '091', code: 'ES', org: 'Policía Nacional', policeUrl: 'policia.es' },
-    fr: { name: 'France', flag: '🇫🇷', emergency: '17', reportLine: '0 805 805 817', code: 'FR', org: 'DGCCRF', policeUrl: 'internet-signalement.gouv.fr' },
-    hi: { name: 'India', flag: '🇮🇳', emergency: '112', reportLine: '1930', code: 'IN', org: 'RBI', policeUrl: 'cybercrime.gov.in' },
-    ar: { name: 'Saudi Arabia', flag: '🇸🇦', emergency: '911', reportLine: '330330', code: 'SA', org: 'SAMA', policeUrl: 'absher.sa' },
+    en: { name: 'United States', flag: '🇺🇸', emergency: '911', code: 'US', bank_tip: 'number on the BACK of your card' },
+    id: { name: 'Indonesia', flag: '🇮🇩', emergency: '110', code: 'ID', bank_tip: 'nomor di BELAKANG kartu ATM' },
+    zh: { name: 'China', flag: '🇨🇳', emergency: '110', code: 'CN', bank_tip: '银行卡背面的客服电话' },
+    ja: { name: 'Japan', flag: '🇯🇵', emergency: '110', code: 'JP', bank_tip: 'カード裏面の電話番号' },
+    ko: { name: 'South Korea', flag: '🇰🇷', emergency: '112', code: 'KR', bank_tip: '카드 뒷면 전화번호' },
+    es: { name: 'Spain', flag: '🇪🇸', emergency: '112', code: 'ES', bank_tip: 'número en el REVERSO de su tarjeta' },
+    fr: { name: 'France', flag: '🇫🇷', emergency: '17', code: 'FR', bank_tip: 'numéro au DOS de votre carte' },
+    hi: { name: 'India', flag: '🇮🇳', emergency: '112', code: 'IN', bank_tip: 'कार्ड के पीछे का नंबर' },
+    ar: { name: 'Saudi Arabia', flag: '🇸🇦', emergency: '911', code: 'SA', bank_tip: 'الرقم الموجود خلف البطاقة' },
   }
   const country = COUNTRY_DATA[lang] || COUNTRY_DATA['en']
 
-  /* ── Caller phone mask (simulate detected number from demo) ── */
-  const DEMO_PHONES = {
-    en: '+1 (202) 555-0147', id: '+62 812-3456-7890', zh: '+86 138-0013-8000',
-    ja: '+81 90-1234-5678', ko: '+82 10-9876-5432', es: '+34 612 345 678',
-    fr: '+33 6 12 34 56 78', hi: '+91 98765 43210', ar: '+966 50 123 4567',
-  }
-  const callerPhone = maskPhone(DEMO_PHONES[lang] || DEMO_PHONES['en'])
-
-  /* ══════════════════════════════════════════════════════════
-     Full native action steps per language
-  ══════════════════════════════════════════════════════════ */
-
   const STEPS_EN = [
-    { step: 1, icon: '📵', action: `Block the caller's number (${callerPhone}) on your phone immediately`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: 'Call your bank using the number on the BACK of your card — NOT any number the caller gave you', urgency: 'critical' },
+    { step: 1, icon: '📵', action: "Block the caller's number on your phone", urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `Call your bank using the ${country.bank_tip} — NOT any number the caller gave you`, urgency: 'critical' },
     { step: 3, icon: '🔒', action: 'Request a temporary freeze on your account if you shared any information', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `Report to FTC at reportfraud.ftc.gov or call ${country.reportLine}`, urgency: 'high' },
+    { step: 4, icon: '📋', action: 'Report to FTC at reportfraud.ftc.gov', urgency: 'high' },
     { step: 5, icon: '🔍', action: 'File FBI IC3 complaint at ic3.gov', urgency: 'high' },
     { step: 6, icon: '🔑', action: 'Change passwords on all accounts discussed during the call', urgency: 'recommended' },
     { step: 7, icon: '📱', action: 'Enable two-factor authentication on all financial accounts', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: 'Alert family members — scammers often target multiple people in the same household', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: 'Alert family members — scammers often target multiple people', urgency: 'recommended' },
   ]
-
   const STEPS_ID = [
-    { step: 1, icon: '📵', action: `Blokir nomor penelepon (${callerPhone}) di pengaturan HP Anda`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: 'Hubungi bank menggunakan nomor di BELAKANG kartu ATM Anda — BUKAN nomor dari penelepon', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: 'Minta bank untuk blokir sementara rekening Anda jika sudah membagikan informasi', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `Laporkan ke OJK: ${country.reportLine} atau konsumen@ojk.go.id`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `Laporkan ke Bareskrim: ${country.policeUrl} atau hubungi ${country.emergency}`, urgency: 'high' },
-    { step: 6, icon: '🔑', action: 'Ganti password semua akun yang dibicarakan saat telepon', urgency: 'recommended' },
+    { step: 1, icon: '📵', action: 'Blokir nomor penelepon di pengaturan HP Anda', urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `Hubungi bank menggunakan ${country.bank_tip}`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: 'Minta bank untuk blokir sementara rekening Anda', urgency: 'critical' },
+    { step: 4, icon: '📋', action: 'Laporkan ke OJK: 157 atau konsumen@ojk.go.id', urgency: 'high' },
+    { step: 5, icon: '🚔', action: 'Laporkan ke Bareskrim: patrolisiber.id atau hubungi 110', urgency: 'high' },
+    { step: 6, icon: '🔑', action: 'Ganti password semua akun yang dibicarakan', urgency: 'recommended' },
     { step: 7, icon: '📱', action: 'Aktifkan verifikasi 2 langkah di semua akun keuangan', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: 'Beritahu keluarga — penipu sering menargetkan banyak orang dalam satu keluarga', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: 'Beritahu keluarga — penipu sering menargetkan banyak orang', urgency: 'recommended' },
   ]
-
   const STEPS_ZH = [
-    { step: 1, icon: '📵', action: `立即拉黑来电号码 (${callerPhone})`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: '使用银行卡背面的官方客服电话联系银行 —— 不要拨打来电者提供的任何号码', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: '如果已经透露了任何信息，请求银行临时冻结账户', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `向${country.org}举报：拨打 ${country.reportLine} 或访问 ${country.policeUrl}`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `拨打 ${country.emergency} 向当地公安局报案`, urgency: 'high' },
+    { step: 1, icon: '📵', action: '立即拉黑来电号码', urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `使用${country.bank_tip}联系银行 — 不要使用来电者提供的号码`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: '如果您透露了任何信息，请求银行临时冻结账户', urgency: 'critical' },
+    { step: 4, icon: '📋', action: '向公安机关报案：拨打110', urgency: 'high' },
+    { step: 5, icon: '🔍', action: '在国家反诈中心APP举报', urgency: 'high' },
     { step: 6, icon: '🔑', action: '更改通话中提及的所有账户密码', urgency: 'recommended' },
     { step: 7, icon: '📱', action: '为所有金融账户启用双重验证', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: '通知家人 —— 诈骗分子经常针对同一家庭的多个成员', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: '通知家人 — 诈骗者经常针对多个目标', urgency: 'recommended' },
   ]
-
   const STEPS_JA = [
-    { step: 1, icon: '📵', action: `発信者番号 (${callerPhone}) を着信拒否に設定してください`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: '銀行カード裏面の公式番号に電話してください（電話の相手が教えた番号は使用しないこと）', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: '情報を伝えてしまった場合は、口座の一時凍結を依頼してください', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `${country.org}に通報：${country.reportLine} または ${country.policeUrl}`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `${country.emergency} に電話して最寄りの警察署に届出`, urgency: 'high' },
-    { step: 6, icon: '🔑', action: '通話中に言及したすべてのアカウントのパスワードを変更', urgency: 'recommended' },
-    { step: 7, icon: '📱', action: 'すべての金融口座で二段階認証を有効にする', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: 'ご家族に注意喚起 —— 詐欺師は同じ家族の複数人を狙うことがあります', urgency: 'recommended' },
+    { step: 1, icon: '📵', action: '発信者番号をブロックしてください', urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `${country.bank_tip}で銀行に連絡してください`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: '情報を伝えてしまった場合、口座の一時凍結を依頼してください', urgency: 'critical' },
+    { step: 4, icon: '📋', action: '警察に届出：#9110（警察相談専用電話）', urgency: 'high' },
+    { step: 5, icon: '🔍', action: '消費者ホットライン：188に連絡', urgency: 'high' },
+    { step: 6, icon: '🔑', action: '通話中に話題になった全アカウントのパスワードを変更', urgency: 'recommended' },
+    { step: 7, icon: '📱', action: 'すべての金融口座で二段階認証を有効化', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: '家族に注意喚起 — 詐欺師は複数人を標的にすることが多い', urgency: 'recommended' },
   ]
-
   const STEPS_KO = [
-    { step: 1, icon: '📵', action: `발신자 번호 (${callerPhone}) 를 차단 설정하세요`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: '카드 뒷면의 공식 고객센터 번호로 은행에 전화하세요 (전화 상대가 알려준 번호 사용 금지)', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: '정보를 이미 알려줬다면 계좌 임시 동결을 요청하세요', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `${country.org}에 신고: ${country.reportLine} 전화`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `사이버경찰청 (${country.policeUrl})에 온라인 신고`, urgency: 'high' },
-    { step: 6, icon: '🔑', action: '통화 중 언급된 모든 계정 비밀번호를 변경하세요', urgency: 'recommended' },
+    { step: 1, icon: '📵', action: '발신자 번호를 차단하세요', urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `${country.bank_tip}로 은행에 전화하세요`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: '정보를 알려줬다면 계좌 임시 동결을 요청하세요', urgency: 'critical' },
+    { step: 4, icon: '📋', action: '금융감독원 신고: 1332', urgency: 'high' },
+    { step: 5, icon: '🚔', action: '경찰청 사이버안전국: 182 또는 ecrm.police.go.kr', urgency: 'high' },
+    { step: 6, icon: '🔑', action: '통화 중 언급한 모든 계정의 비밀번호를 변경하세요', urgency: 'recommended' },
     { step: 7, icon: '📱', action: '모든 금융 계정에 2단계 인증을 활성화하세요', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: '가족에게 알리세요 — 사기범은 같은 가족 여러 명을 노립니다', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: '가족에게 알리세요 — 사기꾼은 여러 사람을 노립니다', urgency: 'recommended' },
   ]
-
   const STEPS_ES = [
-    { step: 1, icon: '📵', action: `Bloquea el número (${callerPhone}) en tu teléfono inmediatamente`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: 'Llama a tu banco usando el número del REVERSO de tu tarjeta — NO el que te dio el estafador', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: 'Solicita el bloqueo temporal de tu cuenta si compartiste información', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `Denuncia a la ${country.org}: llama al ${country.reportLine}`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `Presenta denuncia en ${country.policeUrl} o llama al ${country.emergency}`, urgency: 'high' },
-    { step: 6, icon: '🔑', action: 'Cambia las contraseñas de todas las cuentas mencionadas durante la llamada', urgency: 'recommended' },
-    { step: 7, icon: '📱', action: 'Activa la autenticación de dos factores en todas tus cuentas financieras', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: 'Avisa a tu familia — los estafadores suelen atacar a varias personas del mismo hogar', urgency: 'recommended' },
+    { step: 1, icon: '📵', action: 'Bloquee el número del llamante en su teléfono', urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `Llame a su banco usando el ${country.bank_tip}`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: 'Solicite el bloqueo temporal de su cuenta si compartió información', urgency: 'critical' },
+    { step: 4, icon: '📋', action: 'Denuncie a la Policía Nacional: 091 o al 112', urgency: 'high' },
+    { step: 5, icon: '🔍', action: 'Denuncie en INCIBE: 017 (línea de ayuda en ciberseguridad)', urgency: 'high' },
+    { step: 6, icon: '🔑', action: 'Cambie las contraseñas de todas las cuentas mencionadas', urgency: 'recommended' },
+    { step: 7, icon: '📱', action: 'Active la verificación en dos pasos en todas las cuentas financieras', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: 'Avise a su familia — los estafadores a menudo atacan a varias personas', urgency: 'recommended' },
   ]
-
   const STEPS_FR = [
-    { step: 1, icon: '📵', action: `Bloquez le numéro (${callerPhone}) dans les paramètres de votre téléphone`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: 'Appelez votre banque au numéro figurant au DOS de votre carte — PAS celui donné par l\'appelant', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: 'Demandez un blocage temporaire de votre compte si vous avez partagé des informations', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `Signalez à la ${country.org}: appelez le ${country.reportLine}`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `Déposez plainte sur ${country.policeUrl} ou appelez le ${country.emergency}`, urgency: 'high' },
-    { step: 6, icon: '🔑', action: 'Changez les mots de passe de tous les comptes évoqués pendant l\'appel', urgency: 'recommended' },
-    { step: 7, icon: '📱', action: 'Activez l\'authentification à deux facteurs sur tous vos comptes financiers', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: 'Prévenez votre famille — les escrocs ciblent souvent plusieurs membres d\'un même foyer', urgency: 'recommended' },
+    { step: 1, icon: '📵', action: "Bloquez le numéro de l'appelant sur votre téléphone", urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `Appelez votre banque en utilisant le ${country.bank_tip}`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: 'Demandez un gel temporaire de votre compte si vous avez partagé des informations', urgency: 'critical' },
+    { step: 4, icon: '📋', action: 'Signalez sur PHAROS: internet-signalement.gouv.fr', urgency: 'high' },
+    { step: 5, icon: '🔍', action: 'Appelez Info Escroqueries: 0 805 805 817 (gratuit)', urgency: 'high' },
+    { step: 6, icon: '🔑', action: 'Changez les mots de passe de tous les comptes évoqués', urgency: 'recommended' },
+    { step: 7, icon: '📱', action: "Activez l'authentification à deux facteurs sur tous les comptes", urgency: 'recommended' },
+    { step: 8, icon: '👥', action: 'Prévenez votre famille — les escrocs ciblent souvent plusieurs personnes', urgency: 'recommended' },
   ]
-
   const STEPS_HI = [
-    { step: 1, icon: '📵', action: `कॉलर का नंबर (${callerPhone}) तुरंत ब्लॉक करें`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: 'अपने ATM कार्ड के पीछे लिखे नंबर से बैंक को कॉल करें — कॉलर ने जो नंबर दिया उसे इस्तेमाल न करें', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: 'अगर कोई जानकारी दे दी है तो अकाउंट को अस्थायी रूप से फ़्रीज़ करवाएँ', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `${country.org} को रिपोर्ट करें या ${country.reportLine} पर कॉल करें`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `${country.policeUrl} पर ऑनलाइन शिकायत दर्ज करें या ${country.emergency} पर कॉल करें`, urgency: 'high' },
-    { step: 6, icon: '🔑', action: 'कॉल में बताए गए सभी अकाउंट के पासवर्ड बदलें', urgency: 'recommended' },
-    { step: 7, icon: '📱', action: 'सभी वित्तीय खातों पर दो-चरणीय सत्यापन (2FA) चालू करें', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: 'परिवार को सूचित करें — ठग अक्सर एक ही परिवार के कई सदस्यों को निशाना बनाते हैं', urgency: 'recommended' },
+    { step: 1, icon: '📵', action: 'कॉल करने वाले का नंबर तुरंत ब्लॉक करें', urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `${country.bank_tip} से बैंक को कॉल करें — कॉलर द्वारा दिया गया नंबर न डायल करें`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: 'अगर कोई जानकारी दी है तो बैंक से अकाउंट फ़्रीज़ का अनुरोध करें', urgency: 'critical' },
+    { step: 4, icon: '📋', action: 'साइबर क्राइम हेल्पलाइन: 1930 या cybercrime.gov.in पर रिपोर्ट करें', urgency: 'high' },
+    { step: 5, icon: '🚔', action: 'नज़दीकी पुलिस स्टेशन में FIR दर्ज करें', urgency: 'high' },
+    { step: 6, icon: '🔑', action: 'कॉल में बात किए गए सभी अकाउंट के पासवर्ड बदलें', urgency: 'recommended' },
+    { step: 7, icon: '📱', action: 'सभी वित्तीय खातों पर टू-फ़ैक्टर ऑथेंटिकेशन चालू करें', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: 'परिवार को सूचित करें — ठग अक्सर कई लोगों को निशाना बनाते हैं', urgency: 'recommended' },
   ]
-
   const STEPS_AR = [
-    { step: 1, icon: '📵', action: `قم بحظر رقم المتصل (${callerPhone}) على هاتفك فوراً`, urgency: 'immediate' },
-    { step: 2, icon: '🏦', action: 'اتصل بالبنك من الرقم المكتوب على ظهر بطاقتك — لا تستخدم أي رقم أعطاك إياه المتصل', urgency: 'critical' },
-    { step: 3, icon: '🔒', action: 'اطلب تجميد مؤقت لحسابك إذا أفشيت أي معلومات', urgency: 'critical' },
-    { step: 4, icon: '📋', action: `أبلغ ${country.org} عبر الرقم ${country.reportLine}`, urgency: 'high' },
-    { step: 5, icon: '🚔', action: `قدّم بلاغاً عبر ${country.policeUrl} أو اتصل بالطوارئ ${country.emergency}`, urgency: 'high' },
-    { step: 6, icon: '🔑', action: 'غيّر كلمات مرور جميع الحسابات التي ذكرتها أثناء المكالمة', urgency: 'recommended' },
-    { step: 7, icon: '📱', action: 'فعّل المصادقة الثنائية على جميع حساباتك المالية', urgency: 'recommended' },
-    { step: 8, icon: '👥', action: 'أخبر أفراد عائلتك — المحتالون غالباً يستهدفون عدة أشخاص من نفس العائلة', urgency: 'recommended' },
+    { step: 1, icon: '📵', action: 'قم بحظر رقم المتصل فوراً', urgency: 'immediate' },
+    { step: 2, icon: '🏦', action: `اتصل بالبنك باستخدام ${country.bank_tip} — وليس أي رقم أعطاك إياه المتصل`, urgency: 'critical' },
+    { step: 3, icon: '🔒', action: 'اطلب تجميد حسابك مؤقتاً إذا شاركت أي معلومات', urgency: 'critical' },
+    { step: 4, icon: '📋', action: 'بلّغ عبر تطبيق كلنا أمن أو اتصل بالرقم 911', urgency: 'high' },
+    { step: 5, icon: '🔍', action: 'قدّم بلاغاً لمؤسسة النقد العربي السعودي (ساما)', urgency: 'high' },
+    { step: 6, icon: '🔑', action: 'غيّر كلمات المرور لجميع الحسابات التي تم ذكرها', urgency: 'recommended' },
+    { step: 7, icon: '📱', action: 'فعّل التحقق بخطوتين لجميع الحسابات المالية', urgency: 'recommended' },
+    { step: 8, icon: '👥', action: 'أبلغ أفراد عائلتك — المحتالون يستهدفون عدة أشخاص', urgency: 'recommended' },
   ]
 
   const STEPS_MAP = { en: STEPS_EN, id: STEPS_ID, zh: STEPS_ZH, ja: STEPS_JA, ko: STEPS_KO, es: STEPS_ES, fr: STEPS_FR, hi: STEPS_HI, ar: STEPS_AR }
   const steps = STEPS_MAP[lang] || STEPS_EN
-
-  /* ── Urgency messages per language ── */
   const urgencyLevel = threatScore >= 75 ? 'CRITICAL' : threatScore >= 45 ? 'HIGH' : 'MODERATE'
-  const urgencyMessages = {
+
+  const URGENCY_MESSAGES = {
     en: { CRITICAL: '⚠️ Act within the next 15 minutes. Time is critical.', HIGH: '⚠️ Take action as soon as possible.', MODERATE: 'Review these steps when convenient.' },
     id: { CRITICAL: '⚠️ Bertindak dalam 15 menit ke depan. Waktu sangat penting.', HIGH: '⚠️ Segera ambil tindakan.', MODERATE: 'Tinjau langkah-langkah ini saat memungkinkan.' },
-    zh: { CRITICAL: '⚠️ 请在15分钟内采取行动，时间紧迫。', HIGH: '⚠️ 请尽快采取行动。', MODERATE: '请在方便时查看以下步骤。' },
-    ja: { CRITICAL: '⚠️ 15分以内に対応してください。一刻を争います。', HIGH: '⚠️ できるだけ早く対応してください。', MODERATE: '都合の良い時にご確認ください。' },
-    ko: { CRITICAL: '⚠️ 15분 이내에 조치하세요. 시간이 매우 중요합니다.', HIGH: '⚠️ 가능한 빨리 조치하세요.', MODERATE: '편할 때 아래 단계를 확인하세요.' },
-    es: { CRITICAL: '⚠️ Actúa en los próximos 15 minutos. El tiempo es crítico.', HIGH: '⚠️ Toma acción lo antes posible.', MODERATE: 'Revisa estos pasos cuando puedas.' },
-    fr: { CRITICAL: '⚠️ Agissez dans les 15 prochaines minutes. Le temps est critique.', HIGH: '⚠️ Agissez dès que possible.', MODERATE: 'Consultez ces étapes à votre convenance.' },
-    hi: { CRITICAL: '⚠️ अगले 15 मिनट में कार्रवाई करें। समय बहुत महत्वपूर्ण है।', HIGH: '⚠️ जल्द से जल्द कार्रवाई करें।', MODERATE: 'सुविधानुसार इन चरणों की समीक्षा करें।' },
-    ar: { CRITICAL: '⚠️ تصرّف خلال الـ 15 دقيقة القادمة. الوقت حرج.', HIGH: '⚠️ اتخذ إجراءً في أقرب وقت.', MODERATE: 'راجع هذه الخطوات في الوقت المناسب.' },
+    zh: { CRITICAL: '⚠️ 请在15分钟内采取行动。时间至关重要。', HIGH: '⚠️ 请尽快采取行动。', MODERATE: '请在方便时审查这些步骤。' },
+    ja: { CRITICAL: '⚠️ 15分以内に行動してください。時間が重要です。', HIGH: '⚠️ できるだけ早く行動してください。', MODERATE: 'ご都合の良い時にこれらの手順を確認してください。' },
+    ko: { CRITICAL: '⚠️ 15분 이내에 행동하세요. 시간이 매우 중요합니다.', HIGH: '⚠️ 가능한 빨리 조치를 취하세요.', MODERATE: '편한 시간에 이 단계들을 검토하세요.' },
+    es: { CRITICAL: '⚠️ Actúe en los próximos 15 minutos. El tiempo es crítico.', HIGH: '⚠️ Tome medidas lo antes posible.', MODERATE: 'Revise estos pasos cuando le convenga.' },
+    fr: { CRITICAL: '⚠️ Agissez dans les 15 prochaines minutes. Le temps est critique.', HIGH: '⚠️ Agissez dès que possible.', MODERATE: 'Consultez ces étapes quand vous le pouvez.' },
+    hi: { CRITICAL: '⚠️ अगले 15 मिनट में कार्रवाई करें। समय बहुत महत्वपूर्ण है।', HIGH: '⚠️ जितनी जल्दी हो सके कार्रवाई करें।', MODERATE: 'सुविधानुसार इन चरणों की समीक्षा करें।' },
+    ar: { CRITICAL: '⚠️ تصرف خلال 15 دقيقة القادمة. الوقت حرج.', HIGH: '⚠️ اتخذ إجراءً في أقرب وقت ممكن.', MODERATE: 'راجع هذه الخطوات في الوقت المناسب.' },
   }
-  const msgs = urgencyMessages[lang] || urgencyMessages['en']
+  const msgs = URGENCY_MESSAGES[lang] || URGENCY_MESSAGES['en']
 
-  /* ── Personalized advice per language ── */
-  const adviceTemplates = {
-    en: (pattern, sev) => `Based on the detected pattern "${pattern}", the caller was likely attempting to extract sensitive information. ${sev === 'critical' ? 'If you shared any codes or credentials, contact your bank immediately.' : 'Monitor your accounts closely over the next few days.'}`,
-    id: (pattern, sev) => `Berdasarkan pola "${pattern}" yang terdeteksi, penelepon kemungkinan besar mencoba memperoleh informasi sensitif Anda. ${sev === 'critical' ? 'Jika Anda sudah membagikan kode atau kredensial, segera hubungi bank Anda.' : 'Pantau rekening Anda dengan cermat dalam beberapa hari ke depan.'}`,
-    zh: (pattern, sev) => `根据检测到的模式"${pattern}"，来电者可能试图获取您的敏感信息。${sev === 'critical' ? '如果您已经泄露了验证码或凭据，请立即联系银行。' : '请在接下来几天内密切监控您的账户。'}`,
-    ja: (pattern, sev) => `検出パターン「${pattern}」に基づくと、発信者は機密情報を引き出そうとしていた可能性があります。${sev === 'critical' ? 'コードや認証情報を伝えてしまった場合は、直ちに銀行に連絡してください。' : '今後数日間、口座を注意深く監視してください。'}`,
-    ko: (pattern, sev) => `탐지된 패턴 "${pattern}"에 따르면, 발신자가 민감한 정보를 탈취하려 했을 가능성이 높습니다. ${sev === 'critical' ? '코드나 인증정보를 알려줬다면 즉시 은행에 연락하세요.' : '앞으로 며칠간 계좌를 주의 깊게 모니터링하세요.'}`,
-    es: (pattern, sev) => `Según el patrón detectado "${pattern}", el llamante probablemente intentaba obtener información confidencial. ${sev === 'critical' ? 'Si compartiste algún código o credencial, contacta a tu banco de inmediato.' : 'Vigila tus cuentas de cerca durante los próximos días.'}`,
-    fr: (pattern, sev) => `D'après le schéma détecté « ${pattern} », l'appelant tentait probablement d'obtenir des informations sensibles. ${sev === 'critical' ? 'Si vous avez communiqué des codes ou identifiants, contactez votre banque immédiatement.' : 'Surveillez attentivement vos comptes dans les prochains jours.'}`,
-    hi: (pattern, sev) => `पहचाने गए पैटर्न "${pattern}" के अनुसार, कॉलर संभवतः आपकी संवेदनशील जानकारी चुराने की कोशिश कर रहा था। ${sev === 'critical' ? 'अगर आपने कोई कोड या क्रेडेंशियल बताया है, तो तुरंत अपने बैंक से संपर्क करें।' : 'अगले कुछ दिनों तक अपने खातों पर नज़र रखें।'}`,
-    ar: (pattern, sev) => `بناءً على النمط المكتشف "${pattern}"، من المرجح أن المتصل كان يحاول الحصول على معلوماتك الحساسة. ${sev === 'critical' ? 'إذا شاركت أي رموز أو بيانات اعتماد، اتصل ببنكك فوراً.' : 'راقب حساباتك عن كثب خلال الأيام القليلة القادمة.'}`,
+  const ADVICE = {
+    en: { base: `Based on the detected pattern "${topPattern}", the caller was likely attempting to extract sensitive information.`, critical: 'If you shared any codes or credentials, contact your bank immediately.', other: 'Monitor your accounts closely over the next few days.' },
+    id: { base: `Berdasarkan pola "${topPattern}", penelepon kemungkinan mencoba mendapatkan informasi sensitif Anda.`, critical: 'Jika Anda memberikan kode atau data pribadi, segera hubungi bank.', other: 'Pantau rekening Anda dengan cermat selama beberapa hari ke depan.' },
+    zh: { base: `根据检测到的模式"${topPattern}"，来电者可能试图获取您的敏感信息。`, critical: '如果您透露了验证码或凭据，请立即联系银行。', other: '请在接下来几天密切监控您的账户。' },
+    ja: { base: `検出されたパターン「${topPattern}」に基づくと、発信者は機密情報を引き出そうとしていた可能性があります。`, critical: 'コードや認証情報を伝えてしまった場合は、直ちに銀行に連絡してください。', other: '今後数日間、口座を注意深く監視してください。' },
+    ko: { base: `감지된 패턴 "${topPattern}"에 따르면, 발신자는 민감한 정보를 빼내려고 시도했을 가능성이 높습니다.`, critical: '코드나 인증 정보를 알려줬다면 즉시 은행에 연락하세요.', other: '앞으로 며칠간 계좌를 면밀히 모니터링하세요.' },
+    es: { base: `Según el patrón detectado "${topPattern}", el llamante probablemente intentaba obtener información sensible.`, critical: 'Si compartió códigos o credenciales, contacte a su banco de inmediato.', other: 'Vigile sus cuentas de cerca durante los próximos días.' },
+    fr: { base: `D'après le schéma détecté « ${topPattern} », l'appelant tentait probablement d'obtenir des informations sensibles.`, critical: 'Si vous avez partagé des codes ou identifiants, contactez votre banque immédiatement.', other: 'Surveillez vos comptes attentivement pendant les prochains jours.' },
+    hi: { base: `पहचाने गए पैटर्न "${topPattern}" के आधार पर, कॉल करने वाला संवेदनशील जानकारी निकालने की कोशिश कर रहा था।`, critical: 'अगर आपने कोई कोड या क्रेडेंशियल दिया है तो तुरंत बैंक से संपर्क करें।', other: 'अगले कुछ दिनों तक अपने खातों पर नज़र रखें।' },
+    ar: { base: `بناءً على النمط المكتشف "${topPattern}"، كان المتصل على الأرجح يحاول الحصول على معلومات حساسة.`, critical: 'إذا شاركت أي رموز أو بيانات اعتماد، اتصل بالبنك فوراً.', other: 'راقب حساباتك بعناية خلال الأيام القادمة.' },
   }
-  const getAdvice = adviceTemplates[lang] || adviceTemplates['en']
+  const advice = ADVICE[lang] || ADVICE['en']
+  const personalizedAdvice = `${advice.base} ${severity === 'critical' ? advice.critical : advice.other}`
+
+  const DISCLAIMERS = {
+    en: 'This action plan is generated by AI and should be used as guidance. For legal advice, consult a professional.',
+    id: 'Rencana ini dihasilkan oleh AI dan harus digunakan sebagai panduan. Untuk nasihat hukum, konsultasikan dengan profesional.',
+    zh: '此行动计划由AI生成，仅供参考。如需法律建议，请咨询专业人士。',
+    ja: 'このアクションプランはAIによって生成されたものです。法的アドバイスが必要な場合は専門家にご相談ください。',
+    ko: '이 행동 계획은 AI가 생성한 것이며 참고용입니다. 법적 조언은 전문가에게 문의하세요.',
+    es: 'Este plan de acción fue generado por IA y debe usarse como guía. Para asesoramiento legal, consulte a un profesional.',
+    fr: "Ce plan d'action est généré par l'IA et doit être utilisé comme guide. Pour des conseils juridiques, consultez un professionnel.",
+    hi: 'यह कार्य योजना AI द्वारा तैयार की गई है। कानूनी सलाह के लिए किसी पेशेवर से परामर्श करें।',
+    ar: 'تم إنشاء خطة العمل هذه بواسطة الذكاء الاصطناعي. للحصول على مشورة قانونية، استشر متخصصاً.',
+  }
 
   return {
     type: 'action_plan',
     urgency_level: urgencyLevel,
     urgency_message: msgs[urgencyLevel],
     country,
-    callerPhone,
-    scam_pattern: topPattern,
+    scam_pattern: maskPhoneNumbers(topPattern),
     estimated_time: urgencyLevel === 'CRITICAL' ? '15-30 minutes' : '30-60 minutes',
     steps,
     total_steps: steps.length,
-    personalized_advice: getAdvice(topPattern, severity),
+    personalized_advice: maskPhoneNumbers(personalizedAdvice),
     intervention_summary: {
       total: interventionHistory.length,
       highest_level: interventionHistory.length > 0
@@ -256,16 +249,7 @@ function generateDemoActionPlan(alerts, language, threatScore, interventionHisto
           }, 'NONE')
         : null,
     },
-    disclaimer: lang === 'id'
-      ? 'Rencana tindakan ini dihasilkan oleh AI dan digunakan sebagai panduan. Untuk nasihat hukum, konsultasikan dengan profesional.'
-      : lang === 'zh' ? '本行动计划由AI生成，仅供参考。如需法律建议，请咨询专业人士。'
-      : lang === 'ja' ? 'このアクションプランはAIが生成したものであり、ガイダンスとしてご利用ください。法的助言については専門家にご相談ください。'
-      : lang === 'ko' ? '이 행동 계획은 AI가 생성한 것이며 안내용입니다. 법적 조언은 전문가와 상담하세요.'
-      : lang === 'es' ? 'Este plan de acción fue generado por IA y debe usarse como guía. Para asesoría legal, consulta a un profesional.'
-      : lang === 'fr' ? 'Ce plan d\'action est généré par IA à titre indicatif. Pour un conseil juridique, consultez un professionnel.'
-      : lang === 'hi' ? 'यह कार्य योजना AI द्वारा उत्पन्न है और मार्गदर्शन के रूप में उपयोग की जानी चाहिए। कानूनी सलाह के लिए, किसी पेशेवर से परामर्श करें।'
-      : lang === 'ar' ? 'تم إنشاء خطة العمل هذه بواسطة الذكاء الاصطناعي وينبغي استخدامها كدليل إرشادي. للحصول على مشورة قانونية، استشر متخصصاً.'
-      : 'This action plan is generated by AI and should be used as guidance. For legal advice, consult a professional.',
+    disclaimer: DISCLAIMERS[lang] || DISCLAIMERS['en'],
   }
 }
 
@@ -287,7 +271,7 @@ export default function App() {
   const [lieScores,setLieScores]=useState({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
   const [audioUrl,setAudioUrl]=useState(null)
   const [interventionHistory,setInterventionHistory]=useState([])
-  const [actionPlan,setActionPlan]=useState(null)
+  const [actionPlan,setActionPlan]=useState(null)    // [FIX #4] action plan state
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
 
   const headerRef = useRef(null)
@@ -334,7 +318,8 @@ export default function App() {
   }
 
   const handleTranscriptLine = (line) => {
-    setTranscript(prev=>[...prev,line])
+    // [FIX] Mask phone numbers in transcript for privacy
+    setTranscript(prev=>[...prev, { ...line, text: maskPhoneNumbers(line.text) }])
   }
 
   const handleInterventionEvent = (event) => {
@@ -367,7 +352,7 @@ export default function App() {
     setLieScores({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
     setAudioUrl(null)
     setInterventionHistory([])
-    setActionPlan(null)
+    setActionPlan(null)    // [FIX #4] reset action plan
     if(!DEMO){ws.reset();ws.startSession()}
   }
 

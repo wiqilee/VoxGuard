@@ -325,10 +325,17 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     setActiveIntervention(event)
     setInterventionHistory(h=>[...h,event])
     if(onInterventionEvent) onInterventionEvent(event)
-    // [FIX #3] Also pause any Gemini TTS audio
+    // [FIX] Stop TTS audio during intervention (caller muted) but transcript timers keep running
     if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}
-    if(window.speechSynthesis?.speaking) window.speechSynthesis.pause()
+    if(window.speechSynthesis?.speaking) window.speechSynthesis.cancel()
+    setSpeaking(false)
+    // Note: speechTimers are NOT cleared here — transcript lines keep appearing
+    // This simulates the scammer still talking while VoxGuard has muted them
   },[threatScore,alerts.length,monitoring])
+
+  // Track if intervention is active for muting TTS during lockdown
+  const interventionActiveRef = useRef(false)
+  useEffect(()=>{ interventionActiveRef.current = !!activeIntervention },[activeIntervention])
 
   const handleInterventionDismiss = (action) => {
     const updated = { ...activeIntervention, userAction: action }
@@ -343,11 +350,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       if (onSafeExit) { onSafeExit() } else { handleStop() }
       return
     }
-    if (action === 'challenge_passed' || action === 'dismissed') {
-      if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
-      return
-    }
-    if (window.speechSynthesis?.paused) window.speechSynthesis.resume()
+    // On dismiss/challenge_passed: caller voice can resume (next utterance will play normally)
+    // No need to resume paused speech since we cancelled it — new lines will generate new TTS
   }
 
   useEffect(()=>{setScript(null)},[language]);useEffect(()=>{const t=setInterval(()=>setNow(getNow()),1000);return()=>clearInterval(t)},[]);useEffect(()=>{return()=>{speechTimers.current.forEach(t=>clearTimeout(t));window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause()}catch(e){}}}},[])
@@ -355,12 +359,20 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`,avgConf=alerts.length>0?Math.round(alerts.reduce((a,b)=>a+b.confidence,0)/alerts.length):null,tColor=threatLevel==='critical'?'#ff2d55':threatLevel==='high'?'#ff9500':'#00d4ff'
 
   /* ══════════════════════════════════════════════════════════
-     [FIX #3] startVoiceDemo — Gemini TTS first, browser fallback
+     [FIX] startVoiceDemo — Gemini TTS first, browser fallback
+     + Skip TTS during active intervention (caller muted)
+     + Realistic dialog pauses between sentences
   ══════════════════════════════════════════════════════════ */
-  const startVoiceDemo=useCallback((sel)=>{if(!sel)return;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}setVoiceDemo(true);setTranscriptLines([]);setDemoProgress(0);finished.current=false;startTimeRef.current=Date.now();const sents=sel.sentences,tc=sents.filter(s=>s.speaker==='caller').length;pendingCount.current=tc;const go=()=>{const browserVoice=getVoiceForLang(language);sents.forEach((s,idx)=>{const timer=setTimeout(()=>{const el=Date.now()-startTimeRef.current,ts=fmt(Math.floor(el/1000)),line={text:s.text,time:ts,flagged:!!s.alert,speaker:s.speaker||'caller'};setTranscriptLines(p=>[...p,line]);if(onTranscriptLine)onTranscriptLine(line);if(s.speaker==='me'){if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},500);speechTimers.current.push(at)};return}
+  const startVoiceDemo=useCallback((sel)=>{if(!sel)return;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}setVoiceDemo(true);setTranscriptLines([]);setDemoProgress(0);finished.current=false;startTimeRef.current=Date.now();const sents=sel.sentences,tc=sents.filter(s=>s.speaker==='caller').length;pendingCount.current=tc;const go=()=>{const browserVoice=getVoiceForLang(language);sents.forEach((s,idx)=>{
+    // [FIX] Add realistic jeda: extra random pause (200-800ms) on top of script delay
+    const jedaMs = Math.floor(Math.random() * 600) + 200
+    const effectiveDelay = s.delay + (idx > 0 ? jedaMs : 0)
+    const timer=setTimeout(()=>{const el=Date.now()-startTimeRef.current,ts=fmt(Math.floor(el/1000)),line={text:s.text,time:ts,flagged:!!s.alert,speaker:s.speaker||'caller'};setTranscriptLines(p=>[...p,line]);if(onTranscriptLine)onTranscriptLine(line);if(s.speaker==='me'){if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},500);speechTimers.current.push(at)};return}
 
-          /* ── [FIX #3] Speech: try Gemini TTS, fallback browser ── */
-          if(!voiceMuted){
+          /* ── [FIX] Speech: skip TTS during intervention, try Gemini TTS, fallback browser ── */
+          // If intervention overlay is active, skip TTS but still count progress
+          const isInterventionActive = interventionActiveRef.current
+          if(!voiceMuted && !isInterventionActive){
             const onSpeechDone=()=>{
               setSpeaking(false)
               const cd=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length
@@ -394,7 +406,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
                 if(!window.speechSynthesis)return onSpeechDone()
                 const u=new SpeechSynthesisUtterance(s.text)
                 if(browserVoice)u.voice=browserVoice
-                u.rate=1;u.pitch=1;u.volume=volumeRef.current
+                u.rate=0.95;u.pitch=1;u.volume=volumeRef.current
                 u.onstart=()=>setSpeaking(true)
                 u.onend=onSpeechDone
                 u.onerror=onSpeechDone
@@ -402,7 +414,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
               }
             })()
           } else {
-            // Muted — just progress
+            // Muted or intervention active — just progress (transcript text already shown above)
             const cd=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length
             setDemoProgress(Math.round((cd/tc)*100))
             pendingCount.current--
@@ -410,7 +422,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
           }
 
           if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},1800);speechTimers.current.push(at)}
-        },s.delay);speechTimers.current.push(timer)})};if(window.speechSynthesis&&window.speechSynthesis.getVoices().length===0){window.speechSynthesis.addEventListener('voiceschanged',go,{once:true});setTimeout(go,300)}else go()},[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted])
+        },effectiveDelay);speechTimers.current.push(timer)})};if(window.speechSynthesis&&window.speechSynthesis.getVoices().length===0){window.speechSynthesis.addEventListener('voiceschanged',go,{once:true});setTimeout(go,300)}else go()},[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted])
 
   const handleStartWithVoice=()=>{onStart();if(script)setTimeout(()=>startVoiceDemo(script),500)},handleStop=()=>{window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}speechTimers.current.forEach(t=>clearTimeout(t));onStop()}
 
