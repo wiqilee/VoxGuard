@@ -2,6 +2,7 @@ import { useState, useEffect }  from 'react'
 import { PBox, PBtn }            from '../components/Primitives'
 import { AlertCard }             from '../components/AlertCard'
 import { PixelLogo }             from '../components/PixelLogo'
+import ActionAgent               from '../components/ActionAgent'   // [FIX #4] import ActionAgent
 import { SCAM_PATTERNS, PSYCH_TACTICS, SEV, PF, MF, LIE_INDICATORS, getActionsForLang, getInterventionForLang } from '../utils/constants'
 
 /* ── Global polish CSS ── */
@@ -18,6 +19,43 @@ const tabsCSS = `
   0%, 100% { text-shadow: none; }
   50% { text-shadow: 0 0 8px currentColor; }
 }
+
+/* ── [FIX #2] Report tab hover animations ── */
+@keyframes rpt-border-cycle {
+  0%   { border-color: rgba(0,212,255,0.25); box-shadow: inset 0 0 12px rgba(0,212,255,0.03); }
+  33%  { border-color: rgba(123,97,255,0.3); box-shadow: inset 0 0 12px rgba(123,97,255,0.05); }
+  66%  { border-color: rgba(255,45,85,0.25); box-shadow: inset 0 0 12px rgba(255,45,85,0.03); }
+  100% { border-color: rgba(0,212,255,0.25); box-shadow: inset 0 0 12px rgba(0,212,255,0.03); }
+}
+@keyframes rpt-psych-cycle {
+  0%   { border-color: rgba(255,149,0,0.25); box-shadow: 0 0 14px rgba(255,149,0,0.04); }
+  33%  { border-color: rgba(255,45,85,0.3); box-shadow: 0 0 14px rgba(255,45,85,0.06); }
+  66%  { border-color: rgba(123,97,255,0.25); box-shadow: 0 0 14px rgba(123,97,255,0.04); }
+  100% { border-color: rgba(255,149,0,0.25); box-shadow: 0 0 14px rgba(255,149,0,0.04); }
+}
+@keyframes rpt-lie-cycle {
+  0%   { border-color: rgba(255,45,85,0.25); box-shadow: 0 0 14px rgba(255,45,85,0.04); }
+  33%  { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 14px rgba(0,212,255,0.06); }
+  66%  { border-color: rgba(255,149,0,0.25); box-shadow: 0 0 14px rgba(255,149,0,0.04); }
+  100% { border-color: rgba(255,45,85,0.25); box-shadow: 0 0 14px rgba(255,45,85,0.04); }
+}
+@keyframes rpt-line-glow {
+  0%   { border-left-color: rgba(0,212,255,0.5); }
+  33%  { border-left-color: rgba(123,97,255,0.5); }
+  66%  { border-left-color: rgba(48,209,88,0.5); }
+  100% { border-left-color: rgba(0,212,255,0.5); }
+}
+.rpt-section { transition: all 0.3s ease; }
+.rpt-section:hover { animation: rpt-border-cycle 3s ease infinite; transform: translateY(-1px); }
+.rpt-psych { transition: all 0.3s ease; }
+.rpt-psych:hover { animation: rpt-psych-cycle 3s ease infinite; transform: translateY(-1px); }
+.rpt-lie { transition: all 0.3s ease; }
+.rpt-lie:hover { animation: rpt-lie-cycle 3s ease infinite; transform: translateY(-1px); }
+.rpt-tline { transition: all 0.18s ease; }
+.rpt-tline:hover { background: rgba(0,212,255,0.04) !important; animation: rpt-line-glow 2s ease infinite; border-left-width: 3px !important; transform: translateX(3px); }
+.rpt-tline.rpt-flagged:hover { background: rgba(255,45,85,0.08) !important; border-left-color: #ff2d55 !important; animation: none; box-shadow: inset 0 0 14px rgba(255,45,85,0.06); }
+.rpt-alert-wrap { transition: all 0.2s ease; }
+.rpt-alert-wrap:hover { transform: translateX(3px); filter: brightness(1.1); }
 
 /* ── MOBILE RESPONSIVE for Tabs (Psych, Patterns, Report, About) ── */
 @media(max-width:768px){
@@ -76,11 +114,9 @@ function PieChart({ data, size=120, title }) {
     const rad = (angle-90)*Math.PI/180
     return { x: cx+(r*0.65)*Math.cos(rad), y: cy+(r*0.65)*Math.sin(rad) }
   }
-
   return (
     <div style={{ display:'flex',flexDirection:'column',alignItems:'center',gap:6 }}>
       <svg width={size} height={size} style={{ flexShrink:0, transform:'perspective(200px) rotateX(12deg)', filter:'drop-shadow(0 4px 8px rgba(0,0,0,0.5))' }}>
-        {/* Shadow ellipse for 3D effect */}
         <ellipse cx={cx} cy={cy+4} rx={r} ry={r*0.2} fill="rgba(0,0,0,0.3)"/>
         <circle cx={cx} cy={cy} r={r} fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
         {slices.map((s,i)=>{
@@ -92,7 +128,6 @@ function PieChart({ data, size=120, title }) {
         })}
         {total===0&&<text x={cx} y={cy+3} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">N/A</text>}
       </svg>
-      {/* Legend */}
       <div style={{ display:'flex',flexWrap:'wrap',gap:4,justifyContent:'center',maxWidth:size+40 }}>
         {data.filter(d=>d.value>0).map((d,i)=>(
           <div key={i} style={{ display:'flex',alignItems:'center',gap:3,padding:'2px 5px' }}>
@@ -120,7 +155,7 @@ const saveReport=r=>{try{const l=JSON.parse(localStorage.getItem('vg_reports')||
 const loadReports=()=>{try{return JSON.parse(localStorage.getItem('vg_reports')||'[]')}catch{return[]}}
 const delReport=id=>{try{localStorage.setItem('vg_reports',JSON.stringify(loadReports().filter(r=>r.id!==id)))}catch{}}
 
-/* ── Intervention History Section (POLISHED) ── */
+/* ── Intervention History Section ── */
 function InterventionHistorySection({ interventions, language }) {
   if (!interventions || interventions.length === 0) return null
   const levelColors = { LOCKDOWN: '#ff2d55', BLOCK: '#ff9500', WARN: '#ffd60a' }
@@ -130,10 +165,8 @@ function InterventionHistorySection({ interventions, language }) {
     challenge_passed: '✓ Challenge Passed',
     challenge_failed: '⚠ Challenge Failed (Scam Confirmed)',
   }
-
   return (
     <PBox color="#ff2d55" style={{ padding: 20, background: 'rgba(255,45,85,0.03)', animation: 'intv-section-glow 4s ease-in-out infinite' }}>
-      <style>{tabsCSS}</style>
       <div style={{ fontFamily: PF, fontSize: 8, color: '#ff2d55', marginBottom: 14, textShadow: '0 0 10px #ff2d55' }}>
         🛑 LIVE INTERVENTIONS ({interventions.length})
       </div>
@@ -143,36 +176,17 @@ function InterventionHistorySection({ interventions, language }) {
       {interventions.map((e, i) => {
         const c = levelColors[e.level] || '#ff9500'
         return (
-          <div key={i} style={{
-            padding: '12px 14px', marginBottom: 6,
-            borderLeft: `3px solid ${c}`,
-            background: `${c}08`,
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          }}>
+          <div key={i} style={{ padding: '12px 14px', marginBottom: 6, borderLeft: `3px solid ${c}`, background: `${c}08`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{
-                  fontFamily: PF, fontSize: 6, padding: '3px 8px',
-                  border: `1px solid ${c}`, color: c, background: `${c}15`,
-                  textShadow: `0 0 6px ${c}66`,
-                  animation: 'intv-badge-pulse 2.5s ease-in-out infinite',
-                }}>
-                  {e.level}
-                </span>
-                <span style={{ fontFamily: MF, fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>
-                  {e.pattern}
-                </span>
+                <span style={{ fontFamily: PF, fontSize: 6, padding: '3px 8px', border: `1px solid ${c}`, color: c, background: `${c}15`, textShadow: `0 0 6px ${c}66`, animation: 'intv-badge-pulse 2.5s ease-in-out infinite' }}>{e.level}</span>
+                <span style={{ fontFamily: MF, fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>{e.pattern}</span>
               </div>
               <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>
                 Trigger: {e.trigger === 'instant_pattern' ? '⚡ Instant Pattern' : '📊 Score Threshold'} · Score at time: {e.threatScore}
               </div>
             </div>
-            <div style={{
-              fontFamily: MF, fontSize: 9,
-              color: e.userAction === 'safe_exit' ? '#30d158'
-                : e.userAction === 'challenge_failed' ? '#ff2d55'
-                : 'rgba(255,255,255,0.5)',
-            }}>
+            <div style={{ fontFamily: MF, fontSize: 9, color: e.userAction === 'safe_exit' ? '#30d158' : e.userAction === 'challenge_failed' ? '#ff2d55' : 'rgba(255,255,255,0.5)' }}>
               {actionLabels[e.userAction] || e.userAction || '—'}
             </div>
           </div>
@@ -183,12 +197,10 @@ function InterventionHistorySection({ interventions, language }) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   PREMIUM HTML/PDF EXPORT — colored bars, all sections, footer
-   ─────────────────────────────────────────────────────────
-   FIX: Comprehensive @media print overrides so all text is
-   readable on white paper. Dark-theme hex colors that were
-   invisible on white (#888, rgba(255,255,255,*)) are now
-   remapped to dark equivalents (#333, #555, #000).
+   [FIX #1] genHTML — LIGHT THEME NATIVE for PDF/print
+   ────────────────────────────────────────────────────────
+   Key change: All colors are print-safe on white paper.
+   No @media print overrides fighting inline dark styles.
 ══════════════════════════════════════════════════════════ */
 function genHTML(report) {
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
@@ -196,134 +208,56 @@ function genHTML(report) {
   const barHTML=(entries,title)=>{
     if(!entries||entries.length===0) return ''
     return `<h2>${title}</h2>${entries.map(([k,v])=>{
-      const c=v>60?'#ff2d55':v>30?'#ff9500':v>0?'#30d158':'#333'
-      return `<div class="bar"><span class="bl">${k}</span><div class="bt"><div class="bf" style="width:${v}%;background:linear-gradient(90deg,${c}88,${c})"></div></div><span class="bv" style="color:${c}">${v}%</span></div>`
+      const c=v>60?'#cc0000':v>30?'#cc7700':v>0?'#228833':'#999'
+      return `<div class="bar"><span class="bl">${k}</span><div class="bt"><div class="bf" style="width:${v}%;background:${c}"></div></div><span class="bv" style="color:${c}">${v}%</span></div>`
     }).join('')}`
   }
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>VoxGuard Forensic Report — ${report.id}</title>
 <style>
-*{box-sizing:border-box}
-body{font-family:'Courier New',monospace;background:#020408;color:#e0e0e0;padding:0;margin:0}
-.page{max-width:900px;margin:0 auto;padding:40px}
-h1{color:#ff2d55;border-bottom:2px solid #ff2d55;padding-bottom:12px;font-size:20px;margin-bottom:8px}
-h2{color:#00d4ff;margin:28px 0 14px;font-size:12px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #00d4ff33;padding-bottom:6px}
-.meta{color:#999;font-size:11px;margin-bottom:24px;line-height:1.8}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:16px 0}
-.metric{padding:18px 14px;border:1px solid #1a1a2e;text-align:center;background:rgba(255,255,255,0.02)}
-.metric .v{font-size:26px;font-weight:bold;color:#ff2d55}
-.metric .l{font-size:9px;color:#888;margin-top:6px;text-transform:uppercase;letter-spacing:1px}
-.alert{margin:10px 0;padding:14px 16px;border-left:4px solid;background:rgba(255,255,255,0.02)}
-.critical{border-color:#ff2d55}.high{border-color:#ff9500}.medium{border-color:#ffd60a}
-.badge{display:inline-block;font-size:8px;padding:3px 8px;font-weight:bold;margin-right:8px;text-transform:uppercase;border:1px solid}
-.badge.critical{color:#ff2d55;border-color:#ff2d55}.badge.high{color:#ff9500;border-color:#ff9500}.badge.medium{color:#ffd60a;border-color:#ffd60a}
-.quote{color:rgba(255,255,255,0.55);font-size:11px;margin-top:6px;line-height:1.7}
-.bar{display:flex;align-items:center;gap:10px;margin:8px 0}
-.bl{width:120px;font-size:10px;color:#ccc;flex-shrink:0}
-.bt{flex:1;height:10px;background:#111;border:1px solid #222;overflow:hidden}
-.bf{height:100%;transition:width 0.3s}
-.bv{font-size:11px;width:44px;text-align:right;font-weight:bold;flex-shrink:0}
-.tline{padding:5px 10px;font-size:11px;line-height:1.8;border-left:3px solid transparent;margin:3px 0}
-.tline.flagged{border-left-color:#ff2d55;background:rgba(255,45,85,0.06)}
-.tline.me{border-left-color:#30d15866}
-.ts{color:#00d4ffaa;font-size:10px;margin-right:10px}
-.speaker{font-weight:bold;font-size:9px;margin-right:6px}
-.flag{color:#ff2d55;font-size:9px;margin-left:8px}
-.action{padding:10px 14px;border-left:3px solid #30d158;margin:6px 0;font-size:11px;color:#ccc;background:rgba(48,209,88,0.04)}
-.action .pri{font-size:8px;font-weight:bold;margin-left:8px}
-.intv{padding:12px 16px;border-left:4px solid;margin:8px 0;background:rgba(255,255,255,0.02)}
-.intv .lvl{display:inline-block;font-size:8px;padding:3px 8px;font-weight:bold;margin-right:8px;text-transform:uppercase;border:1px solid}
-.footer{margin-top:40px;padding:20px 0;border-top:2px solid #111;text-align:center;color:#666;font-size:10px}
-.footer .brand{color:#00d4ff;font-size:12px;font-weight:bold;letter-spacing:2px}
-
-/* ════════════════════════════════════════════════════════
-   PRINT STYLES — Full override for white-paper readability
-   ════════════════════════════════════════════════════════ */
-@media print{
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
-
-  /* Base: white background, black text */
-  body{background:#fff!important;color:#111!important}
-  .page{padding:20px}
-
-  /* Headings */
-  h1{color:#cc0000!important;border-bottom-color:#cc0000!important}
-  h2{color:#005599!important;border-bottom-color:#005599!important}
-
-  /* Metadata */
-  .meta{color:#444!important}
-  .meta strong{color:#111!important}
-
-  /* Metric grid */
-  .metric{border-color:#ddd!important;background:#fafafa!important}
-  .metric .v{color:#cc0000!important}
-  .metric .l{color:#555!important}
-
-  /* Alert cards */
-  .alert{background:#fafafa!important}
-  .alert strong{color:#111!important}
-  .alert span[style*="color:#888"]{color:#555!important}
-
-  /* Badges — keep colored but ensure contrast */
-  .badge.critical{color:#cc0000!important;border-color:#cc0000!important;background:#fff0f0!important}
-  .badge.high{color:#cc7700!important;border-color:#cc7700!important;background:#fff8f0!important}
-  .badge.medium{color:#997700!important;border-color:#997700!important;background:#fffdf0!important}
-
-  /* Quotes / evidence text */
-  .quote{color:#333!important}
-
-  /* Bar chart — labels and track */
-  .bl{color:#333!important}
-  .bt{background:#eee!important;border-color:#ccc!important}
-  .bf{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-  .bv{-webkit-print-color-adjust:exact!important}
-
-  /* Transcript lines */
-  .tline{color:#222!important}
-  .tline.flagged{background:#fff0f0!important;border-left-color:#cc0000!important}
-  .tline.me{border-left-color:#008833!important}
-  .ts{color:#005599!important}
-  .speaker{-webkit-print-color-adjust:exact!important}
-  .flag{color:#cc0000!important}
-
-  /* ME speaker green → dark green for print */
-  .speaker[style*="color:#30d158"],
-  .speaker[style*="color: #30d158"]{color:#007722!important}
-
-  /* CALLER speaker orange → dark orange for print */
-  .speaker[style*="color:#ff9500"],
-  .speaker[style*="color: #ff9500"]{color:#995500!important}
-
-  /* Intervention section */
-  .intv{background:#fafafa!important}
-  .intv strong{color:#111!important}
-  .intv .lvl{-webkit-print-color-adjust:exact!important}
-  .intv .quote{color:#333!important}
-  .intv span[style*="color:#888"]{color:#555!important}
-
-  /* Action items */
-  .action{background:#f0fff4!important;border-color:#007700!important;color:#222!important}
-  .action .pri{-webkit-print-color-adjust:exact!important}
-
-  /* Footer */
-  .footer{border-color:#ddd!important;color:#666!important}
-  .footer .brand{color:#005599!important}
-
-  /* Intervention level-specific overrides for print readability */
-  .intv .lvl[style*="#ff2d55"]{color:#cc0000!important;border-color:#cc0000!important}
-  .intv .lvl[style*="#ff9500"]{color:#cc7700!important;border-color:#cc7700!important}
-  .intv .lvl[style*="#ffd60a"]{color:#997700!important;border-color:#997700!important}
-
-  /* Intervened badge in alerts */
-  span[style*="color:#ff2d55"]{color:#cc0000!important}
-
-  /* Generic: any inline rgba(255,255,255,*) text → dark */
-  [style*="rgba(255,255,255"]{color:#333!important}
-  [style*="color:#888"]{color:#555!important}
-  [style*="color:#999"]{color:#555!important}
-  [style*="color:#666"]{color:#555!important}
-  [style*="color:#ccc"]{color:#333!important}
-}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+body{font-family:'Courier New',Courier,monospace;background:#fff;color:#111;padding:0;margin:0;font-size:11px;line-height:1.6}
+.page{max-width:860px;margin:0 auto;padding:36px 40px}
+h1{color:#cc0000;border-bottom:2px solid #cc0000;padding-bottom:10px;font-size:18px;margin:0 0 6px;letter-spacing:1px}
+h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #005599;padding-bottom:5px}
+.meta{color:#555;font-size:10px;margin-bottom:18px;line-height:1.8}
+.meta strong{color:#111}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+.metric{padding:14px 10px;border:1.5px solid #ddd;text-align:center;background:#f8f8f8}
+.metric .v{font-size:22px;font-weight:bold;color:#cc0000}
+.metric .l{font-size:8px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
+.alert{margin:6px 0;padding:10px 14px;border-left:4px solid;background:#f9f9f9;page-break-inside:avoid}
+.alert.critical{border-color:#cc0000;background:#fff5f5}
+.alert.high{border-color:#cc7700;background:#fff8f0}
+.alert.medium{border-color:#997700;background:#fffdf0}
+.badge{display:inline-block;font-size:8px;padding:2px 7px;font-weight:bold;margin-right:6px;text-transform:uppercase;border:1.5px solid}
+.badge.critical{color:#cc0000;border-color:#cc0000;background:#fff0f0}
+.badge.high{color:#cc7700;border-color:#cc7700;background:#fff5e6}
+.badge.medium{color:#997700;border-color:#997700;background:#fffbe6}
+.quote{color:#444;font-size:10px;margin-top:4px;line-height:1.5;font-style:italic}
+.intervened{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
+.bar{display:flex;align-items:center;gap:10px;margin:5px 0}
+.bl{width:110px;font-size:9px;color:#333;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px}
+.bt{flex:1;height:12px;background:#e8e8e8;border:1px solid #ccc;overflow:hidden}
+.bf{height:100%}
+.bv{font-size:10px;width:44px;text-align:right;font-weight:bold;flex-shrink:0}
+.tline{padding:4px 10px;font-size:10px;line-height:1.7;border-left:3px solid transparent;margin:2px 0;color:#222}
+.tline.flagged{border-left-color:#cc0000;background:#fff5f5}
+.tline.me{border-left-color:#228833}
+.ts{color:#005599;font-size:9px;margin-right:8px}
+.speaker{font-weight:bold;font-size:8px;margin-right:5px;text-transform:uppercase;letter-spacing:0.5px}
+.speaker-me{color:#007722}
+.speaker-caller{color:#995500}
+.flag{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
+.intv{padding:10px 14px;border-left:4px solid;margin:6px 0;background:#f9f9f9;page-break-inside:avoid}
+.intv-label{display:inline-block;font-size:7px;padding:2px 7px;font-weight:bold;margin-right:6px;text-transform:uppercase;border:1.5px solid}
+.intv-meta{color:#555;font-size:9px;margin-top:2px}
+.action{padding:8px 12px;border-left:3px solid #007733;margin:4px 0;font-size:10px;color:#222;background:#f0fff4;page-break-inside:avoid}
+.action .pri{font-size:8px;font-weight:bold;margin-left:6px}
+.pri-critical{color:#cc0000}.pri-high{color:#cc7700}.pri-medium{color:#997700}.pri-low{color:#007733}
+.footer{margin-top:28px;padding:14px 0;border-top:2px solid #ddd;text-align:center;color:#888;font-size:9px}
+.footer .brand{color:#005599;font-size:11px;font-weight:bold;letter-spacing:3px}
+@media print{body{margin:0;padding:0}.page{padding:16px 20px}h2{page-break-after:avoid}.alert,.intv,.action{page-break-inside:avoid}}
 </style></head><body><div class="page">
 <h1>🛡 VOXGUARD — FORENSIC REPORT</h1>
 <div class="meta">
@@ -333,7 +267,6 @@ h2{color:#00d4ff;margin:28px 0 14px;font-size:12px;letter-spacing:2px;text-trans
   <strong>Country:</strong> ${actionsData.country} &nbsp;·&nbsp;
   <strong>ID:</strong> ${report.id}
 </div>
-
 <h2>THREAT SUMMARY</h2>
 <div class="grid">
   <div class="metric"><div class="v">${report.threatScore}</div><div class="l">Risk Score</div></div>
@@ -341,37 +274,26 @@ h2{color:#00d4ff;margin:28px 0 14px;font-size:12px;letter-spacing:2px;text-trans
   <div class="metric"><div class="v">${fmt(report.sessionTime)}</div><div class="l">Duration</div></div>
   <div class="metric"><div class="v">${(report.interventionHistory||[]).length}</div><div class="l">Interventions</div></div>
 </div>
-
 ${(report.transcript||[]).length>0?`<h2>FULL TRANSCRIPT</h2>${(report.transcript||[]).map(l=>{
   const isMe=l.speaker==='me'
-  return `<div class="tline${l.flagged?' flagged':''}${isMe?' me':''}"><span class="ts">[${l.time}]</span><span class="speaker" style="color:${isMe?'#30d158':'#ff9500'}">${isMe?'ME':'CALLER'}</span>${l.text}${l.flagged?'<span class="flag">⚠ FLAGGED</span>':''}</div>`
+  return `<div class="tline${l.flagged?' flagged':''}${isMe?' me':''}"><span class="ts">[${l.time}]</span><span class="speaker ${isMe?'speaker-me':'speaker-caller'}">${isMe?'ME':'CALLER'}</span>${l.text}${l.flagged?'<span class="flag">⚠ FLAGGED</span>':''}</div>`
 }).join('')}`:''}
-
 ${(report.interventionHistory||[]).length>0?`<h2>LIVE INTERVENTIONS (${report.interventionHistory.length})</h2>
-<p style="color:#999;font-size:11px;margin-bottom:12px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
+<p style="color:#555;font-size:10px;margin-bottom:10px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
 ${report.interventionHistory.map(e=>{
-  const c=e.level==='LOCKDOWN'?'#ff2d55':e.level==='BLOCK'?'#ff9500':'#ffd60a'
-  return `<div class="intv" style="border-color:${c}">
-    <span class="lvl" style="color:${c};border-color:${c}">${e.level}</span>
-    <strong>${e.pattern}</strong> <span style="color:#888;font-size:10px">Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span>
-    <div class="quote">User action: ${e.userAction||'—'}</div>
-  </div>`
+  const c=e.level==='LOCKDOWN'?'#cc0000':e.level==='BLOCK'?'#cc7700':'#997700'
+  return `<div class="intv" style="border-color:${c}"><span class="intv-label" style="color:${c};border-color:${c}">${e.level}</span><strong style="color:#111">${e.pattern}</strong><span class="intv-meta"> Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span><div class="quote">User action: ${e.userAction||'—'}</div></div>`
 }).join('')}`:''}
-
 <h2>ALERT TIMELINE</h2>
-${(report.alerts||[]).map(a=>`<div class="alert ${a.severity}"><span class="badge ${a.severity}">${a.severity}</span><strong>${a.pattern}</strong> <span style="color:#888;font-size:10px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span style="color:#ff2d55;font-size:9px;margin-left:8px">🛑 INTERVENED</span>':''}<div class="quote">"${a.quote.replace(/"/g,'')}"</div></div>`).join('')}
-
+${(report.alerts||[]).map(a=>{
+  const sev=a.severity||'medium'
+  return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#666;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
+}).join('')}
 ${barHTML(Object.entries(report.psychScores||{}),'PSYCHOLOGICAL VECTORS')}
 ${barHTML(Object.entries(report.lieScores||{}),'LIE DETECTION ANALYSIS')}
-
 <h2>RECOMMENDED ACTIONS — ${actionsData.country}</h2>
-${actionsData.actions.map(a=>`<div class="action">${a.icon} ${a.text}<span class="pri" style="color:${a.priority==='critical'?'#ff2d55':a.priority==='high'?'#ff9500':'#30d158'}">[${a.priority.toUpperCase()}]</span></div>`).join('')}
-
-<div class="footer">
-  <div class="brand">VOXGUARD</div>
-  <div style="margin-top:6px">Built by Wiqi Lee · © 2026 · MIT License · #GeminiLiveAgentChallenge</div>
-  <div style="margin-top:4px;color:#555">Powered by Gemini Live API · Page 1/1</div>
-</div>
+${actionsData.actions.map(a=>`<div class="action">${a.icon} ${a.text}<span class="pri pri-${a.priority}">[${a.priority.toUpperCase()}]</span></div>`).join('')}
+<div class="footer"><div class="brand">VOXGUARD</div><div style="margin-top:5px">Built by Wiqi Lee · © 2026 · MIT License · #GeminiLiveAgentChallenge</div><div style="margin-top:3px;color:#aaa">Powered by Gemini Live API · Page 1/1</div></div>
 </div></body></html>`
 }
 
@@ -383,7 +305,6 @@ function getFilename(report) {
 
 function exportHTML(report){
   let html = genHTML(report)
-  // Add audio player if recording exists
   if(report.audioUrl) {
     html = html.replace('</div></body>',`<h2>SESSION RECORDING</h2><audio controls src="${report.audioUrl}" style="width:100%;margin:10px 0"></audio></div></body>`)
   }
@@ -397,11 +318,10 @@ function exportPDF(report){
   w.document.write(html)
   w.document.title = `VoxGuard Report — ${getFilename(report)}`
   w.document.close()
-  // Wait for render then print
   w.onload = () => setTimeout(()=>w.print(),600)
 }
 
-/* ═══ Vector Bar — with interpretation + shimmer on active tip (POLISHED) ═══ */
+/* ═══ Vector Bar ═══ */
 function VectorBar({tac,score}){
   const[h,setH]=useState(false);const active=score>0
   const barColors=[tac.color+'55',tac.color+'99',tac.color]
@@ -448,11 +368,9 @@ function GalleryFullscreen({report,onClose,onDelete}){
   const[tab,setTab]=useState('transcript')
   const actionsData=getActionsForLang(report.language||'en')
   const hasInterventions=(report.interventionHistory||[]).length>0
-
   return(
     <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,0.95)',backdropFilter:'blur(10px)',display:'flex',flexDirection:'column'}} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{flex:1,maxWidth:1000,width:'100%',margin:'0 auto',display:'flex',flexDirection:'column',overflow:'hidden'}}>
-        {/* Header */}
         <div style={{padding:'20px 28px',borderBottom:'1px solid rgba(0,212,255,0.15)',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0,flexWrap:'wrap',gap:12}}>
           <div>
             <div style={{fontFamily:PF,fontSize:11,color:'#00d4ff',textShadow:'0 0 10px #00d4ff'}}>SESSION DETAIL</div>
@@ -463,21 +381,16 @@ function GalleryFullscreen({report,onClose,onDelete}){
           </div>
           <div style={{display:'flex',gap:12,alignItems:'center'}}>
             <span style={{fontFamily:PF,fontSize:22,color:sc,textShadow:`0 0 14px ${sc}`}}>{report.threatScore}/100</span>
-            {/* Audio playback if recording exists */}
-            {report.audioUrl&&(
-              <audio controls src={report.audioUrl} style={{ height:28,maxWidth:180,opacity:0.8 }} />
-            )}
+            {report.audioUrl&&(<audio controls src={report.audioUrl} style={{ height:28,maxWidth:180,opacity:0.8 }} />)}
             <button onClick={e=>{e.stopPropagation();onDelete?.()}} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid #ff2d5555',color:'#ff2d55',background:'rgba(255,45,85,0.08)',cursor:'pointer'}}>🗑 DELETE</button>
             <button onClick={onClose} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.5)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
           </div>
         </div>
-        {/* Tabs */}
         <div style={{display:'flex',borderBottom:'1px solid rgba(0,212,255,0.1)',flexShrink:0}}>
           {['transcript','alerts',hasInterventions?'interventions':null,'psych','actions'].filter(Boolean).map(t=>(
             <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:tab===t?'#00d4ff':t==='interventions'?'#ff2d55aa':'rgba(255,255,255,0.55)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1}}>{t}{t==='interventions'?` (${(report.interventionHistory||[]).length})`:''}</button>
           ))}
         </div>
-        {/* Content */}
         <div style={{flex:1,overflowY:'auto',padding:'20px 28px'}}>
           {tab==='transcript'&&((report.transcript||[]).length>0?(report.transcript||[]).map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} style={{fontFamily:MF,fontSize:12,color:isMe?'#30d158':'rgba(255,255,255,0.75)',padding:'6px 0',borderLeft:l.flagged?'3px solid #ff2d55':isMe?'3px solid #30d15844':'3px solid transparent',paddingLeft:12,lineHeight:1.8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:10,marginRight:10}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:6,color:isMe?'#30d158':'#ff9500',marginRight:6}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:9,marginLeft:6}}>⚠</span>}</div>}):<div style={{textAlign:'center',padding:40,color:'rgba(255,255,255,0.25)',fontFamily:MF}}>No transcript</div>)}
           {tab==='alerts'&&(report.alerts||[]).map((a,i)=><AlertCard key={i} alert={a} index={i}/>)}
@@ -494,7 +407,6 @@ function GalleryFullscreen({report,onClose,onDelete}){
             {actionsData.actions.map((a,i)=><ActionItem key={i} action={a}/>)}
           </>}
         </div>
-        {/* Footer */}
         <div style={{display:'flex',gap:8,padding:'16px 28px',borderTop:'1px solid rgba(0,212,255,0.1)',flexShrink:0}}>
           <PBtn onClick={()=>exportPDF(report)} color="#ff9500" style={{flex:1,padding:'10px'}}>↓ PDF</PBtn>
           <PBtn onClick={()=>exportHTML(report)} color="#7b61ff" style={{flex:1,padding:'10px'}}>↓ HTML</PBtn>
@@ -548,11 +460,9 @@ function GalleryCard({r,sc,fmt,onOpen,onDel}){
 export function PsychTab({psychScores,lieScores={}}){
   const psychData = PSYCH_TACTICS.map(t=>({label:t.label,value:psychScores[t.id]||0,color:t.color}))
   const lieData = (LIE_INDICATORS||[]).map(l=>({label:l.label,value:lieScores[l.id]||0,color:l.color}))
-
   return(
     <div>
       <style>{tabsCSS}</style>
-      {/* Methodology info */}
       <div style={{marginBottom:24,paddingLeft:18,borderLeft:'3px solid #ff9500'}}>
         <div style={{fontFamily:PF,fontSize:11,color:'#ff9500',textShadow:'0 0 16px #ff9500',marginBottom:10}}>PSYCHOLOGICAL MANIPULATION ANALYZER</div>
         <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.9,maxWidth:780}}>Maps the <span style={{color:'#ff9500'}}>psychological architecture</span> of a manipulation attempt using <span style={{color:'#ff2d55'}}>three analytical frameworks</span>:</div>
@@ -570,8 +480,6 @@ export function PsychTab({psychScores,lieScores={}}){
           </PBox>
         ))}
       </div>
-
-      {/* Scoring rubric */}
       <div style={{marginBottom:24,padding:'12px 16px',border:'1px solid rgba(255,255,255,0.06)',background:'rgba(255,255,255,0.015)'}}>
         <div style={{fontFamily:PF,fontSize:6,color:'rgba(255,255,255,0.55)',marginBottom:8,letterSpacing:1}}>SCORING RUBRIC</div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
@@ -584,8 +492,6 @@ export function PsychTab({psychScores,lieScores={}}){
           ))}
         </div>
       </div>
-
-      {/* ── SECTION 1: Caller Manipulation Vectors ── */}
       <PBox color="#ff950044" style={{padding:20,marginBottom:16}}>
         <div className="vg-psych-section" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
@@ -599,8 +505,6 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-
-      {/* ── SECTION 2: Lie Detection ── */}
       <PBox color="#ff2d5544" style={{padding:20,marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
@@ -614,8 +518,6 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-
-      {/* ── SECTION 3: User Vulnerability ── */}
       <PBox color="#00d4ff44" style={{padding:20,marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
@@ -639,7 +541,6 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-
       <PBox color="#ff9500" style={{padding:'22px 28px',background:'rgba(255,149,0,0.03)',position:'relative',overflow:'hidden'}}>
         <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:12}}>WHY THIS IS UNPRECEDENTED</div>
         <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:2,maxWidth:780}}>Every other tool detects scam <span style={{color:'#00d4ff'}}>keywords</span>. VoxGuard detects scam <span style={{color:'#ff9500'}}>cognition</span> + <span style={{color:'#ff2d55'}}>deception</span> + <span style={{color:'#00d4ff'}}>user vulnerability</span>.</div>
@@ -662,8 +563,6 @@ export function PatternsTab({detectedIds=[]}){
       <div style={{display:'flex',gap:6}}>{['all','critical','high','medium','low'].map(f=>{const fc=f==='all'?'#00d4ff':SEV[f]?.text||'#00d4ff';return<button key={f} onClick={()=>setFilter(f)} style={{padding:'9px 14px',fontFamily:PF,fontSize:6,border:`1px solid ${filter===f?fc:fc+'44'}`,background:filter===f?fc+'18':'transparent',color:filter===f?fc:'rgba(255,255,255,0.5)',cursor:'pointer'}}>{f.toUpperCase()}</button>})}</div>
     </div>
     <div className="vg-patterns-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:14}}>{filtered.map(p=>{const c=SEV[p.severity];return<PatternCard key={p.id} p={p} c={c} hit={detectedIds.includes(p.category)} onClick={()=>setSelected(p)}/>})}</div>
-
-    {/* Fullscreen Pattern Detail */}
     {selected&&(()=>{
       const c=SEV[selected.severity]
       return(
@@ -677,13 +576,10 @@ export function PatternsTab({detectedIds=[]}){
               <button onClick={()=>setSelected(null)} style={{fontFamily:PF,fontSize:7,padding:'8px 14px',border:'1px solid rgba(255,255,255,0.5)',color:'#fff',background:'rgba(255,255,255,0.06)',cursor:'pointer'}}>✕ CLOSE</button>
             </div>
             <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.75)',lineHeight:1.8,marginBottom:20}}>{selected.description}</div>
-
             <div style={{fontFamily:PF,fontSize:7,color:'#ff9500',marginBottom:10}}>MECHANISM</div>
             <div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,0.6)',marginBottom:20,padding:'10px 14px',borderLeft:`3px solid #ff9500`,background:'rgba(255,149,0,0.04)'}}>⚙ {selected.mechanism}</div>
-
             <div style={{fontFamily:PF,fontSize:7,color:'#00d4ff',marginBottom:10}}>LINGUISTIC MARKERS</div>
             <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:20}}>{selected.markers.map((m,i)=><span key={i} style={{fontFamily:MF,fontSize:10,padding:'5px 10px',border:'1px solid rgba(0,212,255,0.25)',color:'#00d4ff',background:'rgba(0,212,255,0.06)'}}>"{m}"</span>)}</div>
-
             <div style={{fontFamily:PF,fontSize:7,color:'#7b61ff',marginBottom:10}}>INTERPRETATION</div>
             <div style={{fontFamily:MF,fontSize:11,color:'rgba(255,255,255,0.6)',lineHeight:1.8,padding:'12px 14px',borderLeft:'3px solid #7b61ff',background:'rgba(123,97,255,0.04)'}}>
               When this pattern is detected, it means the caller is employing a <strong style={{color:c.text}}>{selected.severity}-severity</strong> manipulation technique.
@@ -693,7 +589,6 @@ export function PatternsTab({detectedIds=[]}){
               {selected.severity==='high'&&' This pattern is a strong indicator — combined with other signals, it confirms a scam.'}
               {selected.severity==='medium'&&' This pattern warrants caution — monitor for additional indicators before concluding.'}
             </div>
-
             <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)',marginTop:20}}>Source: {selected.source} · Pattern ID: {selected.id}</div>
           </div>
         </div>
@@ -713,9 +608,9 @@ function PatternCard({p,c,hit,onClick}){const[h,setH]=useState(false);return(
 )}
 
 /* ══════════════════════════════════════════════════════════
-   REPORT TAB
+   [FIX #2 + #4] REPORT TAB — hover animations + ActionAgent
 ══════════════════════════════════════════════════════════ */
-export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null,interventionHistory=[]}){
+export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null,interventionHistory=[],actionPlan=null,onCloseActionPlan}){
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const[saved,setSaved]=useState([]);const[msg,setMsg]=useState('')
   useEffect(()=>setSaved(loadReports()),[])
@@ -728,6 +623,12 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
     <div style={{marginBottom:20,paddingLeft:16,borderLeft:'3px solid #00d4ff'}}><div style={{fontFamily:PF,fontSize:11,color:'#00d4ff'}}>SESSION FORENSIC REPORT</div></div>
     {alerts.length===0?(<PBox color="#00d4ff20" style={{padding:60,textAlign:'center'}}><div style={{fontFamily:PF,fontSize:8,color:'rgba(255,255,255,0.25)',lineHeight:3}}>NO SESSION DATA<br/>START A SESSION FIRST</div></PBox>):(
       <div style={{display:'flex',flexDirection:'column',gap:14}}>
+
+        {/* [FIX #4] ActionAgent — shown at top when available */}
+        {actionPlan && (
+          <ActionAgent plan={actionPlan} onClose={onCloseActionPlan} />
+        )}
+
         <PBox color="#ff2d55" style={{padding:24,background:'rgba(255,45,85,0.04)'}}>
           <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',marginBottom:16}}>⚠ HIGH RISK — SCAM DETECTED</div>
           <div className="vg-report-metrics" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
@@ -736,20 +637,32 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
             ))}
           </div>
         </PBox>
-        {transcript.length>0&&(<PBox color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>FULL TRANSCRIPT ({transcript.length})</div><div style={{maxHeight:200,overflowY:'auto'}}>{transcript.map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} style={{fontFamily:MF,fontSize:10,color:isMe?'#30d158':'rgba(255,255,255,0.65)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':isMe?'2px solid #30d15844':'2px solid transparent',paddingLeft:8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:isMe?'#30d158':'#ff9500',marginRight:4}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>})}</div></PBox>)}
+
+        {/* [FIX #2] Transcript with hover animations */}
+        {transcript.length>0&&(<PBox className="rpt-section" color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>FULL TRANSCRIPT ({transcript.length})</div><div style={{maxHeight:200,overflowY:'auto'}}>{transcript.map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} className={`rpt-tline${l.flagged?' rpt-flagged':''}`} style={{fontFamily:MF,fontSize:10,color:isMe?'#30d158':'rgba(255,255,255,0.65)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':isMe?'2px solid #30d15844':'2px solid transparent',paddingLeft:8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:isMe?'#30d158':'#ff9500',marginRight:4}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>})}</div></PBox>)}
+
         {/* Intervention History */}
         {interventionHistory.length>0&&(
           <InterventionHistorySection interventions={interventionHistory} language={language}/>
         )}
-        <PBox color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>ALERT TIMELINE</div>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</PBox>
-        {/* Psych + Lie together */}
-        <PBox color="#ff950040" style={{padding:20}}>
+
+        {/* [FIX #2] Alert Timeline with hover */}
+        <PBox className="rpt-section" color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>ALERT TIMELINE</div>{alerts.map((a,i)=><div key={a.id} className="rpt-alert-wrap"><AlertCard alert={a} index={i}/></div>)}</PBox>
+
+        {/* [FIX #2] Psych Vectors — separate PBox with hover glow */}
+        <PBox className="rpt-psych" color="#ff950040" style={{padding:20}}>
           <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:14}}>PSYCHOLOGICAL VECTORS</div>
           {PSYCH_TACTICS.map(t=><VectorBar key={t.id} tac={t} score={psychScores[t.id]||0}/>)}
-          <div style={{fontFamily:PF,fontSize:8,color:'#ff2d55',marginTop:16,marginBottom:14}}>LIE DETECTION</div>
+        </PBox>
+
+        {/* [FIX #2] Lie Detection — separate PBox with hover glow */}
+        <PBox className="rpt-lie" color="#ff2d5544" style={{padding:20}}>
+          <div style={{fontFamily:PF,fontSize:8,color:'#ff2d55',marginBottom:14}}>LIE DETECTION</div>
           {(LIE_INDICATORS||[]).map(l=><VectorBar key={l.id} tac={l} score={lieScores[l.id]||0}/>)}
         </PBox>
-        <PBox color="#30d158" style={{padding:20}}>
+
+        {/* [FIX #2] Recommended Actions with hover */}
+        <PBox className="rpt-section" color="#30d158" style={{padding:20}}>
           <div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:6}}>RECOMMENDED ACTIONS</div>
           <div style={{fontFamily:MF,fontSize:11,color:'rgba(48,209,88,0.7)',marginBottom:14,padding:'8px 12px',border:'1px solid rgba(48,209,88,0.2)',background:'rgba(48,209,88,0.04)',display:'flex',alignItems:'center',gap:8}}>
             <span style={{fontSize:18}}>{getFlag(language)}</span>
@@ -757,6 +670,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
           </div>
           {actionsData.actions.map((a,i)=><ActionItem key={i} action={a}/>)}
         </PBox>
+
         <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
           <PBtn onClick={doSave} color="#00d4ff" style={{flex:1,padding:'12px'}}>💾 SAVE</PBtn>
           <PBtn onClick={()=>exportHTML(cur)} color="#7b61ff" style={{flex:1,padding:'12px'}}>↓ HTML</PBtn>
