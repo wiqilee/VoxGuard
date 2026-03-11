@@ -57,6 +57,39 @@ const tabsCSS = `
 .rpt-alert-wrap { transition: all 0.2s ease; }
 .rpt-alert-wrap:hover { transform: translateX(3px); filter: brightness(1.1); }
 
+/* ── [FIX] Psych tab border hover animations ── */
+@keyframes psych-caller-hover {
+  0%   { border-color: rgba(255,149,0,0.3); box-shadow: 0 0 18px rgba(255,149,0,0.05), inset 0 0 14px rgba(255,149,0,0.02); }
+  33%  { border-color: rgba(255,45,85,0.35); box-shadow: 0 0 18px rgba(255,45,85,0.07), inset 0 0 14px rgba(255,45,85,0.03); }
+  66%  { border-color: rgba(123,97,255,0.3); box-shadow: 0 0 18px rgba(123,97,255,0.05), inset 0 0 14px rgba(123,97,255,0.02); }
+  100% { border-color: rgba(255,149,0,0.3); box-shadow: 0 0 18px rgba(255,149,0,0.05), inset 0 0 14px rgba(255,149,0,0.02); }
+}
+@keyframes psych-lie-hover {
+  0%   { border-color: rgba(255,45,85,0.3); box-shadow: 0 0 18px rgba(255,45,85,0.05), inset 0 0 14px rgba(255,45,85,0.02); }
+  33%  { border-color: rgba(0,212,255,0.35); box-shadow: 0 0 18px rgba(0,212,255,0.07), inset 0 0 14px rgba(0,212,255,0.03); }
+  66%  { border-color: rgba(255,149,0,0.3); box-shadow: 0 0 18px rgba(255,149,0,0.05), inset 0 0 14px rgba(255,149,0,0.02); }
+  100% { border-color: rgba(255,45,85,0.3); box-shadow: 0 0 18px rgba(255,45,85,0.05), inset 0 0 14px rgba(255,45,85,0.02); }
+}
+@keyframes psych-vuln-hover {
+  0%   { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 18px rgba(0,212,255,0.05), inset 0 0 14px rgba(0,212,255,0.02); }
+  33%  { border-color: rgba(48,209,88,0.35); box-shadow: 0 0 18px rgba(48,209,88,0.07), inset 0 0 14px rgba(48,209,88,0.03); }
+  66%  { border-color: rgba(123,97,255,0.3); box-shadow: 0 0 18px rgba(123,97,255,0.05), inset 0 0 14px rgba(123,97,255,0.02); }
+  100% { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 18px rgba(0,212,255,0.05), inset 0 0 14px rgba(0,212,255,0.02); }
+}
+@keyframes psych-unprecedented-hover {
+  0%   { border-color: rgba(255,149,0,0.35); box-shadow: 0 0 20px rgba(255,149,0,0.06); }
+  50%  { border-color: rgba(255,45,85,0.4); box-shadow: 0 0 20px rgba(255,45,85,0.08); }
+  100% { border-color: rgba(255,149,0,0.35); box-shadow: 0 0 20px rgba(255,149,0,0.06); }
+}
+.psych-caller-box { transition: all 0.3s ease; }
+.psych-caller-box:hover { animation: psych-caller-hover 3s ease infinite; transform: translateY(-1px); }
+.psych-lie-box { transition: all 0.3s ease; }
+.psych-lie-box:hover { animation: psych-lie-hover 3s ease infinite; transform: translateY(-1px); }
+.psych-vuln-box { transition: all 0.3s ease; }
+.psych-vuln-box:hover { animation: psych-vuln-hover 3s ease infinite; transform: translateY(-1px); }
+.psych-unprecedented-box { transition: all 0.3s ease; }
+.psych-unprecedented-box:hover { animation: psych-unprecedented-hover 2s ease infinite; transform: translateY(-1px); }
+
 /* ── MOBILE RESPONSIVE for Tabs (Psych, Patterns, Report, About) ── */
 @media(max-width:768px){
   .vg-psych-frameworks{grid-template-columns:1fr!important}
@@ -126,7 +159,7 @@ function PieChart({ data, size=120, title }) {
             {s.pct >= 8 && <text x={p.x} y={p.y+3} textAnchor="middle" fill="#fff" fontSize="8" fontFamily="monospace" fontWeight="bold" style={{ textShadow:'0 1px 2px rgba(0,0,0,0.8)' }}>{s.pct}%</text>}
           </g>
         })}
-        {total===0&&<text x={cx} y={cy+3} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">N/A</text>}
+        {slices.length===0&&<text x={cx} y={cy+3} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">N/A</text>}
       </svg>
       <div style={{ display:'flex',flexWrap:'wrap',gap:4,justifyContent:'center',maxWidth:size+40 }}>
         {data.filter(d=>d.value>0).map((d,i)=>(
@@ -199,8 +232,8 @@ function InterventionHistorySection({ interventions, language }) {
 /* ══════════════════════════════════════════════════════════
    [FIX #1] genHTML — LIGHT THEME NATIVE for PDF/print
    ────────────────────────────────────────────────────────
-   Key change: All colors are print-safe on white paper.
-   No @media print overrides fighting inline dark styles.
+   Key: ALL text is #111/#222/#333 on white. No cyan, no
+   neon. Bars use print-safe colors. Fully black text body.
 ══════════════════════════════════════════════════════════ */
 function genHTML(report) {
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
@@ -218,15 +251,15 @@ function genHTML(report) {
 *{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
 body{font-family:'Courier New',Courier,monospace;background:#fff;color:#111;padding:0;margin:0;font-size:11px;line-height:1.6}
 .page{max-width:860px;margin:0 auto;padding:36px 40px}
-h1{color:#cc0000;border-bottom:2px solid #cc0000;padding-bottom:10px;font-size:18px;margin:0 0 6px;letter-spacing:1px}
-h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #005599;padding-bottom:5px}
-.meta{color:#555;font-size:10px;margin-bottom:18px;line-height:1.8}
+h1{color:#111;border-bottom:2px solid #cc0000;padding-bottom:10px;font-size:18px;margin:0 0 6px;letter-spacing:1px}
+h2{color:#111;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #444;padding-bottom:5px}
+.meta{color:#333;font-size:10px;margin-bottom:18px;line-height:1.8}
 .meta strong{color:#111}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
-.metric{padding:14px 10px;border:1.5px solid #ddd;text-align:center;background:#f8f8f8}
+.metric{padding:14px 10px;border:1.5px solid #ccc;text-align:center;background:#f8f8f8}
 .metric .v{font-size:22px;font-weight:bold;color:#cc0000}
-.metric .l{font-size:8px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
-.alert{margin:6px 0;padding:10px 14px;border-left:4px solid;background:#f9f9f9;page-break-inside:avoid}
+.metric .l{font-size:8px;color:#444;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
+.alert{margin:6px 0;padding:10px 14px;border-left:4px solid;background:#f9f9f9;page-break-inside:avoid;color:#222}
 .alert.critical{border-color:#cc0000;background:#fff5f5}
 .alert.high{border-color:#cc7700;background:#fff8f0}
 .alert.medium{border-color:#997700;background:#fffdf0}
@@ -234,29 +267,30 @@ h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-trans
 .badge.critical{color:#cc0000;border-color:#cc0000;background:#fff0f0}
 .badge.high{color:#cc7700;border-color:#cc7700;background:#fff5e6}
 .badge.medium{color:#997700;border-color:#997700;background:#fffbe6}
-.quote{color:#444;font-size:10px;margin-top:4px;line-height:1.5;font-style:italic}
+.quote{color:#333;font-size:10px;margin-top:4px;line-height:1.5;font-style:italic}
 .intervened{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
 .bar{display:flex;align-items:center;gap:10px;margin:5px 0}
-.bl{width:110px;font-size:9px;color:#333;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px}
+.bl{width:110px;font-size:9px;color:#222;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px}
 .bt{flex:1;height:12px;background:#e8e8e8;border:1px solid #ccc;overflow:hidden}
 .bf{height:100%}
 .bv{font-size:10px;width:44px;text-align:right;font-weight:bold;flex-shrink:0}
-.tline{padding:4px 10px;font-size:10px;line-height:1.7;border-left:3px solid transparent;margin:2px 0;color:#222}
+.tline{padding:4px 10px;font-size:10px;line-height:1.7;border-left:3px solid transparent;margin:2px 0;color:#111}
 .tline.flagged{border-left-color:#cc0000;background:#fff5f5}
 .tline.me{border-left-color:#228833}
-.ts{color:#005599;font-size:9px;margin-right:8px}
-.speaker{font-weight:bold;font-size:8px;margin-right:5px;text-transform:uppercase;letter-spacing:0.5px}
+.ts{color:#444;font-size:9px;margin-right:8px}
+.speaker{font-weight:bold;font-size:8px;margin-right:5px;text-transform:uppercase;letter-spacing:0.5px;color:#222}
 .speaker-me{color:#007722}
-.speaker-caller{color:#995500}
+.speaker-caller{color:#773300}
 .flag{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
-.intv{padding:10px 14px;border-left:4px solid;margin:6px 0;background:#f9f9f9;page-break-inside:avoid}
+.intv{padding:10px 14px;border-left:4px solid;margin:6px 0;background:#f9f9f9;page-break-inside:avoid;color:#222}
 .intv-label{display:inline-block;font-size:7px;padding:2px 7px;font-weight:bold;margin-right:6px;text-transform:uppercase;border:1.5px solid}
-.intv-meta{color:#555;font-size:9px;margin-top:2px}
-.action{padding:8px 12px;border-left:3px solid #007733;margin:4px 0;font-size:10px;color:#222;background:#f0fff4;page-break-inside:avoid}
+.intv-meta{color:#444;font-size:9px;margin-top:2px}
+.action{padding:8px 12px;border-left:3px solid #007733;margin:4px 0;font-size:10px;color:#111;background:#f0fff4;page-break-inside:avoid}
 .action .pri{font-size:8px;font-weight:bold;margin-left:6px}
 .pri-critical{color:#cc0000}.pri-high{color:#cc7700}.pri-medium{color:#997700}.pri-low{color:#007733}
-.footer{margin-top:28px;padding:14px 0;border-top:2px solid #ddd;text-align:center;color:#888;font-size:9px}
-.footer .brand{color:#005599;font-size:11px;font-weight:bold;letter-spacing:3px}
+.pri-immediate{color:#cc0000}.pri-recommended{color:#007733}
+.footer{margin-top:28px;padding:14px 0;border-top:2px solid #ddd;text-align:center;color:#555;font-size:9px}
+.footer .brand{color:#222;font-size:11px;font-weight:bold;letter-spacing:3px}
 @media print{body{margin:0;padding:0}.page{padding:16px 20px}h2{page-break-after:avoid}.alert,.intv,.action{page-break-inside:avoid}}
 </style></head><body><div class="page">
 <h1>🛡 VOXGUARD — FORENSIC REPORT</h1>
@@ -279,7 +313,7 @@ ${(report.transcript||[]).length>0?`<h2>FULL TRANSCRIPT</h2>${(report.transcript
   return `<div class="tline${l.flagged?' flagged':''}${isMe?' me':''}"><span class="ts">[${l.time}]</span><span class="speaker ${isMe?'speaker-me':'speaker-caller'}">${isMe?'ME':'CALLER'}</span>${l.text}${l.flagged?'<span class="flag">⚠ FLAGGED</span>':''}</div>`
 }).join('')}`:''}
 ${(report.interventionHistory||[]).length>0?`<h2>LIVE INTERVENTIONS (${report.interventionHistory.length})</h2>
-<p style="color:#555;font-size:10px;margin-bottom:10px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
+<p style="color:#333;font-size:10px;margin-bottom:10px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
 ${report.interventionHistory.map(e=>{
   const c=e.level==='LOCKDOWN'?'#cc0000':e.level==='BLOCK'?'#cc7700':'#997700'
   return `<div class="intv" style="border-color:${c}"><span class="intv-label" style="color:${c};border-color:${c}">${e.level}</span><strong style="color:#111">${e.pattern}</strong><span class="intv-meta"> Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span><div class="quote">User action: ${e.userAction||'—'}</div></div>`
@@ -287,13 +321,13 @@ ${report.interventionHistory.map(e=>{
 <h2>ALERT TIMELINE</h2>
 ${(report.alerts||[]).map(a=>{
   const sev=a.severity||'medium'
-  return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#666;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
+  return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#444;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
 }).join('')}
 ${barHTML(Object.entries(report.psychScores||{}),'PSYCHOLOGICAL VECTORS')}
 ${barHTML(Object.entries(report.lieScores||{}),'LIE DETECTION ANALYSIS')}
 <h2>RECOMMENDED ACTIONS — ${actionsData.country}</h2>
 ${actionsData.actions.map(a=>`<div class="action">${a.icon} ${a.text}<span class="pri pri-${a.priority}">[${a.priority.toUpperCase()}]</span></div>`).join('')}
-<div class="footer"><div class="brand">VOXGUARD</div><div style="margin-top:5px">Built by Wiqi Lee · © 2026 · MIT License · #GeminiLiveAgentChallenge</div><div style="margin-top:3px;color:#aaa">Powered by Gemini Live API · Page 1/1</div></div>
+<div class="footer"><div class="brand">VOXGUARD</div><div style="margin-top:5px;color:#444">Built by Wiqi Lee · © 2026 · MIT License · #GeminiLiveAgentChallenge</div><div style="margin-top:3px;color:#888">Powered by Gemini Live API · Page 1/1</div></div>
 </div></body></html>`
 }
 
@@ -352,7 +386,7 @@ function VectorBar({tac,score}){
 }
 
 /* ═══ Action Item ═══ */
-const PC={critical:'#ff2d55',high:'#ff9500',medium:'#ffd60a',low:'#30d158'}
+const PC={critical:'#ff2d55',high:'#ff9500',medium:'#ffd60a',low:'#30d158',immediate:'#ff2d55',recommended:'#30d158'}
 function ActionItem({action}){const[h,setH]=useState(false);const pc=PC[action.priority]||'#30d158';return(
   <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{fontFamily:MF,fontSize:11,color:h?'rgba(255,255,255,0.9)':'rgba(255,255,255,0.65)',padding:'10px 12px',marginBottom:2,borderBottom:'1px solid rgba(48,209,88,0.08)',borderLeft:`3px solid ${h?pc:pc+'33'}`,background:h?`linear-gradient(90deg,${pc}12,transparent)`:'transparent',transform:h?'translateX(4px)':'none',transition:'all 0.18s ease',display:'flex',gap:10,alignItems:'flex-start'}}>
     <span style={{fontSize:14,flexShrink:0}}>{action.icon}</span><div style={{flex:1}}>{action.text}</div>
@@ -455,7 +489,7 @@ function GalleryCard({r,sc,fmt,onOpen,onDel}){
 }
 
 /* ══════════════════════════════════════════════════════════
-   PSYCH TAB
+   PSYCH TAB — with border hover animations
 ══════════════════════════════════════════════════════════ */
 export function PsychTab({psychScores,lieScores={}}){
   const psychData = PSYCH_TACTICS.map(t=>({label:t.label,value:psychScores[t.id]||0,color:t.color}))
@@ -482,7 +516,7 @@ export function PsychTab({psychScores,lieScores={}}){
       </div>
       <div style={{marginBottom:24,padding:'12px 16px',border:'1px solid rgba(255,255,255,0.06)',background:'rgba(255,255,255,0.015)'}}>
         <div style={{fontFamily:PF,fontSize:6,color:'rgba(255,255,255,0.55)',marginBottom:8,letterSpacing:1}}>SCORING RUBRIC</div>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+        <div className="vg-scoring-rubric" style={{display:'flex',gap:6,flexWrap:'wrap'}}>
           {[{l:'0%',c:'rgba(255,255,255,0.25)',t:'Inactive'},{l:'1-20%',c:'#30d158',t:'Low'},{l:'21-40%',c:'#ffd60a',t:'Moderate'},{l:'41-60%',c:'#ff9500',t:'Elevated'},{l:'61-80%',c:'#ff2d55',t:'High'},{l:'81-100%',c:'#ff2d55',t:'Critical'}].map(r=>(
             <div key={r.l} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 8px',border:`1px solid ${r.c}33`,background:`${r.c}08`}}>
               <div style={{width:8,height:8,background:r.c,flexShrink:0}}/>
@@ -492,7 +526,8 @@ export function PsychTab({psychScores,lieScores={}}){
           ))}
         </div>
       </div>
-      <PBox color="#ff950044" style={{padding:20,marginBottom:16}}>
+      {/* [FIX] Psych Caller box with hover animation */}
+      <PBox className="psych-caller-box" color="#ff950044" style={{padding:20,marginBottom:16}}>
         <div className="vg-psych-section" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#ff9500',textShadow:'0 0 10px #ff9500',marginBottom:4}}>CALLER — MANIPULATION VECTORS</div>
@@ -505,7 +540,8 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-      <PBox color="#ff2d5544" style={{padding:20,marginBottom:16}}>
+      {/* [FIX] Lie Detection box with hover animation */}
+      <PBox className="psych-lie-box" color="#ff2d5544" style={{padding:20,marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',textShadow:'0 0 10px #ff2d55',marginBottom:4}}>LIE DETECTION ANALYSIS</div>
@@ -518,7 +554,8 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-      <PBox color="#00d4ff44" style={{padding:20,marginBottom:16}}>
+      {/* [FIX] Vulnerability box with hover animation */}
+      <PBox className="psych-vuln-box" color="#00d4ff44" style={{padding:20,marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>
             <div style={{fontFamily:PF,fontSize:9,color:'#00d4ff',textShadow:'0 0 10px #00d4ff',marginBottom:4}}>USER VULNERABILITY STATE</div>
@@ -541,7 +578,8 @@ export function PsychTab({psychScores,lieScores={}}){
           </div>
         </div>
       </PBox>
-      <PBox color="#ff9500" style={{padding:'22px 28px',background:'rgba(255,149,0,0.03)',position:'relative',overflow:'hidden'}}>
+      {/* [FIX] Unprecedented box with hover animation */}
+      <PBox className="psych-unprecedented-box" color="#ff9500" style={{padding:'22px 28px',background:'rgba(255,149,0,0.03)',position:'relative',overflow:'hidden'}}>
         <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:12}}>WHY THIS IS UNPRECEDENTED</div>
         <div style={{fontFamily:MF,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:2,maxWidth:780}}>Every other tool detects scam <span style={{color:'#00d4ff'}}>keywords</span>. VoxGuard detects scam <span style={{color:'#ff9500'}}>cognition</span> + <span style={{color:'#ff2d55'}}>deception</span> + <span style={{color:'#00d4ff'}}>user vulnerability</span>.</div>
       </PBox>
