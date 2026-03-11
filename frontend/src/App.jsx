@@ -7,6 +7,7 @@ import { useAudioEngine } from './hooks/useAudioEngine'
 import { useScreenCapture } from './hooks/useScreenCapture'
 import { MOCK_ALERTS, PF, MF } from './utils/constants'
 import { LanguageSelector } from './components/LanguageSelector'
+import { HeaderPixels } from './components/PixelParticles'
 
 const TABS = ['monitor','psych','patterns','report','about']
 const DEMO = import.meta.env.VITE_DEMO_MODE === 'true' || true
@@ -47,13 +48,6 @@ function SocialLink({ href,icon,label,c,bc,bg,hc,hbg }) {
   )
 }
 
-/* ══════════════════════════════════════════════════════════
-   [FIX] Phone number masking utility
-   ────────────────────────────────────────────────────────
-   Masks phone numbers in transcript/quotes for privacy.
-   Handles international (+62 812 xxx), domestic (0812xxx),
-   and various separator formats.
-══════════════════════════════════════════════════════════ */
 function maskPhoneNumbers(text) {
   if (!text) return text
   let masked = text.replace(/(\+?\d{1,3}[\s\-.]?)\(?\d{2,4}\)?[\s\-.]?\d{3,4}[\s\-.]?\d{3,5}/g, (m) => {
@@ -70,14 +64,6 @@ function maskPhoneNumbers(text) {
   return masked
 }
 
-/* ══════════════════════════════════════════════════════════
-   [FIX] Demo Action Plan Generator — Full 9 Languages
-   ────────────────────────────────────────────────────────
-   All 9 supported languages get native-language steps,
-   emergency numbers, country-specific reporting agencies,
-   localized urgency messages, personalized advice, and
-   localized disclaimer text. Phone numbers are masked.
-══════════════════════════════════════════════════════════ */
 function generateDemoActionPlan(alerts, language, threatScore, interventionHistory) {
   const lang = language?.split('-')[0] || 'en'
   const topPattern = alerts[0]?.pattern || 'Unknown Scam'
@@ -271,7 +257,7 @@ export default function App() {
   const [lieScores,setLieScores]=useState({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
   const [audioUrl,setAudioUrl]=useState(null)
   const [interventionHistory,setInterventionHistory]=useState([])
-  const [actionPlan,setActionPlan]=useState(null)    // [FIX #4] action plan state
+  const [actionPlan,setActionPlan]=useState(null)
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
 
   const headerRef = useRef(null)
@@ -318,7 +304,6 @@ export default function App() {
   }
 
   const handleTranscriptLine = (line) => {
-    // [FIX] Mask phone numbers in transcript for privacy
     setTranscript(prev=>[...prev, { ...line, text: maskPhoneNumbers(line.text) }])
   }
 
@@ -326,7 +311,6 @@ export default function App() {
     setInterventionHistory(prev => [...prev, event])
   }
 
-  // [FIX] Generate action plan on safe exit + capture recording
   const handleSafeExit = () => {
     setMonitoring(false)
     const recUrl = window.__voxguard_recording_url || null
@@ -353,21 +337,18 @@ export default function App() {
     setLieScores({INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0})
     setAudioUrl(null)
     setInterventionHistory([])
-    setActionPlan(null)    // [FIX #4] reset action plan
+    setActionPlan(null)
     if(!DEMO){ws.reset();ws.startSession()}
   }
 
-  // [FIX #4] Modified: generate action plan on stop
   const handleStop=()=>{
     setMonitoring(false)
-    // Capture recording URL from MonitorTab's MediaRecorder (if user pressed REC)
     const recUrl = window.__voxguard_recording_url || null
     if(recUrl) { setAudioUrl(recUrl); window.__voxguard_recording_url = null }
     else if(audio.recordingBlob) {
       const url = URL.createObjectURL(audio.recordingBlob)
       setAudioUrl(url)
     }
-    // [FIX #4] Generate action plan if threats detected
     if (alerts.length > 0) {
       const plan = generateDemoActionPlan(alerts, language, threatScore, interventionHistory)
       setActionPlan(plan)
@@ -445,8 +426,9 @@ export default function App() {
             <div className="vg-header-inner" style={{ display:'flex',alignItems:'center',gap:0,height:90,padding:'0 32px' }}>
               <PixelLogo />
               <div className="vg-divider" style={{ width:1,height:40,background:'rgba(0,255,255,0.2)',margin:'0 22px',flexShrink:0 }} />
-              <div className="vg-marquee" style={{ flex:1,overflow:'hidden',height:20,display:'flex',alignItems:'center',minWidth:0 }}>
-                <div style={{ fontFamily:MF,fontSize:10,whiteSpace:'nowrap',animation:'marquee 28s linear infinite,colorCycle 8s ease infinite',letterSpacing:2 }}>
+              <div className="vg-marquee" style={{ flex:1,overflow:'hidden',height:20,display:'flex',alignItems:'center',minWidth:0,position:'relative' }}>
+                <HeaderPixels active={true} count={8} />
+                <div style={{ fontFamily:MF,fontSize:10,whiteSpace:'nowrap',animation:'marquee 28s linear infinite,colorCycle 8s ease infinite',letterSpacing:2,position:'relative',zIndex:2 }}>
                   ◄ VOXGUARD - REAL-TIME MULTIMODAL AI PROTECTION - GEMINI LIVE API + RUST WASM ENGINE - &lt;80ms LATENCY - GROUNDED: FTC - FBI IC3 - GASA - MAS - ACCC - #GeminiLiveAgentChallenge - BY WIQI LEE ►
                 </div>
               </div>
@@ -506,7 +488,6 @@ export default function App() {
             />}
             {tab==='psych'    && <PsychTab psychScores={psychScores} lieScores={lieScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
-            {/* [FIX #4] Pass actionPlan + onCloseActionPlan to ReportTab */}
             {tab==='report'   && <ReportTab alerts={alerts} sessionTime={sessionTime} threatScore={threatScore} psychScores={psychScores} lieScores={lieScores} transcript={transcript} language={language} audioUrl={audioUrl} interventionHistory={interventionHistory} actionPlan={actionPlan} onCloseActionPlan={()=>setActionPlan(null)} />}
             {tab==='about'    && <AboutTab />}
           </main>

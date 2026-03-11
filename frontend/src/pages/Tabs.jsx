@@ -110,7 +110,6 @@ function PieChart({ data, size=120, title }) {
     cum += d.value
     const end = cum / total * 360
     const mid = (start+end)/2
-    // [FIX] Show the absolute % (same as bar) instead of relative pie proportion
     return { ...d, start, end, mid, pct: d.value, relPct: Math.round(d.value/total*100) }
   })
   const r = size/2 - 16
@@ -132,7 +131,6 @@ function PieChart({ data, size=120, title }) {
         <circle cx={cx} cy={cy} r={r} fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
         {slices.map((s,i)=>{
           const p = labelPos(s.mid)
-          // Show absolute % (matching bar) — only if slice is big enough to fit label
           return <g key={i}>
             <path d={arc(s.start,s.end)} fill={s.color+'cc'} stroke="#020408" strokeWidth="1.5" style={{ filter:`drop-shadow(0 0 4px ${s.color}44)` }}/>
             {s.relPct >= 8 && <text x={p.x} y={p.y+3} textAnchor="middle" fill="#fff" fontSize="8" fontFamily="monospace" fontWeight="bold" style={{ textShadow:'0 1px 2px rgba(0,0,0,0.8)' }}>{s.pct}%</text>}
@@ -209,10 +207,16 @@ function InterventionHistorySection({ interventions, language }) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   [FIX #1] genHTML — LIGHT THEME NATIVE for PDF/print
+   [FIX] genHTML — ALL TEXT DARK/VISIBLE on white paper
    ────────────────────────────────────────────────────────
-   Key change: All colors are print-safe on white paper.
-   No @media print overrides fighting inline dark styles.
+   Key changes:
+   - ALL text is #111, #222, #333, #444 — NO gray (#aaa, #888, #ccc)
+   - Footer text is #333 not #888
+   - Section headers, badges, bars all use strong print-safe colors
+   - Pie charts included inline as SVG
+   - Action Plan vs Recommended Actions clearly differentiated
+   - Audio recording embedded if available
+   - Intervention history fully rendered
 ══════════════════════════════════════════════════════════ */
 function genHTML(report) {
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
@@ -237,20 +241,20 @@ function genHTML(report) {
       const c=colors[i%colors.length]
       sliceHTML+=`<path d="${arc(start,end)}" fill="${c}" stroke="#fff" stroke-width="1.5"/>`
       if((end-start)/360*100>=8) sliceHTML+=`<text x="${lx}" y="${ly+3}" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold" font-family="monospace" style="text-shadow:0 1px 2px rgba(0,0,0,0.8)">${v}%</text>`
-      legendHTML+=`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 8px 2px 0"><span style="display:inline-block;width:10px;height:10px;background:${c};border:1px solid #ddd"></span><span style="font-size:9px;color:#333;font-weight:bold">${k} ${v}%</span></span>`
+      legendHTML+=`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 8px 2px 0"><span style="display:inline-block;width:10px;height:10px;background:${c};border:1px solid #ddd"></span><span style="font-size:9px;color:#222;font-weight:bold">${k} ${v}%</span></span>`
     })
-    return `<div style="text-align:center;margin:12px 0"><svg width="${size}" height="${size}" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.15))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0f0f0" stroke="#ddd" stroke-width="1"/>${sliceHTML}</svg><div style="margin-top:6px;font-size:9px">${legendHTML}</div></div>`
+    return `<div style="text-align:center;margin:12px 0"><div style="font-size:10px;color:#222;font-weight:bold;margin-bottom:6px">${title}</div><svg width="${size}" height="${size}" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.15))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0f0f0" stroke="#ddd" stroke-width="1"/>${sliceHTML}</svg><div style="margin-top:6px;font-size:9px">${legendHTML}</div></div>`
   }
 
   const barHTML=(entries,title)=>{
     if(!entries||entries.length===0) return ''
     return `<h2>${title}</h2>${entries.map(([k,v])=>{
-      const c=v>60?'#cc0000':v>30?'#cc7700':v>0?'#228833':'#999'
+      const c=v>60?'#cc0000':v>30?'#cc7700':v>0?'#228833':'#444'
       return `<div class="bar"><span class="bl">${k}</span><div class="bt"><div class="bf" style="width:${v}%;background:${c}"></div></div><span class="bv" style="color:${c}">${v}%</span></div>`
     }).join('')}`
   }
 
-  /* ── Action Plan HTML for export ── */
+  /* ── [FIX] Action Plan HTML — PERSONALIZED recovery steps (differs from Recommended Actions) ── */
   const actionPlanHTML=(report)=>{
     if(!report.actionPlan&&!(report.alerts||[]).length) return ''
     const lang=(report.language||'en').split('-')[0]
@@ -260,19 +264,34 @@ function genHTML(report) {
     const urgency=plan?.urgency_level||(report.threatScore>=75?'CRITICAL':report.threatScore>=45?'HIGH':'MODERATE')
     const urgColors={CRITICAL:'#cc0000',HIGH:'#cc7700',MODERATE:'#228833'}
     const uc=urgColors[urgency]||'#228833'
-    const steps=plan?.steps||actionsData.actions.map((a,i)=>({step:i+1,icon:a.icon,action:a.text,urgency:a.priority==='critical'?'critical':a.priority==='high'?'high':'recommended'}))
+    const steps=plan?.steps||[]
+    if(steps.length===0) return ''
     const urgBadgeColors={immediate:'#cc0000',critical:'#cc0000',high:'#cc7700',recommended:'#228833'}
-    return `<h2 style="color:${uc};border-color:${uc}">🛡 ANTI-SCAM ACTION PLAN</h2>
+    return `<h2 style="color:${uc};border-color:${uc}">🛡 ANTI-SCAM ACTION PLAN (AI-PERSONALIZED)</h2>
+<div style="padding:10px 14px;border:2px solid ${uc};background:${uc}08;margin-bottom:10px;color:#222;font-size:10px;line-height:1.6">
+  <strong style="color:${uc}">This plan is personalized based on the specific scam pattern detected in this session.</strong>
+  Unlike the generic Recommended Actions below, these steps are ordered by urgency and tailored to the "${plan?.scam_pattern||'detected'}" attack vector.
+</div>
 <div style="padding:12px 16px;border:2px solid ${uc};background:${uc}11;margin-bottom:12px">
   <span style="display:inline-block;padding:3px 10px;background:${uc};color:#fff;font-size:9px;font-weight:bold;margin-right:8px">${urgency}</span>
-  <span style="font-size:10px;color:#333">${country.flag} ${country.name}</span>
-  <span style="font-size:9px;color:#666;margin-left:8px">⏱ ${plan?.estimated_time||'15-60 minutes'}</span>
+  <span style="font-size:10px;color:#222">${country.flag} ${country.name}</span>
+  <span style="font-size:9px;color:#444;margin-left:8px">⏱ ${plan?.estimated_time||'15-60 minutes'}</span>
 </div>
-${plan?.urgency_message?`<div style="padding:8px 14px;background:#fff8e1;border-left:3px solid ${uc};margin-bottom:10px;font-size:10px;color:#333;font-weight:bold">${plan.urgency_message}</div>`:''}
-${plan?.personalized_advice?`<div style="padding:8px 14px;background:#f0f7ff;border-left:3px solid #005599;margin-bottom:12px;font-size:10px;color:#333;line-height:1.6">🤖 ${plan.personalized_advice}</div>`:''}
-${steps.map(s=>{const bc=urgBadgeColors[s.urgency]||'#228833';return `<div class="action" style="border-left-color:${bc}"><span style="font-size:13px;margin-right:6px">${s.icon||'▸'}</span>${s.action}<span class="pri" style="color:${bc}">[${(s.urgency||'recommended').toUpperCase()}]</span></div>`}).join('')}
+${plan?.urgency_message?`<div style="padding:8px 14px;background:#fff8e1;border-left:3px solid ${uc};margin-bottom:10px;font-size:10px;color:#222;font-weight:bold">${plan.urgency_message}</div>`:''}
+${plan?.personalized_advice?`<div style="padding:8px 14px;background:#f0f7ff;border-left:3px solid #005599;margin-bottom:12px;font-size:10px;color:#222;line-height:1.6">🤖 <strong>AI Analysis:</strong> ${plan.personalized_advice}</div>`:''}
+${steps.map(s=>{const bc=urgBadgeColors[s.urgency]||'#228833';return `<div class="action" style="border-left-color:${bc}"><span style="font-size:13px;margin-right:6px">${s.icon||'▸'}</span><span style="color:#111">${s.action}</span><span class="pri" style="color:${bc}">[${(s.urgency||'recommended').toUpperCase()}]</span></div>`}).join('')}
 <div style="padding:10px 14px;background:#fff0f0;border:1px solid #cc000033;margin-top:10px;text-align:center;font-size:10px;color:#cc0000;font-weight:bold">🚨 Emergency: Call ${country.emergency} if you feel in danger</div>
-${plan?.disclaimer?`<div style="font-size:8px;color:#888;margin-top:6px;font-style:italic">${plan.disclaimer}</div>`:''}`
+${plan?.disclaimer?`<div style="font-size:8px;color:#444;margin-top:6px;font-style:italic">${plan.disclaimer}</div>`:''}`
+  }
+
+  /* ── [FIX] Recommended Actions — GENERIC country-level reference (always same per country) ── */
+  const recommendedActionsHTML=(report)=>{
+    return `<h2 style="color:#005599;border-color:#005599">📋 RECOMMENDED ACTIONS — ${actionsData.country} (GENERAL REFERENCE)</h2>
+<div style="padding:10px 14px;border:1px solid #00559933;background:#f0f7ff;margin-bottom:10px;color:#222;font-size:10px;line-height:1.6">
+  <strong>These are standard anti-scam actions for ${actionsData.country}.</strong>
+  They apply to all scam types and include reporting channels, emergency contacts, and general protective measures for your region.
+</div>
+${actionsData.actions.map(a=>`<div class="action" style="border-left-color:#007733"><span style="color:#111">${a.icon} ${a.text}</span><span class="pri pri-${a.priority}" style="color:${a.priority==='critical'?'#cc0000':a.priority==='high'?'#cc7700':'#228833'}">[${a.priority.toUpperCase()}]</span></div>`).join('')}`
   }
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>VoxGuard Forensic Report — ${report.id}</title>
@@ -282,12 +301,12 @@ body{font-family:'Courier New',Courier,monospace;background:#fff;color:#111;padd
 .page{max-width:860px;margin:0 auto;padding:36px 40px}
 h1{color:#cc0000;border-bottom:2px solid #cc0000;padding-bottom:10px;font-size:18px;margin:0 0 6px;letter-spacing:1px}
 h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #005599;padding-bottom:5px}
-.meta{color:#555;font-size:10px;margin-bottom:18px;line-height:1.8}
+.meta{color:#333;font-size:10px;margin-bottom:18px;line-height:1.8}
 .meta strong{color:#111}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
-.metric{padding:14px 10px;border:1.5px solid #ddd;text-align:center;background:#f8f8f8}
+.metric{padding:14px 10px;border:1.5px solid #bbb;text-align:center;background:#f8f8f8}
 .metric .v{font-size:22px;font-weight:bold;color:#cc0000}
-.metric .l{font-size:8px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
+.metric .l{font-size:8px;color:#333;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
 .alert{margin:6px 0;padding:10px 14px;border-left:4px solid;background:#f9f9f9;page-break-inside:avoid}
 .alert.critical{border-color:#cc0000;background:#fff5f5}
 .alert.high{border-color:#cc7700;background:#fff8f0}
@@ -296,29 +315,30 @@ h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-trans
 .badge.critical{color:#cc0000;border-color:#cc0000;background:#fff0f0}
 .badge.high{color:#cc7700;border-color:#cc7700;background:#fff5e6}
 .badge.medium{color:#997700;border-color:#997700;background:#fffbe6}
-.quote{color:#444;font-size:10px;margin-top:4px;line-height:1.5;font-style:italic}
+.quote{color:#333;font-size:10px;margin-top:4px;line-height:1.5;font-style:italic}
 .intervened{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
 .bar{display:flex;align-items:center;gap:10px;margin:5px 0}
-.bl{width:110px;font-size:9px;color:#333;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px}
+.bl{width:110px;font-size:9px;color:#222;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold}
 .bt{flex:1;height:12px;background:#e8e8e8;border:1px solid #ccc;overflow:hidden}
 .bf{height:100%}
 .bv{font-size:10px;width:44px;text-align:right;font-weight:bold;flex-shrink:0}
-.tline{padding:4px 10px;font-size:10px;line-height:1.7;border-left:3px solid transparent;margin:2px 0;color:#222}
+.tline{padding:4px 10px;font-size:10px;line-height:1.7;border-left:3px solid transparent;margin:2px 0;color:#111}
 .tline.flagged{border-left-color:#cc0000;background:#fff5f5}
 .tline.me{border-left-color:#228833}
-.ts{color:#005599;font-size:9px;margin-right:8px}
+.ts{color:#005599;font-size:9px;margin-right:8px;font-weight:bold}
 .speaker{font-weight:bold;font-size:8px;margin-right:5px;text-transform:uppercase;letter-spacing:0.5px}
 .speaker-me{color:#007722}
 .speaker-caller{color:#995500}
 .flag{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
 .intv{padding:10px 14px;border-left:4px solid;margin:6px 0;background:#f9f9f9;page-break-inside:avoid}
 .intv-label{display:inline-block;font-size:7px;padding:2px 7px;font-weight:bold;margin-right:6px;text-transform:uppercase;border:1.5px solid}
-.intv-meta{color:#555;font-size:9px;margin-top:2px}
-.action{padding:8px 12px;border-left:3px solid #007733;margin:4px 0;font-size:10px;color:#222;background:#f0fff4;page-break-inside:avoid}
+.intv-meta{color:#333;font-size:9px;margin-top:2px}
+.action{padding:8px 12px;border-left:3px solid #007733;margin:4px 0;font-size:10px;color:#111;background:#f0fff4;page-break-inside:avoid}
 .action .pri{font-size:8px;font-weight:bold;margin-left:6px}
-.pri-critical{color:#cc0000}.pri-high{color:#cc7700}.pri-medium{color:#997700}.pri-low{color:#007733}
-.footer{margin-top:28px;padding:14px 0;border-top:2px solid #ddd;text-align:center;color:#888;font-size:9px}
+.footer{margin-top:28px;padding:14px 0;border-top:2px solid #333;text-align:center;color:#222;font-size:9px}
 .footer .brand{color:#005599;font-size:11px;font-weight:bold;letter-spacing:3px}
+.footer .sub{margin-top:5px;color:#333}
+.footer .powered{margin-top:3px;color:#444;font-style:italic}
 @media print{body{margin:0;padding:0}.page{padding:16px 20px}h2{page-break-after:avoid}.alert,.intv,.action{page-break-inside:avoid}}
 </style></head><body><div class="page">
 <h1>🛡 VOXGUARD — FORENSIC REPORT</h1>
@@ -340,25 +360,28 @@ ${(report.transcript||[]).length>0?`<h2>FULL TRANSCRIPT</h2>${(report.transcript
   const isMe=l.speaker==='me'
   return `<div class="tline${l.flagged?' flagged':''}${isMe?' me':''}"><span class="ts">[${l.time}]</span><span class="speaker ${isMe?'speaker-me':'speaker-caller'}">${isMe?'ME':'CALLER'}</span>${l.text}${l.flagged?'<span class="flag">⚠ FLAGGED</span>':''}</div>`
 }).join('')}`:''}
-${(report.interventionHistory||[]).length>0?`<h2>LIVE INTERVENTIONS (${report.interventionHistory.length})</h2>
-<p style="color:#555;font-size:10px;margin-bottom:10px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
+${(report.interventionHistory||[]).length>0?`<h2 style="color:#cc0000;border-color:#cc0000">🛑 LIVE INTERVENTIONS (${report.interventionHistory.length})</h2>
+<p style="color:#222;font-size:10px;margin-bottom:10px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
 ${report.interventionHistory.map(e=>{
   const c=e.level==='LOCKDOWN'?'#cc0000':e.level==='BLOCK'?'#cc7700':'#997700'
-  return `<div class="intv" style="border-color:${c}"><span class="intv-label" style="color:${c};border-color:${c}">${e.level}</span><strong style="color:#111">${e.pattern}</strong><span class="intv-meta"> Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span><div class="quote">User action: ${e.userAction||'—'}</div></div>`
+  return `<div class="intv" style="border-color:${c}"><span class="intv-label" style="color:${c};border-color:${c}">${e.level}</span><strong style="color:#111">${e.pattern}</strong><span class="intv-meta"> Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span><div class="quote" style="color:#333">User action: ${e.userAction||'—'}</div></div>`
 }).join('')}`:''}
 <h2>ALERT TIMELINE</h2>
 ${(report.alerts||[]).map(a=>{
   const sev=a.severity||'medium'
-  return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#666;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
+  return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#444;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
 }).join('')}
 ${barHTML(Object.entries(report.psychScores||{}),'PSYCHOLOGICAL VECTORS')}
-${genPieSVG(Object.entries(report.psychScores||{}),'Psych Distribution')}
+${genPieSVG(Object.entries(report.psychScores||{}),'Psychological Vector Distribution')}
 ${barHTML(Object.entries(report.lieScores||{}),'LIE DETECTION ANALYSIS')}
 ${genPieSVG(Object.entries(report.lieScores||{}),'Lie Detection Distribution')}
 ${actionPlanHTML(report)}
-<h2>RECOMMENDED ACTIONS - ${actionsData.country}</h2>
-${actionsData.actions.map(a=>`<div class="action">${a.icon} ${a.text}<span class="pri pri-${a.priority}">[${a.priority.toUpperCase()}]</span></div>`).join('')}
-<div class="footer"><div class="brand">VOXGUARD</div><div style="margin-top:5px">Built by Wiqi Lee · © 2026 · MIT License · #GeminiLiveAgentChallenge</div><div style="margin-top:3px;color:#aaa">Powered by Gemini Live API · Page 1/1</div></div>
+${recommendedActionsHTML(report)}
+<div class="footer">
+  <div class="brand">VOXGUARD</div>
+  <div class="sub">Built by Wiqi Lee · © 2026 · MIT License · #GeminiLiveAgentChallenge</div>
+  <div class="powered">Powered by Gemini Live API · Page 1/1</div>
+</div>
 </div></body></html>`
 }
 
@@ -370,8 +393,9 @@ function getFilename(report) {
 
 function exportHTML(report){
   let html = genHTML(report)
+  /* [FIX] Embed audio recording if available */
   if(report.audioUrl) {
-    html = html.replace('</div></body>',`<h2>SESSION RECORDING</h2><audio controls src="${report.audioUrl}" style="width:100%;margin:10px 0"></audio></div></body>`)
+    html = html.replace('</div></body>',`<h2>🎙 SESSION RECORDING</h2><p style="color:#222;font-size:10px">Audio captured during this session:</p><audio controls src="${report.audioUrl}" style="width:100%;margin:10px 0;border:1px solid #ccc"></audio></div></body>`)
   }
   const b=new Blob([html],{type:'text/html'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`${getFilename(report)}.html`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)
 }
@@ -673,7 +697,7 @@ function PatternCard({p,c,hit,onClick}){const[h,setH]=useState(false);return(
 )}
 
 /* ══════════════════════════════════════════════════════════
-   [FIX #2 + #4] REPORT TAB — hover animations + ActionAgent
+   [FIX] REPORT TAB — Action Plan vs Recommended Actions clearly separated
 ══════════════════════════════════════════════════════════ */
 export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null,interventionHistory=[],actionPlan=null,onCloseActionPlan}){
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
@@ -689,9 +713,17 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
     {alerts.length===0?(<PBox color="#00d4ff20" style={{padding:60,textAlign:'center'}}><div style={{fontFamily:PF,fontSize:8,color:'rgba(255,255,255,0.25)',lineHeight:3}}>NO SESSION DATA<br/>START A SESSION FIRST</div></PBox>):(
       <div style={{display:'flex',flexDirection:'column',gap:14}}>
 
-        {/* [FIX #4] ActionAgent — shown at top when available */}
+        {/* [FIX #4] ActionAgent — AI-PERSONALIZED recovery (shown at top when available) */}
         {actionPlan && (
-          <ActionAgent plan={actionPlan} onClose={onCloseActionPlan} />
+          <div>
+            <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:8,textShadow:'0 0 10px #ff9500'}}>
+              🛡 AI-PERSONALIZED ACTION PLAN
+            </div>
+            <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,149,0,0.6)',marginBottom:8}}>
+              Tailored to the specific scam pattern detected in this session. Steps are prioritized by urgency.
+            </div>
+            <ActionAgent plan={actionPlan} onClose={onCloseActionPlan} />
+          </div>
         )}
 
         <PBox color="#ff2d55" style={{padding:24,background:'rgba(255,45,85,0.04)'}}>
@@ -703,7 +735,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
           </div>
         </PBox>
 
-        {/* [FIX #2] Transcript with hover animations */}
+        {/* Transcript with hover animations */}
         {transcript.length>0&&(<PBox className="rpt-section" color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>FULL TRANSCRIPT ({transcript.length})</div><div style={{maxHeight:200,overflowY:'auto'}}>{transcript.map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} className={`rpt-tline${l.flagged?' rpt-flagged':''}`} style={{fontFamily:MF,fontSize:10,color:isMe?'#30d158':'rgba(255,255,255,0.65)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':isMe?'2px solid #30d15844':'2px solid transparent',paddingLeft:8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:isMe?'#30d158':'#ff9500',marginRight:4}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>})}</div></PBox>)}
 
         {/* Intervention History */}
@@ -711,24 +743,27 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
           <InterventionHistorySection interventions={interventionHistory} language={language}/>
         )}
 
-        {/* [FIX #2] Alert Timeline with hover */}
+        {/* Alert Timeline with hover */}
         <PBox className="rpt-section" color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>ALERT TIMELINE</div>{alerts.map((a,i)=><div key={a.id} className="rpt-alert-wrap"><AlertCard alert={a} index={i}/></div>)}</PBox>
 
-        {/* [FIX #2] Psych Vectors — separate PBox with hover glow */}
+        {/* Psych Vectors */}
         <PBox className="rpt-psych" color="#ff950040" style={{padding:20}}>
           <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:14}}>PSYCHOLOGICAL VECTORS</div>
           {PSYCH_TACTICS.map(t=><VectorBar key={t.id} tac={t} score={psychScores[t.id]||0}/>)}
         </PBox>
 
-        {/* [FIX #2] Lie Detection — separate PBox with hover glow */}
+        {/* Lie Detection */}
         <PBox className="rpt-lie" color="#ff2d5544" style={{padding:20}}>
           <div style={{fontFamily:PF,fontSize:8,color:'#ff2d55',marginBottom:14}}>LIE DETECTION</div>
           {(LIE_INDICATORS||[]).map(l=><VectorBar key={l.id} tac={l} score={lieScores[l.id]||0}/>)}
         </PBox>
 
-        {/* [FIX #2] Recommended Actions with hover */}
+        {/* [FIX] Recommended Actions — GENERIC per-country reference, clearly different from Action Plan */}
         <PBox className="rpt-section" color="#30d158" style={{padding:20}}>
-          <div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:6}}>RECOMMENDED ACTIONS</div>
+          <div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:6}}>📋 RECOMMENDED ACTIONS — GENERAL REFERENCE</div>
+          <div style={{fontFamily:MF,fontSize:9,color:'rgba(48,209,88,0.5)',marginBottom:6}}>
+            Standard anti-scam actions for your region. These apply to all scam types.
+          </div>
           <div style={{fontFamily:MF,fontSize:11,color:'rgba(48,209,88,0.7)',marginBottom:14,padding:'8px 12px',border:'1px solid rgba(48,209,88,0.2)',background:'rgba(48,209,88,0.04)',display:'flex',alignItems:'center',gap:8}}>
             <span style={{fontSize:18}}>{getFlag(language)}</span>
             <span>📍 {actionsData.country}</span>
@@ -749,7 +784,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
 }
 
 /* ══════════════════════════════════════════════════════════
-   ABOUT TAB
+   ABOUT TAB — [FIX] Added more data sources with credible links
 ══════════════════════════════════════════════════════════ */
 function DataSourceCard({name,url,href,c}){const[h,setH]=useState(false);return<a href={href} target="_blank" rel="noreferrer" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{padding:'12px 14px',border:`1px solid ${h?c+'88':c+'22'}`,borderLeft:`2px solid ${h?c:c+'55'}`,background:h?c+'0f':'rgba(255,255,255,0.015)',transition:'all 0.18s',textDecoration:'none',display:'block'}}><div style={{fontFamily:MF,fontSize:11,color:h?c:c+'cc',marginBottom:3}}>{name}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,0.5)'}}>{url}</div></a>}
 function Tag({label,c}){const[h,setH]=useState(false);return<span onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'inline-block',padding:'5px 12px',fontFamily:MF,fontSize:10,color:h?c:'rgba(255,255,255,0.7)',border:`1px solid ${h?c:c+'44'}`,background:h?c+'12':'rgba(255,255,255,0.03)',transition:'all 0.16s',whiteSpace:'nowrap'}}>{label}</span>}
@@ -813,12 +848,23 @@ export function AboutTab(){
         </div>
       </div>
     </PBox>
-    <PBox color="#30d158" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES</div><div className="vg-datasources-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
+    {/* [FIX] Expanded Data Sources with more credible links per country */}
+    <PBox color="#30d158" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES & REGIONAL SCAM REFERENCES</div><div className="vg-datasources-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
       <DataSourceCard name="FBI IC3 2024 Annual Report" url="ic3.gov/AnnualReport/Reports/2024" href="https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf" c="#ff2d55"/>
       <DataSourceCard name="FTC Consumer Sentinel" url="ftc.gov/enforcement" href="https://www.ftc.gov/enforcement/consumer-sentinel-network" c="#00d4ff"/>
       <DataSourceCard name="GASA Global Scam Report" url="gasa.org" href="https://www.gasa.org" c="#ffd60a"/>
       <DataSourceCard name="MAS ScamShield (SG)" url="scamshield.org.sg" href="https://www.scamshield.org.sg" c="#7b61ff"/>
       <DataSourceCard name="ACCC ScamWatch (AU)" url="scamwatch.gov.au" href="https://www.scamwatch.gov.au" c="#30d158"/>
+      <DataSourceCard name="OJK Indonesia" url="ojk.go.id" href="https://www.ojk.go.id" c="#ff9500"/>
+      <DataSourceCard name="Bareskrim Cyber (ID)" url="patrolisiber.id" href="https://patrolisiber.id" c="#ff2d55"/>
+      <DataSourceCard name="NPA Japan (警察庁)" url="npa.go.jp" href="https://www.npa.go.jp/bureau/criminal/souni/index.html" c="#00d4ff"/>
+      <DataSourceCard name="FSS South Korea (금감원)" url="fss.or.kr" href="https://www.fss.or.kr" c="#7b61ff"/>
+      <DataSourceCard name="MHA India Cyber Crime" url="cybercrime.gov.in" href="https://cybercrime.gov.in" c="#ff9500"/>
+      <DataSourceCard name="INCIBE Spain" url="incibe.es" href="https://www.incibe.es" c="#ffd60a"/>
+      <DataSourceCard name="PHAROS France" url="internet-signalement.gouv.fr" href="https://www.internet-signalement.gouv.fr" c="#30d158"/>
+      <DataSourceCard name="SAMA Saudi Arabia" url="sama.gov.sa" href="https://www.sama.gov.sa" c="#ff2d55"/>
+      <DataSourceCard name="China Anti-Fraud Center" url="National Anti-Fraud App" href="https://www.mps.gov.cn" c="#00d4ff"/>
+      <DataSourceCard name="Interpol Scam Alert" url="interpol.int" href="https://www.interpol.int/en/Crimes/Financial-crime/Online-financial-fraud" c="#7b61ff"/>
     </div></PBox>
   </div>)
 }
