@@ -1,4 +1,4 @@
-// ── Scam Patterns - grounded from FTC / FBI IC3 / GASA / MAS / ACCC ──
+s// ── Scam Patterns - grounded from FTC / FBI IC3 / GASA / MAS / ACCC ──
 // NOTE: No specific brand names - use generic terms
 export const SCAM_PATTERNS = [
   { id:1,  category:"Bank Impersonation",         severity:"critical", description:"Caller poses as fraud prevention from a financial institution, manufacturing panic about account security to extract credentials.",                      markers:["suspicious activity detected","account will be frozen","verify your identity","fraud alert"],          mechanism:"AUTHORITY + FEAR",             source:"FBI IC3 2024",  detected:false },
