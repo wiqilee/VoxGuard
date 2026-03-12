@@ -9,6 +9,7 @@
 <img src="docs/svgs/architecture-2.png" alt="VoxGuard Architecture" width="100%"/>
 <br><br>
 <img src="docs/svgs/architecture-3.png" alt="VoxGuard Architecture" width="100%"/>
+<br><br>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg?style=flat-square)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python)](https://python.org)
