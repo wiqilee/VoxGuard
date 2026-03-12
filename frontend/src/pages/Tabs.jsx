@@ -101,6 +101,148 @@ function getInterpretation(score) {
   return { level:'CRITICAL', color:'#ff2d55', text:'Maximum intensity. This is a confirmed manipulation tactic — disengage immediately.' }
 }
 
+/* ══════════════════════════════════════════════════════════
+   [FIX] EMERGENCY CONTACTS — Real phone numbers per country
+   ────────────────────────────────────────────────────────
+   Displayed in both demo mode and live mode.
+   Each country has: emergency line, fraud hotline, bank freeze line
+══════════════════════════════════════════════════════════ */
+const EMERGENCY_CONTACTS = {
+  en: {
+    country: 'United States', flag: '🇺🇸', emergency: '911',
+    contacts: [
+      { label: 'Emergency', number: '911', icon: '🚨' },
+      { label: 'FTC Fraud Reporting', number: '+1-877-382-4357', icon: '📋' },
+      { label: 'FBI IC3 Online', number: 'ic3.gov', icon: '🕵️' },
+      { label: 'Identity Theft Hotline', number: '+1-877-438-4338', icon: '🔒' },
+      { label: 'Social Security Fraud', number: '+1-800-269-0271', icon: '🏛️' },
+    ]
+  },
+  id: {
+    country: 'Indonesia', flag: '🇮🇩', emergency: '110',
+    contacts: [
+      { label: 'Polisi / Emergency', number: '110', icon: '🚨' },
+      { label: 'OJK Konsumen', number: '+62-21-157', icon: '🏦' },
+      { label: 'Bareskrim Siber', number: '+62-21-7218484', icon: '🕵️' },
+      { label: 'Bank Indonesia', number: '+62-21-131', icon: '💰' },
+      { label: 'Kominfo Aduan', number: '+62-21-3452841', icon: '📋' },
+    ]
+  },
+  zh: {
+    country: 'China', flag: '🇨🇳', emergency: '110',
+    contacts: [
+      { label: '报警电话', number: '110', icon: '🚨' },
+      { label: '反诈中心', number: '96110', icon: '🛡️' },
+      { label: '银保监会投诉', number: '+86-12378', icon: '🏦' },
+      { label: '网络违法举报', number: '+86-12321', icon: '📋' },
+    ]
+  },
+  ja: {
+    country: 'Japan', flag: '🇯🇵', emergency: '110',
+    contacts: [
+      { label: '警察', number: '110', icon: '🚨' },
+      { label: '警察相談', number: '#9110', icon: '🕵️' },
+      { label: '消費者ホットライン', number: '188', icon: '📋' },
+      { label: '金融庁相談', number: '+81-3-5251-6811', icon: '🏦' },
+    ]
+  },
+  ko: {
+    country: 'South Korea', flag: '🇰🇷', emergency: '112',
+    contacts: [
+      { label: '경찰', number: '112', icon: '🚨' },
+      { label: '금융감독원', number: '1332', icon: '🏦' },
+      { label: '사이버수사대', number: '+82-182', icon: '🕵️' },
+      { label: '개인정보침해 신고', number: '+82-118', icon: '📋' },
+    ]
+  },
+  es: {
+    country: 'Spain', flag: '🇪🇸', emergency: '112',
+    contacts: [
+      { label: 'Emergencias', number: '112', icon: '🚨' },
+      { label: 'Guardia Civil', number: '+34-062', icon: '🕵️' },
+      { label: 'INCIBE', number: '+34-017', icon: '🛡️' },
+      { label: 'Policía Nacional', number: '+34-091', icon: '👮' },
+    ]
+  },
+  fr: {
+    country: 'France', flag: '🇫🇷', emergency: '17',
+    contacts: [
+      { label: 'Police Secours', number: '17', icon: '🚨' },
+      { label: 'Info Escroqueries', number: '+33-0-805-805-817', icon: '📋' },
+      { label: 'PHAROS Signalement', number: 'internet-signalement.gouv.fr', icon: '🕵️' },
+      { label: 'Banque de France', number: '+33-1-42-92-42-92', icon: '🏦' },
+    ]
+  },
+  hi: {
+    country: 'India', flag: '🇮🇳', emergency: '112',
+    contacts: [
+      { label: 'Emergency', number: '112', icon: '🚨' },
+      { label: 'Cyber Crime Helpline', number: '1930', icon: '🕵️' },
+      { label: 'RBI Complaint', number: '+91-14440', icon: '🏦' },
+      { label: 'Women Helpline', number: '181', icon: '👩' },
+      { label: 'cybercrime.gov.in', number: 'Online Portal', icon: '📋' },
+    ]
+  },
+  ar: {
+    country: 'Saudi Arabia', flag: '🇸🇦', emergency: '911',
+    contacts: [
+      { label: 'الطوارئ', number: '911', icon: '🚨' },
+      { label: 'كلنا أمن', number: 'Kulluna Amn App', icon: '🛡️' },
+      { label: 'SAMA شكاوى', number: '+966-800-125-6666', icon: '🏦' },
+      { label: 'الجرائم المعلوماتية', number: '+966-920-020-405', icon: '🕵️' },
+    ]
+  },
+}
+
+function getEmergencyContacts(lang) {
+  const key = lang?.split('-')[0] || 'en'
+  return EMERGENCY_CONTACTS[key] || EMERGENCY_CONTACTS['en']
+}
+
+/* ── Emergency Contacts Component (shown in both demo & live) ── */
+function EmergencyContactsPanel({ language, compact = false }) {
+  const ec = getEmergencyContacts(language)
+  const [expanded, setExpanded] = useState(!compact)
+  return (
+    <PBox color="#ff2d55" style={{ padding: compact ? 12 : 16, background: 'rgba(255,45,85,0.04)' }}>
+      <div
+        onClick={() => compact && setExpanded(!expanded)}
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: compact ? 'pointer' : 'default' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 18 }}>{ec.flag}</span>
+          <span style={{ fontFamily: PF, fontSize: compact ? 7 : 8, color: '#ff2d55', textShadow: '0 0 8px #ff2d55' }}>
+            🚨 EMERGENCY CONTACTS — {ec.country}
+          </span>
+        </div>
+        {compact && (
+          <span style={{ fontFamily: MF, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
+            {expanded ? '▾' : '▸'}
+          </span>
+        )}
+      </div>
+      {expanded && (
+        <div style={{ marginTop: 10, display: 'grid', gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6 }}>
+          {ec.contacts.map((c, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 12px',
+              border: '1px solid rgba(255,45,85,0.15)',
+              background: 'rgba(255,45,85,0.03)',
+            }}>
+              <span style={{ fontSize: 14 }}>{c.icon}</span>
+              <div>
+                <div style={{ fontFamily: MF, fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>{c.label}</div>
+                <div style={{ fontFamily: PF, fontSize: 10, color: '#ff2d55', letterSpacing: 0.5 }}>{c.number}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </PBox>
+  )
+}
+
 /* ── Pie Chart — pseudo-3D with labels showing ABSOLUTE % matching bars ── */
 function PieChart({ data, size=120, title }) {
   const total = data.reduce((s,d)=>s+d.value,0) || 1
@@ -209,18 +351,21 @@ function InterventionHistorySection({ interventions, language }) {
 /* ══════════════════════════════════════════════════════════
    [FIX] genHTML — ALL TEXT DARK/VISIBLE on white paper
    ────────────────────────────────────────────────────────
-   Key changes:
-   - ALL text is #111, #222, #333, #444 — NO gray (#aaa, #888, #ccc)
-   - Footer text is #333 not #888
+   Key changes v2:
+   - ALL text is #111, #222, #333 — NO gray (#aaa, #888, #ccc, #444 avoided)
+   - Footer text is #222 not #888
    - Section headers, badges, bars all use strong print-safe colors
    - Pie charts included inline as SVG
    - Action Plan vs Recommended Actions clearly differentiated
    - Audio recording embedded if available
    - Intervention history fully rendered
+   - Emergency contacts with real phone numbers per country
+   - Transcript text fully black/dark for readability
 ══════════════════════════════════════════════════════════ */
 function genHTML(report) {
   const fmt=s=>s!=null?`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:'—'
   const actionsData=getActionsForLang(report.language||'en')
+  const ec=getEmergencyContacts(report.language||'en')
 
   /* ── Pie Chart SVG generator for print ── */
   const genPieSVG=(entries,title,size=140)=>{
@@ -241,20 +386,32 @@ function genHTML(report) {
       const c=colors[i%colors.length]
       sliceHTML+=`<path d="${arc(start,end)}" fill="${c}" stroke="#fff" stroke-width="1.5"/>`
       if((end-start)/360*100>=8) sliceHTML+=`<text x="${lx}" y="${ly+3}" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold" font-family="monospace" style="text-shadow:0 1px 2px rgba(0,0,0,0.8)">${v}%</text>`
-      legendHTML+=`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 8px 2px 0"><span style="display:inline-block;width:10px;height:10px;background:${c};border:1px solid #ddd"></span><span style="font-size:9px;color:#222;font-weight:bold">${k} ${v}%</span></span>`
+      legendHTML+=`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 8px 2px 0"><span style="display:inline-block;width:10px;height:10px;background:${c};border:1px solid #ddd"></span><span style="font-size:9px;color:#111;font-weight:bold">${k} ${v}%</span></span>`
     })
-    return `<div style="text-align:center;margin:12px 0"><div style="font-size:10px;color:#222;font-weight:bold;margin-bottom:6px">${title}</div><svg width="${size}" height="${size}" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.15))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0f0f0" stroke="#ddd" stroke-width="1"/>${sliceHTML}</svg><div style="margin-top:6px;font-size:9px">${legendHTML}</div></div>`
+    return `<div style="text-align:center;margin:12px 0"><div style="font-size:10px;color:#111;font-weight:bold;margin-bottom:6px">${title}</div><svg width="${size}" height="${size}" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.15))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0f0f0" stroke="#ddd" stroke-width="1"/>${sliceHTML}</svg><div style="margin-top:6px;font-size:9px">${legendHTML}</div></div>`
   }
 
   const barHTML=(entries,title)=>{
     if(!entries||entries.length===0) return ''
     return `<h2>${title}</h2>${entries.map(([k,v])=>{
-      const c=v>60?'#cc0000':v>30?'#cc7700':v>0?'#228833':'#444'
+      const c=v>60?'#cc0000':v>30?'#cc7700':v>0?'#228833':'#333'
       return `<div class="bar"><span class="bl">${k}</span><div class="bt"><div class="bf" style="width:${v}%;background:${c}"></div></div><span class="bv" style="color:${c}">${v}%</span></div>`
     }).join('')}`
   }
 
-  /* ── [FIX] Action Plan HTML — PERSONALIZED recovery steps (differs from Recommended Actions) ── */
+  /* ── [FIX] Emergency Contacts HTML for PDF ── */
+  const emergencyHTML=()=>{
+    return `<h2 style="color:#cc0000;border-color:#cc0000">🚨 EMERGENCY CONTACTS — ${ec.flag} ${ec.country}</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px">
+${ec.contacts.map(c=>`<div style="padding:10px 14px;border:1.5px solid #cc000033;background:#fff5f5">
+  <div style="font-size:13px;margin-bottom:2px">${c.icon}</div>
+  <div style="font-size:9px;color:#333;font-weight:bold">${c.label}</div>
+  <div style="font-size:12px;color:#cc0000;font-weight:bold;letter-spacing:0.5px">${c.number}</div>
+</div>`).join('')}
+</div>`
+  }
+
+  /* ── [FIX] Action Plan HTML — PERSONALIZED recovery steps ── */
   const actionPlanHTML=(report)=>{
     if(!report.actionPlan&&!(report.alerts||[]).length) return ''
     const lang=(report.language||'en').split('-')[0]
@@ -268,26 +425,26 @@ function genHTML(report) {
     if(steps.length===0) return ''
     const urgBadgeColors={immediate:'#cc0000',critical:'#cc0000',high:'#cc7700',recommended:'#228833'}
     return `<h2 style="color:${uc};border-color:${uc}">🛡 ANTI-SCAM ACTION PLAN (AI-PERSONALIZED)</h2>
-<div style="padding:10px 14px;border:2px solid ${uc};background:${uc}08;margin-bottom:10px;color:#222;font-size:10px;line-height:1.6">
+<div style="padding:10px 14px;border:2px solid ${uc};background:${uc}08;margin-bottom:10px;color:#111;font-size:10px;line-height:1.6">
   <strong style="color:${uc}">This plan is personalized based on the specific scam pattern detected in this session.</strong>
   Unlike the generic Recommended Actions below, these steps are ordered by urgency and tailored to the "${plan?.scam_pattern||'detected'}" attack vector.
 </div>
 <div style="padding:12px 16px;border:2px solid ${uc};background:${uc}11;margin-bottom:12px">
   <span style="display:inline-block;padding:3px 10px;background:${uc};color:#fff;font-size:9px;font-weight:bold;margin-right:8px">${urgency}</span>
-  <span style="font-size:10px;color:#222">${country.flag} ${country.name}</span>
-  <span style="font-size:9px;color:#444;margin-left:8px">⏱ ${plan?.estimated_time||'15-60 minutes'}</span>
+  <span style="font-size:10px;color:#111">${country.flag} ${country.name}</span>
+  <span style="font-size:9px;color:#333;margin-left:8px">⏱ ${plan?.estimated_time||'15-60 minutes'}</span>
 </div>
-${plan?.urgency_message?`<div style="padding:8px 14px;background:#fff8e1;border-left:3px solid ${uc};margin-bottom:10px;font-size:10px;color:#222;font-weight:bold">${plan.urgency_message}</div>`:''}
-${plan?.personalized_advice?`<div style="padding:8px 14px;background:#f0f7ff;border-left:3px solid #005599;margin-bottom:12px;font-size:10px;color:#222;line-height:1.6">🤖 <strong>AI Analysis:</strong> ${plan.personalized_advice}</div>`:''}
+${plan?.urgency_message?`<div style="padding:8px 14px;background:#fff8e1;border-left:3px solid ${uc};margin-bottom:10px;font-size:10px;color:#111;font-weight:bold">${plan.urgency_message}</div>`:''}
+${plan?.personalized_advice?`<div style="padding:8px 14px;background:#f0f7ff;border-left:3px solid #005599;margin-bottom:12px;font-size:10px;color:#111;line-height:1.6">🤖 <strong>AI Analysis:</strong> ${plan.personalized_advice}</div>`:''}
 ${steps.map(s=>{const bc=urgBadgeColors[s.urgency]||'#228833';return `<div class="action" style="border-left-color:${bc}"><span style="font-size:13px;margin-right:6px">${s.icon||'▸'}</span><span style="color:#111">${s.action}</span><span class="pri" style="color:${bc}">[${(s.urgency||'recommended').toUpperCase()}]</span></div>`}).join('')}
 <div style="padding:10px 14px;background:#fff0f0;border:1px solid #cc000033;margin-top:10px;text-align:center;font-size:10px;color:#cc0000;font-weight:bold">🚨 Emergency: Call ${country.emergency} if you feel in danger</div>
-${plan?.disclaimer?`<div style="font-size:8px;color:#444;margin-top:6px;font-style:italic">${plan.disclaimer}</div>`:''}`
+${plan?.disclaimer?`<div style="font-size:8px;color:#333;margin-top:6px;font-style:italic">${plan.disclaimer}</div>`:''}`
   }
 
-  /* ── [FIX] Recommended Actions — GENERIC country-level reference (always same per country) ── */
+  /* ── [FIX] Recommended Actions — GENERIC country-level reference ── */
   const recommendedActionsHTML=(report)=>{
     return `<h2 style="color:#005599;border-color:#005599">📋 RECOMMENDED ACTIONS — ${actionsData.country} (GENERAL REFERENCE)</h2>
-<div style="padding:10px 14px;border:1px solid #00559933;background:#f0f7ff;margin-bottom:10px;color:#222;font-size:10px;line-height:1.6">
+<div style="padding:10px 14px;border:1px solid #00559933;background:#f0f7ff;margin-bottom:10px;color:#111;font-size:10px;line-height:1.6">
   <strong>These are standard anti-scam actions for ${actionsData.country}.</strong>
   They apply to all scam types and include reporting channels, emergency contacts, and general protective measures for your region.
 </div>
@@ -301,12 +458,12 @@ body{font-family:'Courier New',Courier,monospace;background:#fff;color:#111;padd
 .page{max-width:860px;margin:0 auto;padding:36px 40px}
 h1{color:#cc0000;border-bottom:2px solid #cc0000;padding-bottom:10px;font-size:18px;margin:0 0 6px;letter-spacing:1px}
 h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #005599;padding-bottom:5px}
-.meta{color:#333;font-size:10px;margin-bottom:18px;line-height:1.8}
+.meta{color:#222;font-size:10px;margin-bottom:18px;line-height:1.8}
 .meta strong{color:#111}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
 .metric{padding:14px 10px;border:1.5px solid #bbb;text-align:center;background:#f8f8f8}
 .metric .v{font-size:22px;font-weight:bold;color:#cc0000}
-.metric .l{font-size:8px;color:#333;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
+.metric .l{font-size:8px;color:#222;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
 .alert{margin:6px 0;padding:10px 14px;border-left:4px solid;background:#f9f9f9;page-break-inside:avoid}
 .alert.critical{border-color:#cc0000;background:#fff5f5}
 .alert.high{border-color:#cc7700;background:#fff8f0}
@@ -315,16 +472,16 @@ h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-trans
 .badge.critical{color:#cc0000;border-color:#cc0000;background:#fff0f0}
 .badge.high{color:#cc7700;border-color:#cc7700;background:#fff5e6}
 .badge.medium{color:#997700;border-color:#997700;background:#fffbe6}
-.quote{color:#333;font-size:10px;margin-top:4px;line-height:1.5;font-style:italic}
+.quote{color:#222;font-size:10px;margin-top:4px;line-height:1.5;font-style:italic}
 .intervened{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
 .bar{display:flex;align-items:center;gap:10px;margin:5px 0}
-.bl{width:110px;font-size:9px;color:#222;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold}
+.bl{width:110px;font-size:9px;color:#111;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold}
 .bt{flex:1;height:12px;background:#e8e8e8;border:1px solid #ccc;overflow:hidden}
 .bf{height:100%}
 .bv{font-size:10px;width:44px;text-align:right;font-weight:bold;flex-shrink:0}
 .tline{padding:4px 10px;font-size:10px;line-height:1.7;border-left:3px solid transparent;margin:2px 0;color:#111}
-.tline.flagged{border-left-color:#cc0000;background:#fff5f5}
-.tline.me{border-left-color:#228833}
+.tline.flagged{border-left-color:#cc0000;background:#fff5f5;color:#111}
+.tline.me{border-left-color:#228833;color:#111}
 .ts{color:#005599;font-size:9px;margin-right:8px;font-weight:bold}
 .speaker{font-weight:bold;font-size:8px;margin-right:5px;text-transform:uppercase;letter-spacing:0.5px}
 .speaker-me{color:#007722}
@@ -332,13 +489,13 @@ h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-trans
 .flag{color:#cc0000;font-size:8px;margin-left:6px;font-weight:bold}
 .intv{padding:10px 14px;border-left:4px solid;margin:6px 0;background:#f9f9f9;page-break-inside:avoid}
 .intv-label{display:inline-block;font-size:7px;padding:2px 7px;font-weight:bold;margin-right:6px;text-transform:uppercase;border:1.5px solid}
-.intv-meta{color:#333;font-size:9px;margin-top:2px}
+.intv-meta{color:#222;font-size:9px;margin-top:2px}
 .action{padding:8px 12px;border-left:3px solid #007733;margin:4px 0;font-size:10px;color:#111;background:#f0fff4;page-break-inside:avoid}
 .action .pri{font-size:8px;font-weight:bold;margin-left:6px}
-.footer{margin-top:28px;padding:14px 0;border-top:2px solid #333;text-align:center;color:#222;font-size:9px}
+.footer{margin-top:28px;padding:14px 0;border-top:2px solid #333;text-align:center;color:#111;font-size:9px}
 .footer .brand{color:#005599;font-size:11px;font-weight:bold;letter-spacing:3px}
-.footer .sub{margin-top:5px;color:#333}
-.footer .powered{margin-top:3px;color:#444;font-style:italic}
+.footer .sub{margin-top:5px;color:#222}
+.footer .powered{margin-top:3px;color:#333;font-style:italic}
 @media print{body{margin:0;padding:0}.page{padding:16px 20px}h2{page-break-after:avoid}.alert,.intv,.action{page-break-inside:avoid}}
 </style></head><body><div class="page">
 <h1>🛡 VOXGUARD — FORENSIC REPORT</h1>
@@ -356,20 +513,21 @@ h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-trans
   <div class="metric"><div class="v">${fmt(report.sessionTime)}</div><div class="l">Duration</div></div>
   <div class="metric"><div class="v">${(report.interventionHistory||[]).length}</div><div class="l">Interventions</div></div>
 </div>
+${emergencyHTML()}
 ${(report.transcript||[]).length>0?`<h2>FULL TRANSCRIPT</h2>${(report.transcript||[]).map(l=>{
   const isMe=l.speaker==='me'
   return `<div class="tline${l.flagged?' flagged':''}${isMe?' me':''}"><span class="ts">[${l.time}]</span><span class="speaker ${isMe?'speaker-me':'speaker-caller'}">${isMe?'ME':'CALLER'}</span>${l.text}${l.flagged?'<span class="flag">⚠ FLAGGED</span>':''}</div>`
 }).join('')}`:''}
 ${(report.interventionHistory||[]).length>0?`<h2 style="color:#cc0000;border-color:#cc0000">🛑 LIVE INTERVENTIONS (${report.interventionHistory.length})</h2>
-<p style="color:#222;font-size:10px;margin-bottom:10px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
+<p style="color:#111;font-size:10px;margin-bottom:10px">VoxGuard actively intervened ${report.interventionHistory.length} time${report.interventionHistory.length>1?'s':''} during this session.</p>
 ${report.interventionHistory.map(e=>{
   const c=e.level==='LOCKDOWN'?'#cc0000':e.level==='BLOCK'?'#cc7700':'#997700'
-  return `<div class="intv" style="border-color:${c}"><span class="intv-label" style="color:${c};border-color:${c}">${e.level}</span><strong style="color:#111">${e.pattern}</strong><span class="intv-meta"> Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span><div class="quote" style="color:#333">User action: ${e.userAction||'—'}</div></div>`
+  return `<div class="intv" style="border-color:${c}"><span class="intv-label" style="color:${c};border-color:${c}">${e.level}</span><strong style="color:#111">${e.pattern}</strong><span class="intv-meta"> Score: ${e.threatScore} · ${e.trigger==='instant_pattern'?'⚡ Instant':'📊 Score'}</span><div class="quote" style="color:#222">User action: ${e.userAction||'—'}</div></div>`
 }).join('')}`:''}
 <h2>ALERT TIMELINE</h2>
 ${(report.alerts||[]).map(a=>{
   const sev=a.severity||'medium'
-  return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#444;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
+  return `<div class="alert ${sev}"><span class="badge ${sev}">${sev.toUpperCase()}</span><strong style="color:#111">${a.pattern}</strong><span style="color:#333;font-size:9px;margin-left:4px">${a.time} · ${a.confidence}%</span>${a.triggered_intervention?'<span class="intervened">🛑 INTERVENED</span>':''}<div class="quote">"${(a.quote||'').replace(/"/g,'')}"</div></div>`
 }).join('')}
 ${barHTML(Object.entries(report.psychScores||{}),'PSYCHOLOGICAL VECTORS')}
 ${genPieSVG(Object.entries(report.psychScores||{}),'Psychological Vector Distribution')}
@@ -395,7 +553,7 @@ function exportHTML(report){
   let html = genHTML(report)
   /* [FIX] Embed audio recording if available */
   if(report.audioUrl) {
-    html = html.replace('</div></body>',`<h2>🎙 SESSION RECORDING</h2><p style="color:#222;font-size:10px">Audio captured during this session:</p><audio controls src="${report.audioUrl}" style="width:100%;margin:10px 0;border:1px solid #ccc"></audio></div></body>`)
+    html = html.replace('</div></body>',`<h2>🎙 SESSION RECORDING</h2><p style="color:#111;font-size:10px">Audio captured during this session:</p><audio controls src="${report.audioUrl}" style="width:100%;margin:10px 0;border:1px solid #ccc"></audio></div></body>`)
   }
   const b=new Blob([html],{type:'text/html'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`${getFilename(report)}.html`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)
 }
@@ -476,14 +634,15 @@ function GalleryFullscreen({report,onClose,onDelete}){
           </div>
         </div>
         <div style={{display:'flex',borderBottom:'1px solid rgba(0,212,255,0.1)',flexShrink:0}}>
-          {['transcript','alerts',hasInterventions?'interventions':null,'psych','actions'].filter(Boolean).map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:tab===t?'#00d4ff':t==='interventions'?'#ff2d55aa':'rgba(255,255,255,0.55)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1}}>{t}{t==='interventions'?` (${(report.interventionHistory||[]).length})`:''}</button>
+          {['transcript','alerts',hasInterventions?'interventions':null,'psych','emergency','actions'].filter(Boolean).map(t=>(
+            <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:'12px',fontFamily:PF,fontSize:7,border:'none',borderBottom:tab===t?'2px solid #00d4ff':'2px solid transparent',background:'transparent',color:tab===t?'#00d4ff':t==='interventions'?'#ff2d55aa':t==='emergency'?'#ff2d55aa':'rgba(255,255,255,0.55)',cursor:'pointer',textTransform:'uppercase',letterSpacing:1}}>{t}{t==='interventions'?` (${(report.interventionHistory||[]).length})`:''}</button>
           ))}
         </div>
         <div style={{flex:1,overflowY:'auto',padding:'20px 28px'}}>
           {tab==='transcript'&&((report.transcript||[]).length>0?(report.transcript||[]).map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} style={{fontFamily:MF,fontSize:12,color:isMe?'#30d158':'rgba(255,255,255,0.75)',padding:'6px 0',borderLeft:l.flagged?'3px solid #ff2d55':isMe?'3px solid #30d15844':'3px solid transparent',paddingLeft:12,lineHeight:1.8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:10,marginRight:10}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:6,color:isMe?'#30d158':'#ff9500',marginRight:6}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:9,marginLeft:6}}>⚠</span>}</div>}):<div style={{textAlign:'center',padding:40,color:'rgba(255,255,255,0.25)',fontFamily:MF}}>No transcript</div>)}
           {tab==='alerts'&&(report.alerts||[]).map((a,i)=><AlertCard key={i} alert={a} index={i}/>)}
           {tab==='interventions'&&<InterventionHistorySection interventions={report.interventionHistory||[]} language={report.language||'en'}/>}
+          {tab==='emergency'&&<EmergencyContactsPanel language={report.language||'en'}/>}
           {tab==='psych'&&<>
             <div style={{fontFamily:PF,fontSize:8,color:'#ff9500',marginBottom:12}}>PSYCHOLOGICAL VECTORS</div>
             {PSYCH_TACTICS.map(t=><VectorBar key={t.id} tac={t} score={report.psychScores?.[t.id]||0}/>)}
@@ -698,6 +857,7 @@ function PatternCard({p,c,hit,onClick}){const[h,setH]=useState(false);return(
 
 /* ══════════════════════════════════════════════════════════
    [FIX] REPORT TAB — Action Plan vs Recommended Actions clearly separated
+   + Emergency Contacts shown always
 ══════════════════════════════════════════════════════════ */
 export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null,interventionHistory=[],actionPlan=null,onCloseActionPlan}){
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
@@ -735,6 +895,9 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
           </div>
         </PBox>
 
+        {/* [FIX] Emergency Contacts — Always shown in Report */}
+        <EmergencyContactsPanel language={language} />
+
         {/* Transcript with hover animations */}
         {transcript.length>0&&(<PBox className="rpt-section" color="#00d4ff25" style={{padding:20}}><div style={{fontFamily:PF,fontSize:8,color:'#00d4ff',marginBottom:14}}>FULL TRANSCRIPT ({transcript.length})</div><div style={{maxHeight:200,overflowY:'auto'}}>{transcript.map((l,i)=>{const isMe=l.speaker==='me';return<div key={i} className={`rpt-tline${l.flagged?' rpt-flagged':''}`} style={{fontFamily:MF,fontSize:10,color:isMe?'#30d158':'rgba(255,255,255,0.65)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':isMe?'2px solid #30d15844':'2px solid transparent',paddingLeft:8}}><span style={{color:'rgba(0,212,255,0.5)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:isMe?'#30d158':'#ff9500',marginRight:4}}>{isMe?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>})}</div></PBox>)}
 
@@ -758,7 +921,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
           {(LIE_INDICATORS||[]).map(l=><VectorBar key={l.id} tac={l} score={lieScores[l.id]||0}/>)}
         </PBox>
 
-        {/* [FIX] Recommended Actions — GENERIC per-country reference, clearly different from Action Plan */}
+        {/* [FIX] Recommended Actions — GENERIC per-country reference */}
         <PBox className="rpt-section" color="#30d158" style={{padding:20}}>
           <div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:6}}>📋 RECOMMENDED ACTIONS — GENERAL REFERENCE</div>
           <div style={{fontFamily:MF,fontSize:9,color:'rgba(48,209,88,0.5)',marginBottom:6}}>
