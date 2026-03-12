@@ -5,6 +5,8 @@
 <div align="center">
 
 <img src="docs/svgs/architecture-badge.png" alt="VoxGuard Architecture" width="100%"/>
+<img src="docs/svgs/architecture-2.png" alt="VoxGuard Architecture" width="100%"/>
+<img src="docs/svgs/architecture-3.png" alt="VoxGuard Architecture" width="100%"/>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg?style=flat-square)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python)](https://python.org)

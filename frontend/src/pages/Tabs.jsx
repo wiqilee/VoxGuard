@@ -351,7 +351,7 @@ function InterventionHistorySection({ interventions, language }) {
 /* ══════════════════════════════════════════════════════════
    [FIX] genHTML — ALL TEXT DARK/VISIBLE on white paper
    ────────────────────────────────────────────────────────
-   Key changes v2:
+   Key changes:
    - ALL text is #111, #222, #333 — NO gray (#aaa, #888, #ccc, #444 avoided)
    - Footer text is #222 not #888
    - Section headers, badges, bars all use strong print-safe colors
@@ -505,6 +505,7 @@ h2{color:#005599;margin:22px 0 10px;font-size:11px;letter-spacing:2px;text-trans
   <strong>Language:</strong> ${(report.language||'en').toUpperCase()} &nbsp;·&nbsp;
   <strong>Country:</strong> ${actionsData.country} &nbsp;·&nbsp;
   <strong>ID:</strong> ${report.id}
+${report.callerNumber?`<br/><strong style="color:#cc0000">Caller Number:</strong> <span style="color:#cc0000;font-weight:bold">${report.callerNumber}</span>`:''}
 </div>
 <h2>THREAT SUMMARY</h2>
 <div class="grid">
@@ -863,9 +864,9 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const[saved,setSaved]=useState([]);const[msg,setMsg]=useState('')
   useEffect(()=>setSaved(loadReports()),[])
-  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,id:Date.now().toString(),savedAt:new Date().toISOString()}
+  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,callerNumber:window.__voxguard_caller_number||null,id:Date.now().toString(),savedAt:new Date().toISOString()}
   const actionsData=getActionsForLang(language)
-  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,audioUrl});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
+  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,audioUrl,callerNumber:window.__voxguard_caller_number||null});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
 
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
     <style>{tabsCSS}</style>

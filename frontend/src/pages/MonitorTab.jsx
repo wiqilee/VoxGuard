@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { PBox, PBtn, StatCard } from '../components/Primitives'
 import { WaveformVisualizer } from '../components/WaveformVisualizer'
+import { PixelAvatar } from '../components/PixelAvatar'
 import { ThreatMeter } from '../components/ThreatMeter'
 import { AlertCard } from '../components/AlertCard'
 import { InterventionOverlay } from '../components/InterventionOverlay'
@@ -115,10 +116,8 @@ function CallerVisual({mode='phone',active,screenWatchOn,isRecording,callerNumbe
       <style>{cvCSS}</style>
       <div style={{position:'absolute',inset:0,opacity:.035,backgroundImage:'linear-gradient(rgba(0,212,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,1) 1px,transparent 1px)',backgroundSize:'28px 28px',pointerEvents:'none'}}/>
       <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <div style={{position:'relative',animation:'cv-fl 3.5s ease-in-out infinite',zIndex:2}}>
-          <svg width="60" height="70" viewBox="0 0 60 70" style={{filter:`drop-shadow(0 0 12px ${ac}66)`}}>
-            <path d="M14,12 C10,12 8,16 8,20 L8,24 C8,27 10,30 13,30 L16,30 C18,30 20,32 20,35 L20,36 C20,39 18,41 16,41 L13,41 C10,41 8,44 8,47 L8,51 C8,55 10,58 14,58 L18,58 C22,58 25,55 25,51 L25,47 C25,46 26,45 27,45 L33,45 C34,45 35,46 35,47 L35,51 C35,55 38,58 42,58 L46,58 C50,58 52,55 52,51 L52,47 C52,44 50,41 47,41 L44,41 C42,41 40,39 40,36 L40,35 C40,32 42,30 44,30 L47,30 C50,30 52,27 52,24 L52,20 C52,16 50,12 46,12 Z" fill={`${ac}0c`} stroke={ac} strokeWidth="2" strokeLinejoin="round" opacity="0.7"/>
-          </svg>
+      <div style={{position:'relative',animation:'cv-fl 3.5s ease-in-out infinite',zIndex:2}}>
+          <PixelAvatar speaking={!!tick&&tick%3!==0} threatLevel={ac==='#ff2d55'?'critical':ac==='#ff9500'?'high':'safe'} mode={mode} />
         </div>
         <div style={{position:'absolute',top:14,left:18,animation:'cv-fi .5s ease'}}><div style={{fontFamily:PF,fontSize:6,color:ac,letterSpacing:1,padding:'5px 12px',border:`1px solid ${ac}44`,background:`${ac}0c`,display:'flex',alignItems:'center',gap:6,backdropFilter:'blur(4px)'}}><span style={{fontSize:11}}>{mode==='phone'?'📞':'🖥'}</span>{mode==='phone'?'CALL':'VIDEO'}<span style={{width:5,height:5,borderRadius:'50%',background:ac,animation:'blink 1.2s step-end infinite',boxShadow:`0 0 6px ${ac}`}}/></div></div>
         {/* [NEW] Caller phone number display */}

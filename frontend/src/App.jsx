@@ -283,6 +283,13 @@ export default function App() {
   /* ══════════════════════════════════════════════════════════
      [FIX] THREAT SCORE — Realistic severity-based increments
      ────────────────────────────────────────────────────────
+     Bank ENhigh, critical, high24 → 56 → 80 | 80 BLOCK
+     Gov/Tax ENcritical, critical, critical32 → 64 → 98 | 98 LOCKDOWN
+     Romance ENcritical, critical, critical32 → 64 → 98 | 98 LOCKDOWN
+     Bank IDhigh, critical, high24 → 56 → 80 | 80 BLOCK
+     Pinjol IDhigh, critical, critical24 → 56 → 90 | 90 LOCKDOWN
+     Cryptohigh, critical, critical24 → 56 → 90 | 90 LOCKDOWN
+
      This ensures:
      - Bank Fraud (3 alerts, 2 critical): score reaches 70-85 → BLOCK
      - Gov + Gift Card (3 critical): score reaches 80-95 → LOCKDOWN
