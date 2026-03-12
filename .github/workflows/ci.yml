@@ -13,10 +13,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # [FIX] Replace dtolnay/rust-toolchain with direct rustup commands
+      # dtolnay/rust-toolchain@stable fails with 401 Unauthorized when
+      # GitHub API rate-limits the tarball download for the action repo.
+      # Using rustup directly is more reliable and doesn't depend on
+      # third-party action downloads.
       - name: Install Rust + wasm32 target
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup target add wasm32-unknown-unknown
+          rustc --version
+          cargo --version
 
       - name: Cache Rust dependencies
         uses: actions/cache@v4

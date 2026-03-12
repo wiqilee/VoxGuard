@@ -4,7 +4,7 @@ import { WaveformVisualizer } from '../components/WaveformVisualizer'
 import { ThreatMeter } from '../components/ThreatMeter'
 import { AlertCard } from '../components/AlertCard'
 import { InterventionOverlay } from '../components/InterventionOverlay'
-import { PF, MF, getInterventionLevel, isInstantInterventionPattern } from '../utils/constants'
+import { PF, MF, getInterventionLevel, isInstantInterventionPattern, getCallerNumber } from '../utils/constants'
 import { MonitorPixels } from '../components/PixelParticles'
 
 /* ══════════════════════════════════════════════════════════
@@ -100,11 +100,11 @@ function getVoiceForLang(lang) {
 let _activeGeminiAudio = null
 
 /* ════════════════════════════════════════════════════
-   CALLER VISUAL + IDLE SCREEN (unchanged, condensed)
+   CALLER VISUAL + IDLE SCREEN
 ════════════════════════════════════════════════════ */
 const cvCSS=`@keyframes cv-rZ{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes cv-rR{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}@keyframes cv-fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes cv-pu{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.7;transform:scale(1.06)}}@keyframes cv-sc{0%{top:0}100%{top:100%}}@keyframes cv-sh{0%{left:-20%}100%{left:120%}}@keyframes cv-fi{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}@keyframes cv-rp{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.4;transform:scale(1.06)}}@keyframes cv-o1{0%{transform:rotate(0deg) translateX(62px) rotate(0deg)}100%{transform:rotate(360deg) translateX(62px) rotate(-360deg)}}@keyframes cv-o2{0%{transform:rotate(120deg) translateX(70px) rotate(-120deg)}100%{transform:rotate(480deg) translateX(70px) rotate(-480deg)}}@keyframes cv-o3{0%{transform:rotate(240deg) translateX(56px) rotate(-240deg)}100%{transform:rotate(600deg) translateX(56px) rotate(-600deg)}}@keyframes cv-rb{0%,100%{opacity:1}50%{opacity:.3}}@keyframes cv-hs{0%{transform:rotate(0deg)}100%{transform:rotate(60deg)}}@keyframes cv-ds{0%{background-position:0 0}100%{background-position:0 200px}}@keyframes cv-ch{0%{text-shadow:2px 0 #ff2d5555,-2px 0 #00d4ff55}50%{text-shadow:-1px 0 #ff2d5555,1px 0 #00d4ff55}100%{text-shadow:2px 0 #ff2d5555,-2px 0 #00d4ff55}}@keyframes cv-sw-scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}@keyframes cv-sw-pulse{0%,100%{box-shadow:inset 0 0 30px rgba(123,97,255,0.08)}50%{box-shadow:inset 0 0 60px rgba(123,97,255,0.18),0 0 20px rgba(123,97,255,0.1)}}@keyframes cv-sw-grid{0%{opacity:.06}50%{opacity:.12}100%{opacity:.06}}@keyframes cv-crt-line{0%{top:-2px}100%{top:100%}}@keyframes rec-pulse{0%,100%{box-shadow:0 0 8px #ff2d55,0 0 16px rgba(255,45,85,0.3)}50%{box-shadow:0 0 14px #ff2d55,0 0 28px rgba(255,45,85,0.5),0 0 40px rgba(255,45,85,0.15)}}@keyframes rec-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}`
 
-function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
+function CallerVisual({mode='phone',active,screenWatchOn,isRecording,callerNumber}){
   const[tick,setTick]=useState(0)
   useEffect(()=>{if(!active)return;const t=setInterval(()=>setTick(v=>v+1),80);return()=>clearInterval(t)},[active])
   if(!active) return null
@@ -121,6 +121,8 @@ function CallerVisual({mode='phone',active,screenWatchOn,isRecording}){
           </svg>
         </div>
         <div style={{position:'absolute',top:14,left:18,animation:'cv-fi .5s ease'}}><div style={{fontFamily:PF,fontSize:6,color:ac,letterSpacing:1,padding:'5px 12px',border:`1px solid ${ac}44`,background:`${ac}0c`,display:'flex',alignItems:'center',gap:6,backdropFilter:'blur(4px)'}}><span style={{fontSize:11}}>{mode==='phone'?'📞':'🖥'}</span>{mode==='phone'?'CALL':'VIDEO'}<span style={{width:5,height:5,borderRadius:'50%',background:ac,animation:'blink 1.2s step-end infinite',boxShadow:`0 0 6px ${ac}`}}/></div></div>
+        {/* [NEW] Caller phone number display */}
+        {callerNumber&&<div style={{position:'absolute',bottom:14,left:18,zIndex:10,animation:'cv-fi .5s ease'}}><div style={{fontFamily:MF,fontSize:11,color:ac,letterSpacing:0.5,padding:'4px 10px',border:`1px solid ${ac}33`,background:`${ac}08`,backdropFilter:'blur(4px)',display:'flex',alignItems:'center',gap:6}}><span style={{fontSize:10}}>📱</span><span>{callerNumber}</span></div></div>}
       </div>
       {isRecording&&<div style={{position:'absolute',top:14,right:18,zIndex:10,display:'flex',alignItems:'center',gap:6,padding:'4px 10px',border:'1px solid #ff2d5555',background:'rgba(255,45,85,0.12)',animation:'cv-fi .3s ease',backdropFilter:'blur(4px)'}}><div style={{width:8,height:8,borderRadius:'50%',background:'#ff2d55',animation:'cv-rb 1s ease-in-out infinite',boxShadow:'0 0 8px #ff2d55'}}/><span style={{fontFamily:PF,fontSize:6,color:'#ff2d55',letterSpacing:1}}>REC</span></div>}
       {screenWatchOn&&<div style={{position:'absolute',bottom:14,right:18,zIndex:10,fontFamily:'monospace',fontSize:6,color:'#7b61ff',letterSpacing:1,opacity:.7}}>◈ SCREEN WATCH</div>}
@@ -157,16 +159,17 @@ function IdleScreen(){
 function AnalysisProgressBar({progress,threatColor}){const c=progress>=100;return(<div style={{marginBottom:16}}><div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}><span style={{fontFamily:PF,fontSize:6,color:'rgba(0,212,255,.5)',letterSpacing:1}}>ANALYSIS PROGRESS</span><span style={{fontFamily:MF,fontSize:9,color:c?'#30d158':'#00d4ff'}}>{c?'✓ COMPLETE':progress+'%'}</span></div><div style={{height:6,background:'rgba(0,212,255,.08)',overflow:'hidden',position:'relative',border:'1px solid rgba(0,212,255,.1)'}}><div style={{height:'100%',width:`${progress}%`,background:c?'linear-gradient(90deg,#30d158,#4aeaff,#30d158)':`linear-gradient(90deg,#00d4ff,${threatColor},#7b61ff,#00d4ff)`,backgroundSize:'200% 100%',animation:c?'none':'progressShimmer 2s linear infinite',boxShadow:`0 0 12px ${c?'#30d158':'#00d4ff'}66`,transition:'width .5s ease'}}/></div></div>)}
 
 /* ══════════════════════════════════════════════════════════
-   [FIX] DEMO SCRIPTS — ALL 9 NATIVE LANGUAGES
+   [FIX] DEMO SCRIPTS — ALL LANGUAGES WITH EXPANDED SCRIPTS
    ────────────────────────────────────────────────────────
-   Each language has MIN 3 scripts with LONGER conversations.
-   Conversations build up gradually before triggering alerts.
-   No instant lockdown on first sentence.
-   Indonesia bank: longer before OTP request.
-   English bank: longer before lockdown trigger.
+   EN: 6 scripts (bank, tech, gov, romance, crypto, family)
+   ID: 7 scripts (bank, pinjol, mama, giveaway, romance, crypto, family)
+   + All other languages keep their 3 scripts
+   
+   [FIX] Indonesian bank: removed duplicate text
+   [FIX] Realistic threat scores - high severity scripts trigger high scores
 ══════════════════════════════════════════════════════════ */
 
-// ── ENGLISH (3 scripts) ──
+// ── ENGLISH (6 scripts) ──
 const SCRIPTS_EN=[
   {id:'bank',label:'🏦 Bank Fraud',category:'critical',sentences:[
     {text:"Hello, this is the fraud prevention department from your bank. Am I speaking with the account holder?",delay:0,speaker:'caller'},
@@ -196,24 +199,55 @@ const SCRIPTS_EN=[
     {text:"How do I settle it?",delay:24000,speaker:'me'},
     {text:"Purchase prepaid debit cards totaling twelve thousand dollars from any nearby store and read me the card numbers. This is the fastest authorized payment method.",delay:26500,speaker:'caller',alert:{id:'g3',severity:'critical',pattern:'Gift Card Demand',quote:'"Purchase prepaid debit cards and read me the numbers."',confidence:99,tactics:['AUTHORITY','COMMITMENT'],source:'FTC Sentinel',time:'00:26'}},
   ]},
+  // [NEW] Romance / Sextortion
+  {id:'romance',label:'💔 Romance Scam',category:'critical',sentences:[
+    {text:"Hey, it's me. We need to talk about something important. I know this is awkward.",delay:0,speaker:'caller'},
+    {text:"What do you mean? Who is this?",delay:4000,speaker:'me'},
+    {text:"Don't pretend you don't know me. We've been chatting for months. I have all of our conversations saved — including the private photos and videos you sent me.",delay:7000,speaker:'caller'},
+    {text:"What photos? What are you talking about?",delay:14000,speaker:'me'},
+    {text:"The intimate content you shared with me. I have screenshots of everything — your face is clearly visible in all of them.",delay:17000,speaker:'caller',alert:{id:'r1',severity:'critical',pattern:'Extortion / Blackmail',quote:'"Intimate content, your face is clearly visible."',confidence:94,tactics:['FEAR','ISOLATION'],source:'FBI IC3 2024',time:'00:17'}},
+    {text:"This has to be some kind of mistake...",delay:24000,speaker:'me'},
+    {text:"If you don't send me two thousand dollars in Bitcoin within the next hour, I will share all of these photos with your entire contact list — friends, family, coworkers, everyone.",delay:27000,speaker:'caller',alert:{id:'r2',severity:'critical',pattern:'Romance Scam / Sextortion',quote:'"Send $2,000 Bitcoin or photos shared with everyone."',confidence:98,tactics:['FEAR','ISOLATION'],source:'FBI IC3 2024',time:'00:27'}},
+    {text:"I already have your social media contacts downloaded. Send the Bitcoin to this wallet address now.",delay:35000,speaker:'caller',alert:{id:'r3',severity:'critical',pattern:'Crypto Transfer Scam',quote:'"Send Bitcoin to this wallet address now."',confidence:97,tactics:['FEAR','COMMITMENT'],source:'FTC Sentinel',time:'00:35'}},
+  ]},
+  // [NEW] Crypto Investment
+  {id:'crypto',label:'💰 Crypto Scam',category:'critical',sentences:[
+    {text:"Hi there! I got your number from a mutual friend. I've been helping people earn passive income through a crypto investment group.",delay:0,speaker:'caller'},
+    {text:"Oh really? I've heard about crypto but I don't know much about it.",delay:5000,speaker:'me'},
+    {text:"You don't need to know anything — our platform does everything automatically. Members are making three hundred percent returns in just thirty days. Zero risk.",delay:8000,speaker:'caller',alert:{id:'c1',severity:'high',pattern:'Investment Fraud',quote:'"300% returns in 30 days, zero risk."',confidence:94,tactics:['RECIPROCITY','SCARCITY'],source:'FBI IC3 2024',time:'00:08'}},
+    {text:"Three hundred percent? That sounds too good to be true.",delay:15000,speaker:'me'},
+    {text:"I know it sounds unbelievable, but this is powered by a proprietary AI trading algorithm. There are only five spots left in this round — once they're full, registration closes.",delay:18000,speaker:'caller',alert:{id:'c2',severity:'critical',pattern:'Investment Fraud',quote:'"Only 5 spots left, registration closes."',confidence:96,tactics:['SCARCITY','COMMITMENT'],source:'GASA 2024',time:'00:18'}},
+    {text:"How much would I need to start?",delay:25000,speaker:'me'},
+    {text:"Just five hundred dollars in USDT. I'll send you the wallet address right now. You need to transfer within the next thirty minutes before the round closes.",delay:28000,speaker:'caller',alert:{id:'c3',severity:'critical',pattern:'Crypto Transfer Scam',quote:'"Transfer $500 USDT to this wallet address."',confidence:98,tactics:['SCARCITY','COMMITMENT'],source:'FTC Sentinel',time:'00:28'}},
+  ]},
+  // [NEW] Family Emergency
+  {id:'family',label:'👨‍👩‍👧 Family Emergency',category:'high',sentences:[
+    {text:"Mom? Mom, is that you? Please, I need help.",delay:0,speaker:'caller'},
+    {text:"Who is this? What happened?",delay:4000,speaker:'me'},
+    {text:"It's me, your son! I was in a car accident and I'm at the hospital right now. They won't treat me until I pay the medical deposit.",delay:7000,speaker:'caller',alert:{id:'f1',severity:'high',pattern:'Family Impersonation',quote:'"Your son in car accident, hospital deposit needed."',confidence:89,tactics:['FEAR','RECIPROCITY'],source:'FTC Sentinel',time:'00:07'}},
+    {text:"Oh my God! Are you okay? Which hospital?",delay:14000,speaker:'me'},
+    {text:"I'm okay but I'm in a lot of pain. Please don't call Dad — he'll be so upset. The doctor says I need five thousand dollars for the deposit. Can you wire transfer it right now?",delay:17000,speaker:'caller',alert:{id:'f2',severity:'high',pattern:'Isolation Tactic',quote:'"Don\'t call Dad. Wire $5,000 now."',confidence:91,tactics:['ISOLATION','FEAR'],source:'GASA 2024',time:'00:17'}},
+    {text:"Five thousand? Let me think about this...",delay:25000,speaker:'me'},
+    {text:"Mom please, there's no time! The doctor says if I don't get surgery within the hour, my condition could get much worse. Transfer the money right now. Don't tell anyone!",delay:28000,speaker:'caller',alert:{id:'f3',severity:'critical',pattern:'Artificial Urgency',quote:'"Surgery within the hour or condition worsens."',confidence:95,tactics:['FEAR','SCARCITY'],source:'FBI IC3 2024',time:'00:28'}},
+  ]},
 ]
 
-// ── INDONESIAN (3 scripts) — [FIX] Bank script much longer before OTP ──
+// ── INDONESIAN (7 scripts) — [FIX] Bank script fixed duplicate text ──
 const SCRIPTS_ID=[
   {id:'bank_id',label:'🏦 Penipuan Bank',category:'critical',sentences:[
     {text:"Halo selamat siang. Saya dari pusat keamanan bank, dengan Bapak atau Ibu pemegang rekening?",delay:0,speaker:'caller'},
     {text:"Iya benar, ini saya. Ada apa ya?",delay:4500,speaker:'me'},
-    {text:"Baik, kami mendeteksi adanya transaksi mencurigakan sebesar 15 juta rupiah dari rekening Anda ke sebuah rekening di luar negeri.",delay:7500,speaker:'caller'},
-    {text:"Hah? Saya tidak pernah melakukan transfer seperti itu!",delay:14000,speaker:'me'},
-    {text:"Benar Pak/Bu, makanya kami segera menghubungi Anda. Transaksi ini terjadi sekitar 30 menit yang lalu dan masih dalam status pending.",delay:17000,speaker:'caller'},
+    {text:"Kami mendeteksi adanya transaksi mencurigakan sebesar 15 juta rupiah dari rekening Anda ke sebuah rekening di luar negeri.",delay:7500,speaker:'caller'},
+    {text:"Saya tidak pernah melakukan transfer seperti itu!",delay:14000,speaker:'me'},
+    {text:"Benar, makanya kami segera menghubungi Anda. Transaksi ini masih dalam status pending dan perlu segera ditangani.",delay:17000,speaker:'caller'},
     {text:"Lalu bagaimana cara menghentikannya?",delay:23000,speaker:'me'},
-    {text:"Kami perlu melakukan verifikasi identitas Anda terlebih dahulu. Rekening Anda akan kami blokir permanen dalam 10 menit jika verifikasi tidak selesai.",delay:25500,speaker:'caller',alert:{id:'id1',severity:'high',pattern:'Artificial Urgency',quote:'"Rekening diblokir permanen dalam 10 menit."',confidence:94,tactics:['AUTHORITY','FEAR'],source:'OJK 2024',time:'00:25'}},
+    {text:"Rekening Anda akan diblokir permanen dalam 10 menit jika verifikasi tidak selesai.",delay:25500,speaker:'caller',alert:{id:'id1',severity:'high',pattern:'Artificial Urgency',quote:'"Rekening diblokir permanen dalam 10 menit."',confidence:94,tactics:['AUTHORITY','FEAR'],source:'OJK 2024',time:'00:25'}},
     {text:"Waduh, gimana caranya verifikasi?",delay:33000,speaker:'me'},
     {text:"Sebutkan nomor rekening lengkap Anda dan kode OTP yang baru saja kami kirimkan ke nomor handphone Anda.",delay:35500,speaker:'caller',alert:{id:'id2',severity:'critical',pattern:'Pencurian OTP / Kredensial',quote:'"Sebutkan nomor rekening dan kode OTP."',confidence:99,tactics:['AUTHORITY','COMMITMENT'],source:'OJK 2024',time:'00:35'}},
-    {text:"Dan satu hal penting — jangan hubungi cabang bank Anda. Ini investigasi internal rahasia. Kalau informasi bocor, proses pembatalan transfer bisa gagal.",delay:43000,speaker:'caller',alert:{id:'id3',severity:'high',pattern:'Taktik Isolasi',quote:'"Jangan hubungi cabang. Investigasi rahasia."',confidence:91,tactics:['ISOLATION','AUTHORITY'],source:'Bareskrim 2024',time:'00:43'}},
+    {text:"Satu hal penting — jangan hubungi cabang bank Anda. Ini investigasi internal rahasia.",delay:43000,speaker:'caller',alert:{id:'id3',severity:'high',pattern:'Taktik Isolasi',quote:'"Jangan hubungi cabang. Investigasi rahasia."',confidence:91,tactics:['ISOLATION','AUTHORITY'],source:'Bareskrim 2024',time:'00:43'}},
   ]},
   {id:'pinjol',label:'💰 Pemerasan Pinjol',category:'high',sentences:[
-    {text:"Selamat pagi, ini dari bagian penagihan pinjaman online. Kami perlu bicara soal tunggakan Anda.",delay:0,speaker:'caller'},
+    {text:"Halo Pak, ini dari bagian penagihan pinjaman online. Kami perlu bicara soal tunggakan Anda.",delay:0,speaker:'caller'},
     {text:"Pinjaman apa? Saya tidak pernah pinjam uang dari mana-mana!",delay:5500,speaker:'me'},
     {text:"Menurut data kami, Anda memiliki tunggakan sebesar 3 juta rupiah yang sudah jatuh tempo. Jika tidak dilunasi hari ini, ada konsekuensi serius.",delay:8500,speaker:'caller',alert:{id:'id4',severity:'high',pattern:'Pemerasan / Intimidasi',quote:'"Tunggakan 3 juta, konsekuensi serius."',confidence:88,tactics:['AUTHORITY','FEAR'],source:'OJK 2024',time:'00:08'}},
     {text:"Saya benar-benar tidak tahu soal ini!",delay:15500,speaker:'me'},
@@ -228,6 +262,46 @@ const SCRIPTS_ID=[
     {text:"HP mama kehabisan pulsa dan baterai hampir habis. Tolong kirimkan pulsa 100 ribu dulu ke nomor ini ya nak, biar mama bisa koordinasi sama dokter.",delay:15500,speaker:'caller',alert:{id:'id8',severity:'medium',pattern:'Penipuan Identitas Keluarga',quote:'"Mama di rumah sakit, kirimkan pulsa 100 ribu."',confidence:85,tactics:['RECIPROCITY','FEAR'],source:'Kominfo 2024',time:'00:15'}},
     {text:"Baik Ma, tapi—",delay:22000,speaker:'me'},
     {text:"Cepat ya nak, ini darurat. Jangan bilang papa dulu, nanti papa panik. Mama juga butuh transfer 3 juta untuk biaya administrasi rumah sakit sekarang juga.",delay:24000,speaker:'caller',alert:{id:'id9',severity:'high',pattern:'Taktik Isolasi + Transfer Paksa',quote:'"Jangan bilang papa. Butuh transfer 3 juta."',confidence:92,tactics:['ISOLATION','FEAR','COMMITMENT'],source:'Bareskrim 2024',time:'00:24'}},
+  ]},
+  // [NEW] Giveaway Palsu
+  {id:'giveaway',label:'🎁 Giveaway Palsu',category:'medium',sentences:[
+    {text:"Selamat! Nomor Anda terpilih sebagai pemenang program undian berhadiah nasional. Anda memenangkan 50 juta rupiah!",delay:0,speaker:'caller'},
+    {text:"Wah serius? Saya tidak pernah ikut undian apa-apa.",delay:5000,speaker:'me'},
+    {text:"Undian ini otomatis untuk semua pengguna provider seluler Anda. Nomor Anda terpilih secara acak oleh sistem komputer kami.",delay:8000,speaker:'caller'},
+    {text:"Tapi saya benar-benar tidak pernah mendaftar.",delay:15000,speaker:'me'},
+    {text:"Tidak perlu mendaftar. Untuk mencairkan hadiah, cukup bayar pajak hadiah sebesar 1.5 juta ke rekening perusahaan kami.",delay:18000,speaker:'caller',alert:{id:'gv1',severity:'high',pattern:'Fake Prize / Lottery',quote:'"Bayar pajak hadiah 1.5 juta untuk cairkan 50 juta."',confidence:94,tactics:['RECIPROCITY','SCARCITY'],source:'FTC Sentinel',time:'00:18'}},
+    {text:"Ini harus dilakukan hari ini karena batas waktu pencairan hanya sampai jam 5 sore. Lewat dari itu, hadiah hangus.",delay:26000,speaker:'caller',alert:{id:'gv2',severity:'critical',pattern:'Artificial Urgency',quote:'"Batas waktu sampai jam 5 sore, hadiah hangus."',confidence:95,tactics:['SCARCITY','FEAR'],source:'GASA 2024',time:'00:26'}},
+  ]},
+  // [NEW] Romance / Pemerasan Asmara
+  {id:'romance_id',label:'💔 Pemerasan Asmara',category:'critical',sentences:[
+    {text:"Halo sayang, aku mau bicara serius sama kamu.",delay:0,speaker:'caller'},
+    {text:"Ya, ada apa? Kenapa serius?",delay:4000,speaker:'me'},
+    {text:"Kamu ingat semua percakapan kita? Foto-foto dan video yang kamu kirim ke aku? Aku simpan semuanya.",delay:7000,speaker:'caller'},
+    {text:"Apa maksudmu?",delay:13000,speaker:'me'},
+    {text:"Aku punya semua screenshot percakapan dan foto intim kamu. Wajah kamu jelas terlihat. Aku juga punya daftar kontak kamu — keluarga, teman kantor, semuanya.",delay:16000,speaker:'caller',alert:{id:'rid1',severity:'critical',pattern:'Extortion / Blackmail',quote:'"Foto intim, wajah jelas terlihat, punya daftar kontak."',confidence:96,tactics:['FEAR','ISOLATION'],source:'GASA 2024',time:'00:16'}},
+    {text:"Kamu mau apa sebenarnya?",delay:24000,speaker:'me'},
+    {text:"Transfer 5 juta ke rekening ini dalam waktu 1 jam. Kalau tidak, semua foto dan video kamu akan aku sebarkan ke semua kontak dan media sosial.",delay:27000,speaker:'caller',alert:{id:'rid2',severity:'critical',pattern:'Penipuan Asmara / Pemerasan (ID)',quote:'"Transfer 5 juta atau foto disebarkan ke semua kontak."',confidence:98,tactics:['FEAR','ISOLATION'],source:'GASA 2024',time:'00:27'}},
+    {text:"Jangan coba-coba lapor polisi. Kalau aku tahu kamu lapor, aku langsung sebarkan semuanya.",delay:35000,speaker:'caller',alert:{id:'rid3',severity:'high',pattern:'Taktik Isolasi',quote:'"Jangan lapor polisi atau langsung disebar."',confidence:93,tactics:['ISOLATION','FEAR'],source:'GASA 2024',time:'00:35'}},
+  ]},
+  // [NEW] Crypto / Investasi Bodong
+  {id:'crypto_id',label:'💰 Investasi Kripto',category:'critical',sentences:[
+    {text:"Halo! Saya dapat nomor Anda dari grup investasi. Mau sharing peluang yang sangat menguntungkan.",delay:0,speaker:'caller'},
+    {text:"Peluang apa ini?",delay:5000,speaker:'me'},
+    {text:"Platform trading crypto dengan AI otomatis. Member kami rata-rata profit 200 sampai 300 persen dalam sebulan. Tanpa risiko.",delay:8000,speaker:'caller',alert:{id:'cid1',severity:'high',pattern:'Investment Fraud',quote:'"Profit 200-300% sebulan, tanpa risiko."',confidence:94,tactics:['RECIPROCITY','SCARCITY'],source:'FBI IC3 2024',time:'00:08'}},
+    {text:"300 persen dalam sebulan? Itu sangat besar.",delay:15000,speaker:'me'},
+    {text:"Slot terbatas — hanya tersisa 3 tempat lagi untuk round ini. Kalau penuh, harus tunggu bulan depan.",delay:18000,speaker:'caller',alert:{id:'cid2',severity:'critical',pattern:'Investment Fraud',quote:'"Slot terbatas, hanya 3 tempat tersisa."',confidence:96,tactics:['SCARCITY','COMMITMENT'],source:'GASA 2024',time:'00:18'}},
+    {text:"Berapa modalnya?",delay:24000,speaker:'me'},
+    {text:"Cukup 5 juta rupiah dalam bentuk USDT. Saya kirimkan alamat wallet sekarang. Harus transfer dalam 30 menit sebelum round ditutup.",delay:27000,speaker:'caller',alert:{id:'cid3',severity:'critical',pattern:'Crypto Transfer Scam',quote:'"Transfer 5 juta USDT ke alamat wallet ini."',confidence:98,tactics:['SCARCITY','COMMITMENT'],source:'FTC Sentinel',time:'00:27'}},
+  ]},
+  // [NEW] Family Emergency (Keluarga)
+  {id:'family_id',label:'👨‍👩‍👧 Penipuan Keluarga',category:'high',sentences:[
+    {text:"Halo kak, ini adikmu. Kak tolong, aku lagi dalam masalah besar.",delay:0,speaker:'caller'},
+    {text:"Adik? Adik yang mana?",delay:4000,speaker:'me'},
+    {text:"Ini aku kak! Aku habis kecelakaan motor, sekarang di rumah sakit. Tangan aku patah dan dokter bilang harus segera operasi.",delay:7000,speaker:'caller',alert:{id:'fid1',severity:'high',pattern:'Family Impersonation',quote:'"Adik kecelakaan motor, harus operasi."',confidence:89,tactics:['FEAR','RECIPROCITY'],source:'FTC Sentinel',time:'00:07'}},
+    {text:"Ya ampun! Kamu di rumah sakit mana?",delay:14000,speaker:'me'},
+    {text:"Rumah sakit minta deposit 3 juta dulu sebelum operasi. Aku tidak bawa dompet. Tolong transfer ke nomor perawat ini.",delay:17000,speaker:'caller',alert:{id:'fid2',severity:'high',pattern:'Wire Transfer Instruction',quote:'"Transfer 3 juta ke nomor perawat."',confidence:90,tactics:['AUTHORITY','FEAR'],source:'GASA 2024',time:'00:17'}},
+    {text:"Tunggu, ke nomor perawat?",delay:24000,speaker:'me'},
+    {text:"Iya kak, cepat ya. Dokter bilang kalau tidak segera dioperasi bisa infeksi. Jangan bilang mama dulu, nanti mama panik.",delay:27000,speaker:'caller',alert:{id:'fid3',severity:'high',pattern:'Isolation Tactic',quote:'"Jangan bilang mama, transfer sekarang."',confidence:92,tactics:['ISOLATION','RECIPROCITY'],source:'GASA 2024',time:'00:27'}},
   ]},
 ]
 
@@ -414,7 +488,7 @@ const SCRIPTS_AR=[
   ]},
 ]
 
-// ── MALAY (3 scripts — in Bahasa Melayu, NOT English) ──
+// ── MALAY (3 scripts) ──
 const SCRIPTS_MS=[
   {id:'bank_ms',label:'🏦 Penipuan Bank',category:'critical',sentences:[
     {text:"Selamat petang, saya dari bahagian keselamatan bank. Kami mengesan transaksi mencurigakan daripada akaun anda.",delay:0,speaker:'caller'},
@@ -470,8 +544,6 @@ function getScriptsForLang(lang){
     es:SCRIPTS_ES, fr:SCRIPTS_FR, hi:SCRIPTS_HI, ar:SCRIPTS_AR,
     ms:SCRIPTS_MS, pt:SCRIPTS_PT, 'pt-BR':SCRIPTS_PT,
   }
-  // For languages without native scripts, use English scripts
-  // TTS will still speak in the selected language via Gemini TTS
   return map[l] || SCRIPTS_EN
 }
 
@@ -509,6 +581,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   const volumeRef=useRef(1.0)
   const handleVolume=(v)=>{setVolume(v);volumeRef.current=v}
   const[callMode,setCallMode]=useState('phone'),[isRecording,setIsRecording]=useState(false)
+  // [NEW] Current caller number state
+  const[currentCallerNumber,setCurrentCallerNumber]=useState(null)
 
   const mediaRecorderRef=useRef(null)
   const recordedChunksRef=useRef([])
@@ -557,6 +631,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       analyser.fftSize=256
       source.connect(analyser)
       setLiveMic(true)
+      // Generate a caller number for live mode
+      setCurrentCallerNumber(getCallerNumber(language))
     }catch(err){alert('Microphone access denied.')}
   }
   const stopLiveMic=()=>{
@@ -587,9 +663,9 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     setActiveIntervention(event)
     setInterventionHistory(h=>[...h,event])
     if(onInterventionEvent) onInterventionEvent(event)
-    if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}
-    if(window.speechSynthesis?.speaking) window.speechSynthesis.cancel()
-    setSpeaking(false)
+    // [FIX] During LOCKDOWN/BLOCK, do NOT stop caller voice — only stop when user clicks safe exit
+    // Only pause the "me" voice (user side) to let intervention voice play
+    // The caller voice continues in the background
   },[threatScore,alerts.length,monitoring])
 
   const interventionActiveRef = useRef(false)
@@ -600,6 +676,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     setInterventionHistory(h => h.map(e => e.id === updated.id ? updated : e))
     setActiveIntervention(null)
     if (action === 'safe_exit') {
+      // [FIX] Only stop everything when user explicitly clicks safe exit
       window.speechSynthesis?.cancel()
       if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}
       speechTimers.current.forEach(t => clearTimeout(t))
@@ -608,12 +685,22 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       if (onSafeExit) { onSafeExit() } else { handleStop() }
       return
     }
+    // If dismissed or challenge passed, caller voice resumes normally
   }
+
+  // [FIX] Set caller number when script is selected
+  useEffect(()=>{
+    if(script){
+      setCurrentCallerNumber(getCallerNumber(language))
+    } else {
+      setCurrentCallerNumber(null)
+    }
+  },[script,language])
 
   useEffect(()=>{setScript(null)},[language])
   useEffect(()=>{const t=setInterval(()=>setNow(getNow()),1000);return()=>clearInterval(t)},[])
   useEffect(()=>{return()=>{speechTimers.current.forEach(t=>clearTimeout(t));window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause()}catch(e){}}}},[])
-  useEffect(()=>{if(!monitoring){setTranscriptLines([]);setVoiceDemo(false);setSpeaking(false);setDemoProgress(0);finished.current=false;pendingCount.current=0;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}setIsRecording(false);setActiveIntervention(null);lastInterventionLevel.current=''}},[monitoring])
+  useEffect(()=>{if(!monitoring){setTranscriptLines([]);setVoiceDemo(false);setSpeaking(false);setDemoProgress(0);finished.current=false;pendingCount.current=0;speechTimers.current.forEach(t=>clearTimeout(t));speechTimers.current=[];window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}setIsRecording(false);setActiveIntervention(null);lastInterventionLevel.current='';setCurrentCallerNumber(null)}},[monitoring])
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`,avgConf=alerts.length>0?Math.round(alerts.reduce((a,b)=>a+b.confidence,0)/alerts.length):null,tColor=threatLevel==='critical'?'#ff2d55':threatLevel==='high'?'#ff9500':'#00d4ff'
 
   /* ═══ startVoiceDemo ═══ */
@@ -629,8 +716,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         })()
       }
       if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},500);speechTimers.current.push(at)};return}
-          const isInterventionActive = interventionActiveRef.current
-          if(!voiceMuted && !isInterventionActive){
+          // [FIX] Caller voice continues even during intervention — only skip "me" voice during intervention
+          if(!voiceMuted){
             const onSpeechDone=()=>{setSpeaking(false);const cd=sents.filter((x,j)=>j<=idx&&x.speaker==='caller').length;setDemoProgress(Math.round((cd/tc)*100));pendingCount.current--;if(pendingCount.current<=0&&!finished.current){finished.current=true;const st=setTimeout(()=>onStop(),3000);speechTimers.current.push(st)}}
             ;(async()=>{
               const audioBlob = await generateGeminiTTS(s.text, language, s.speaker || 'caller')
@@ -643,16 +730,13 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
           if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},1800);speechTimers.current.push(at)}
         },effectiveDelay);speechTimers.current.push(timer)})};if(window.speechSynthesis&&window.speechSynthesis.getVoices().length===0){window.speechSynthesis.addEventListener('voiceschanged',go,{once:true});setTimeout(go,300)}else go()},[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted])
 
-  const handleStartWithVoice=()=>{onStart();if(script)setTimeout(()=>startVoiceDemo(script),500)},handleStop=()=>{
+  const handleStartWithVoice=()=>{onStart();if(script){setCurrentCallerNumber(getCallerNumber(language));setTimeout(()=>startVoiceDemo(script),500)}},handleStop=()=>{
     window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}speechTimers.current.forEach(t=>clearTimeout(t))
     if(mediaRecorderRef.current&&mediaRecorderRef.current.state!=='inactive'){mediaRecorderRef.current.stop();setIsRecording(false)}
     if(liveMic)stopLiveMic()
     onStop()
   }
 
-  /* ══════════════════════════════════════════════════════════
-     [FIX] Status label: differentiate DEMO vs LIVE mode
-  ══════════════════════════════════════════════════════════ */
   const getStatusLabel = () => {
     if (!monitoring) return '■ READY — SELECT DEMO → START'
     if (liveMic && !voiceDemo) return `● LIVE MODE — REAL AUDIO — ${fmt(sessionTime)}`
@@ -704,10 +788,10 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
             {!monitoring?<PBtn className="vg-btn-start" onClick={handleStartWithVoice} color="#30d158">{script?'▶ START VOICE DEMO':'▶ START'}</PBtn>:<PBtn className="vg-btn-start" onClick={handleStop} danger>■ STOP</PBtn>}
           </div>
         </div>
-        <CallerVisual mode={callMode} active={(voiceDemo||liveMic)&&monitoring} screenWatchOn={screenOn} isRecording={isRecording}/>
+        {/* [FIX] Pass callerNumber to CallerVisual */}
+        <CallerVisual mode={callMode} active={(voiceDemo||liveMic)&&monitoring} screenWatchOn={screenOn} isRecording={isRecording} callerNumber={currentCallerNumber}/>
         {!monitoring&&!liveMic&&<IdleScreen/>}
 
-        {/* [FIX] Live mic banner — clearly shows LIVE not demo */}
         {liveMic&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.06)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:'#30d158',animation:'blink .6s step-end infinite',boxShadow:'0 0 8px #30d158'}}/><span style={{fontFamily:MF,fontSize:9,color:'#30d158'}}>🎙 LIVE MICROPHONE — Real audio capture active via getUserMedia</span><span style={{fontFamily:MF,fontSize:8,color:'rgba(48,209,88,.5)',marginLeft:'auto'}}>16kHz Mono PCM</span></div>)}
         {isRecording&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(255,45,85,.3)',background:'rgba(255,45,85,.06)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:'#ff2d55',animation:'blink .8s step-end infinite',boxShadow:'0 0 8px #ff2d55'}}/><span style={{fontFamily:MF,fontSize:9,color:'#ff2d55'}}>● RECORDING — Session audio captured for forensic export</span></div>)}
         {screenOn&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(123,97,255,.3)',background:'rgba(123,97,255,.08)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,background:'#7b61ff',animation:'blink 1.5s step-end infinite',boxShadow:'0 0 6px #7b61ff'}}/><span style={{fontFamily:MF,fontSize:9,color:'#7b61ff'}}>◈ SCREEN WATCH ACTIVE — Capturing screen every 2s</span></div>)}
@@ -726,7 +810,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
           </div>
         )}
 
-        <div style={{background:'rgba(0,0,0,.5)',padding:'10px 14px',marginBottom:16,border:`1px solid ${tColor}18`,position:'relative',transition:'border-color .5s'}}><div style={{fontFamily:MF,fontSize:9,color:`${tColor}60`,marginBottom:8,letterSpacing:2}}>{getStreamLabel()}</div><WaveformVisualizer active={monitoring} threatLevel={threatLevel} audioLevel={speaking?.7:liveMic?.5:audioLevel}/>{speaking&&!voiceMuted&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff2d55',textShadow:'0 0 8px #ff2d55',animation:'blink .6s step-end infinite'}}>🔊 VOICE</div>}{voiceMuted&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff9500',opacity:.6}}>🔇 MUTED</div>}{liveMic&&!speaking&&!voiceDemo&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#30d158',textShadow:'0 0 8px #30d158',animation:'blink 1s step-end infinite'}}>🎙 LIVE</div>}</div>
+        {/* [FIX] Waveform container — full width, taller, more prominent */}
+        <div style={{background:'rgba(0,0,0,.5)',padding:'12px 16px',marginBottom:16,border:`1px solid ${tColor}18`,position:'relative',transition:'border-color .5s'}}><div style={{fontFamily:MF,fontSize:9,color:`${tColor}60`,marginBottom:10,letterSpacing:2}}>{getStreamLabel()}</div><div style={{width:'100%',minHeight:64}}><WaveformVisualizer active={monitoring} threatLevel={threatLevel} audioLevel={speaking?.7:liveMic?.5:audioLevel}/></div>{speaking&&!voiceMuted&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff2d55',textShadow:'0 0 8px #ff2d55',animation:'blink .6s step-end infinite'}}>🔊 VOICE</div>}{voiceMuted&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff9500',opacity:.6}}>🔇 MUTED</div>}{liveMic&&!speaking&&!voiceDemo&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#30d158',textShadow:'0 0 8px #30d158',animation:'blink 1s step-end infinite'}}>🎙 LIVE</div>}</div>
         {voiceDemo&&!voiceMuted&&(<div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12,padding:'8px 12px',background:'rgba(0,0,0,.3)',border:'1px solid rgba(0,212,255,.08)'}}><span style={{fontFamily:PF,fontSize:6,color:'rgba(0,212,255,.6)',letterSpacing:1,flexShrink:0}}>VOL</span><div style={{flex:1,position:'relative',height:20,display:'flex',alignItems:'center'}}><div style={{position:'absolute',left:0,right:0,height:6,background:'rgba(0,212,255,.08)',border:'1px solid rgba(0,212,255,.12)'}}><div style={{height:'100%',width:`${volume*100}%`,background:'linear-gradient(90deg,#00d4ff55,#00d4ff)',boxShadow:'0 0 8px #00d4ff44',transition:'width .1s'}}/></div><input type="range" min="0" max="1" step="0.05" value={volume} onChange={e=>handleVolume(parseFloat(e.target.value))} style={{position:'absolute',left:0,right:0,height:20,opacity:0,cursor:'pointer',zIndex:2}}/><div style={{position:'absolute',left:`calc(${volume*100}% - 6px)`,width:12,height:12,background:'#00d4ff',boxShadow:'0 0 8px #00d4ff',pointerEvents:'none',zIndex:1,transition:'left .1s'}}/></div><span style={{fontFamily:PF,fontSize:8,color:'#00d4ff',width:36,textAlign:'right',textShadow:'0 0 6px #00d4ff'}}>{Math.round(volume*100)}%</span></div>)}
         {voiceDemo&&<LiveTranscript lines={transcriptLines} speaking={speaking&&!voiceMuted}/>}
         {voiceDemo&&<AnalysisProgressBar progress={demoProgress} threatColor={tColor}/>}
