@@ -103,9 +103,10 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 | **Country-specific emergency contacts + reporting** | No | No | No | **Yes (9 countries)** |
 | **Intervention history in forensic reports** | No | No | No | **Yes (First)** |
 | Session gallery with playback | No | No | No | **Yes** |
+| **Audio session recording (REC)** | No | No | No | **Yes (First)** |
 | Forensic export (PDF + HTML) | No | No | No | **Yes** |
 | Grounded to global scam databases | No | Partial | Partial | Yes |
-| Works on any call platform | No | No | No | Yes (browser-based) |
+| Works on any call platform (desktop + mobile) | No | No | No | Yes (browser-based, responsive) |
 
 ---
 
@@ -530,15 +531,22 @@ Gemini Live API supports 40 languages natively. VoxGuard includes region-specifi
 | Hindi | 🇮🇳 | Digital Arrest Fraud | MHA/RBI | Full | Full | Full (IN) |
 | Arabic | 🇸🇦 | احتيال مصرفي (Bank Fraud) | GASA | Full | Full | Full (SA) |
 
+#### Partial Native Support (demo scripts in local language, TTS via Gemini):
+
+| Language | Flag | Demo Scripts | Regional Scams | Intervention | Voice TTS | Action Agent |
+|----------|------|-------------|----------------|-------------|-----------|-------------|
+| Malay | 🇲🇾 | Bank, Polis Diraja, Hadiah Palsu | BNM patterns | Full | Full | English fallback |
+| Portuguese | 🇧🇷 | Fraude Bancária, Polícia Federal, Prêmio Falso | GASA patterns | Full | Full | English fallback |
+
 #### English Fallback (voice + alerts in English, UI translated):
 
-Malay 🇲🇾, Filipino 🇵🇭, Thai 🇹🇭, Vietnamese 🇻🇳, German 🇩🇪, Italian 🇮🇹, Dutch 🇳🇱, Turkish 🇹🇷, Polish 🇵🇱, Russian 🇷🇺, Ukrainian 🇺🇦, Romanian 🇷🇴, Czech 🇨🇿, Hungarian 🇭🇺, Swedish 🇸🇪, Danish 🇩🇰, Finnish 🇫🇮, Greek 🇬🇷, Hebrew 🇮🇱, Persian 🇮🇷, Bengali 🇧🇩, Urdu 🇵🇰, Tamil 🇱🇰, Swahili 🇰🇪, Amharic 🇪🇹, Yoruba 🇳🇬, Hausa 🇳🇬, Afrikaans 🇿🇦, Norwegian 🇳🇴, Portuguese 🇧🇷
+Filipino 🇵🇭, Thai 🇹🇭, Vietnamese 🇻🇳, German 🇩🇪, Italian 🇮🇹, Dutch 🇳🇱, Turkish 🇹🇷, Polish 🇵🇱, Russian 🇷🇺, Ukrainian 🇺🇦, Romanian 🇷🇴, Czech 🇨🇿, Hungarian 🇭🇺, Swedish 🇸🇪, Danish 🇩🇰, Finnish 🇫🇮, Greek 🇬🇷, Hebrew 🇮🇱, Persian 🇮🇷, Bengali 🇧🇩, Urdu 🇵🇰, Tamil 🇱🇰, Swahili 🇰🇪, Amharic 🇪🇹, Yoruba 🇳🇬, Hausa 🇳🇬, Afrikaans 🇿🇦, Norwegian 🇳🇴
 
 > ⚠️ English fallback languages show a yellow notice in the app. Full native support planned for future release.
 
 ### 10. 📱 Responsive Design
 
-Optimized for both desktop and mobile browsers. On phones: header wraps, tabs scroll horizontally, content padding reduced, footer stacks vertically.
+Fully optimized for desktop and mobile browsers. Works on any smartphone via the browser — no app installation required. On phones: header wraps, tabs scroll horizontally, content padding reduced, footer stacks vertically. Touch-friendly buttons and controls throughout.
 
 ---
 
@@ -561,7 +569,8 @@ voxguard/
 │   │   │   ├── ActionAgent.jsx            # Guided anti-scam action agent with step checklist
 │   │   │   ├── ThreatMeter.jsx            # SVG arc gauge: composite threat score 0-100
 │   │   │   ├── WaveformVisualizer.jsx     # Real-time audio waveform bar visualization
-│   │   │   └── LanguageSelector.jsx       # Language dropdown (40 languages)
+│   │   │   ├── LanguageSelector.jsx       # Language dropdown (40 languages)
+│   │   │   └── PixelParticles.jsx        # Animated pixel particles (header + monitor)
 │   │   ├── pages/
 │   │   │   ├── MonitorTab.jsx             # Main dashboard: waveform, alerts, explanation cards
 │   │   │   └── Tabs.jsx                   # Psych, Patterns, Report (with action plan), About
@@ -786,6 +795,16 @@ Submitted to: **Gemini Live Agent Challenge 2026** `#GeminiLiveAgentChallenge`
 | GASA Global Scam Report | [gasa.org](https://www.gasa.org) | Global $1T+ loss estimates |
 | MAS ScamShield (SG) | [scamshield.org.sg](https://www.scamshield.org.sg) | Southeast Asian variants |
 | ACCC ScamWatch (AU) | [scamwatch.gov.au](https://www.scamwatch.gov.au) | Australian variant patterns |
+| OJK Indonesia | [ojk.go.id](https://www.ojk.go.id) | Indonesian financial authority patterns |
+| Bareskrim Cyber (ID) | [patrolisiber.id](https://patrolisiber.id) | Indonesian cybercrime reporting |
+| NPA Japan (警察庁) | [npa.go.jp](https://www.npa.go.jp) | Japanese ore-ore sagi patterns |
+| FSS South Korea (금감원) | [fss.or.kr](https://www.fss.or.kr) | Korean voice phishing patterns |
+| MHA India Cyber Crime | [cybercrime.gov.in](https://cybercrime.gov.in) | Indian digital arrest scam data |
+| INCIBE Spain | [incibe.es](https://www.incibe.es) | Spanish cybersecurity incident data |
+| PHAROS France | [internet-signalement.gouv.fr](https://www.internet-signalement.gouv.fr) | French online fraud reporting |
+| SAMA Saudi Arabia | [sama.gov.sa](https://www.sama.gov.sa) | Saudi monetary authority fraud alerts |
+| China National Anti-Fraud Center | [mps.gov.cn](https://www.mps.gov.cn) | Chinese anti-fraud app & public security data |
+| Interpol Financial Crime | [interpol.int](https://www.interpol.int/en/Crimes/Financial-crime) | International scam pattern intelligence |
 
 No proprietary or licensed data. No personal victim data. All examples reconstructed from published public reports.
 
