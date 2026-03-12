@@ -51,6 +51,8 @@ export const SCAM_PATTERNS = [
   { id:48, category:"Fake Visa / Immigration",     severity:"high",     description:"Threatens visa cancellation or deportation if the victim does not pay a fine immediately, targeting foreign workers and students.",                         markers:["visa cancelled","deportation order","immigration violation","pay fine immediately"],                         mechanism:"AUTHORITY + FEAR",             source:"GASA 2024",     detected:false },
   { id:49, category:"Deepfake Video Call",         severity:"critical", description:"Uses AI-generated face or voice during a video call to impersonate a known person, typically to authorize fraudulent transactions.",                        markers:["video call verification","face doesn't match voice","pre-recorded responses","AI-generated"],              mechanism:"RECIPROCITY + AUTHORITY",      source:"GASA 2024",     detected:false },
   { id:50, category:"Password Reset Phishing",     severity:"high",     description:"Sends fake password reset notifications claiming unauthorized access, directing victims to a credential-harvesting fake login page.",                      markers:["password reset request","account compromised","click to secure","unusual login detected"],                  mechanism:"FEAR + COMPLIANCE",            source:"FBI IC3 2024",  detected:false },
+  { id:51, category:"Romance Scam / Sextortion",   severity:"critical", description:"Builds a romantic or intimate relationship online, then threatens to expose intimate photos/videos unless the victim pays money.",                          markers:["I have your photos","intimate video","send money or I share","your reputation","screenshot"],               mechanism:"FEAR + ISOLATION",             source:"FBI IC3 2024",  detected:false },
+  { id:52, category:"Penipuan Asmara / Pemerasan (ID)", severity:"critical", description:"Membangun hubungan romantis online lalu mengancam menyebarkan foto/video intim korban kecuali korban membayar sejumlah uang.",                      markers:["foto intim","video pribadi","saya sebar","reputasi","screenshot","bayar atau saya kirim"],                  mechanism:"FEAR + ISOLATION",             source:"GASA 2024",     detected:false },
 ]
 
 // ── Psychological manipulation vectors (Cialdini + FBI behavioral) ──
@@ -141,8 +143,6 @@ export function isChallengeAvailable(interventionLevel, pattern) {
 // ══════════════════════════════════════════════════════════════════
 // ── SCENARIO-BASED VERIFICATION CHALLENGES ──────────────────────
 // ══════════════════════════════════════════════════════════════════
-// 2-3 questions per scenario. Contextual to the scam type.
-// Each question: answering "scam_indicator" = confirms scam behavior.
 
 // Scenario classifier - maps pattern names to scenario keys
 const SCENARIO_MAP = {
@@ -156,6 +156,8 @@ const SCENARIO_MAP = {
   'Fake Prize / Lottery': 'prize',
   'Extortion / Blackmail': 'generic',
   'Fake Giveaway / Celebrity': 'prize',
+  'Romance Scam / Sextortion': 'romance',
+  'Crypto Transfer Scam': 'crypto',
   // Localized - map to same scenarios
   'Penipuan Perbankan': 'bank',
   '冒充政府机关': 'government',
@@ -168,6 +170,8 @@ const SCENARIO_MAP = {
   'Pemerasan / Intimidasi': 'generic',
   'Ancaman Pemerasan': 'generic',
   'Penipuan Identitas Keluarga': 'family',
+  'Penipuan Asmara / Pemerasan': 'romance',
+  'Penipuan Asmara / Pemerasan (ID)': 'romance',
   'डिजिटल अरेस्ट': 'government',
 }
 
@@ -176,7 +180,6 @@ function getScenarioKey(pattern) {
 }
 
 // Per-language, per-scenario verification challenges
-// Each scenario has exactly 2-3 questions + results + verify action
 const SCENARIO_CHALLENGES = {
   en: {
     bank: {
@@ -258,6 +261,29 @@ const SCENARIO_CHALLENGES = {
       result_caution: 'Take a breath. No legitimate situation requires instant action by phone.',
       verify_action: 'Hang up and call back through an official number',
     },
+    romance: {
+      title: 'VERIFY THIS PERSON',
+      subtitle: 'This caller may be using a romantic relationship to manipulate you.',
+      questions: [
+        { q: 'Have you ever met this person in real life?', scam_indicator: 'No', safe_indicator: 'Yes' },
+        { q: 'Are they threatening to share intimate photos or videos if you don\'t pay?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Did they ask you for money, gift cards, or crypto at any point?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'This matches romance scam / sextortion tactics. Do NOT send any money. Report to authorities immediately.',
+      result_caution: 'Be very cautious. Never send money to someone you have not met in person.',
+      verify_action: 'Report to FBI IC3 (ic3.gov) or local police cyber unit',
+    },
+    crypto: {
+      title: 'VERIFY THIS TRANSACTION',
+      subtitle: 'This caller is asking you to send cryptocurrency.',
+      questions: [
+        { q: 'Are they asking you to send crypto to a wallet address they provided?', scam_indicator: 'Yes', safe_indicator: 'No' },
+        { q: 'Are they promising guaranteed returns or claiming to recover lost funds?', scam_indicator: 'Yes', safe_indicator: 'No' },
+      ],
+      result_scam: 'Legitimate organizations NEVER ask you to send cryptocurrency by phone. Crypto transfers are irreversible.',
+      result_caution: 'Do not send crypto to unknown wallets. Verify through official channels.',
+      verify_action: 'Consult your financial advisor before any crypto transaction',
+    },
     generic: {
       title: 'VERIFY THIS CALLER',
       subtitle: 'VoxGuard detected manipulation patterns in this call.',
@@ -293,6 +319,29 @@ const SCENARIO_CHALLENGES = {
       result_scam: 'Instansi pemerintah TIDAK PERNAH mengancam via telepon. Ini penipuan.',
       result_caution: 'Hati-hati. Verifikasi dengan menghubungi kantor resmi.',
       verify_action: 'Cari nomor resmi instansi di website resmi',
+    },
+    romance: {
+      title: 'VERIFIKASI ORANG INI',
+      subtitle: 'Orang ini mungkin menggunakan hubungan romantis untuk memanipulasi Anda.',
+      questions: [
+        { q: 'Apakah Anda pernah bertemu orang ini secara langsung?', scam_indicator: 'Belum pernah', safe_indicator: 'Sudah pernah' },
+        { q: 'Apakah mereka mengancam menyebarkan foto/video intim jika Anda tidak bayar?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+        { q: 'Apakah mereka pernah meminta uang, pulsa, atau kripto?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+      ],
+      result_scam: 'Ini sesuai pola penipuan asmara / pemerasan. JANGAN kirim uang apapun. Laporkan ke polisi segera.',
+      result_caution: 'Sangat hati-hati. Jangan pernah kirim uang ke orang yang belum pernah Anda temui langsung.',
+      verify_action: 'Laporkan ke Bareskrim: patrolisiber.id atau hubungi 110',
+    },
+    family: {
+      title: 'VERIFIKASI PENELEPON',
+      subtitle: 'Penelepon mengaku sebagai anggota keluarga yang kesulitan.',
+      questions: [
+        { q: 'Bisakah Anda verifikasi identitas mereka dengan pertanyaan pribadi?', scam_indicator: 'Mereka tidak bisa jawab', safe_indicator: 'Mereka jawab benar' },
+        { q: 'Apakah mereka bilang jangan hubungi anggota keluarga lain?', scam_indicator: 'Ya', safe_indicator: 'Tidak' },
+      ],
+      result_scam: 'Ini sesuai pola penipuan identitas keluarga. Penipu menggunakan kepanikan agar Anda tidak verifikasi.',
+      result_caution: 'Tutup telepon dan hubungi langsung anggota keluarga di nomor yang Anda kenal.',
+      verify_action: 'Hubungi keluarga tersebut di nomor asli mereka',
     },
     generic: {
       title: 'VERIFIKASI PENELEPON',
@@ -448,16 +497,17 @@ export function getInterventionForLang(langCode) {
 }
 
 // ── Recommended Actions per Language/Country ──
+// [FIX] Added emergency phone numbers for ALL countries
 export const RECOMMENDED_ACTIONS = {
-  en: { country:'United States', actions:[{icon:'🚫',text:'Do NOT transfer money, gift cards, or cryptocurrency to anyone',priority:'critical'},{icon:'📞',text:'Hang up immediately - do not engage further with the caller',priority:'critical'},{icon:'🏦',text:'Contact your bank\'s official fraud hotline (number on back of your card)',priority:'high'},{icon:'📋',text:'Report to FTC: reportfraud.ftc.gov',link:'https://reportfraud.ftc.gov',priority:'high'},{icon:'🔍',text:'File FBI IC3 complaint: ic3.gov',link:'https://ic3.gov',priority:'high'},{icon:'📱',text:'Enable two-factor authentication on all financial accounts',priority:'medium'},{icon:'🔒',text:'Change passwords on any accounts you may have disclosed',priority:'high'},{icon:'📝',text:'Document everything: save call logs, screenshots, messages',priority:'medium'},{icon:'👥',text:'Alert family members - scammers often target multiple people',priority:'medium'},{icon:'⚖️',text:'Contact your state Attorney General\'s consumer protection office',priority:'low'}] },
-  id: { country:'Indonesia', actions:[{icon:'🚫',text:'JANGAN transfer uang, pulsa, atau kripto ke siapapun',priority:'critical'},{icon:'📞',text:'Putuskan panggilan segera',priority:'critical'},{icon:'🏦',text:'Hubungi hotline resmi bank (cek di belakang kartu ATM)',priority:'high'},{icon:'📋',text:'Lapor ke OJK: 157',link:'https://ojk.go.id',priority:'high'},{icon:'🔍',text:'Lapor ke Kominfo: aduankonten.id',link:'https://aduankonten.id',priority:'high'},{icon:'👮',text:'Lapor ke Bareskrim: patrolisiber.id',link:'https://patrolisiber.id',priority:'high'},{icon:'📱',text:'Aktifkan verifikasi 2 langkah',priority:'medium'},{icon:'🔒',text:'Ganti PIN dan password mobile banking',priority:'high'},{icon:'📝',text:'Simpan semua bukti',priority:'medium'},{icon:'👥',text:'Peringatkan keluarga',priority:'medium'}] },
-  zh: { country:'中国', actions:[{icon:'🚫',text:'切勿转账或提供银行信息',priority:'critical'},{icon:'📞',text:'立即挂断电话',priority:'critical'},{icon:'📋',text:'拨打反诈热线 96110',priority:'high'},{icon:'🔍',text:'下载国家反诈中心APP',priority:'high'},{icon:'👮',text:'向当地公安局报案',priority:'high'},{icon:'🔒',text:'修改网银密码',priority:'high'}] },
-  ja: { country:'日本', actions:[{icon:'🚫',text:'絶対にお金を振り込まない',priority:'critical'},{icon:'📞',text:'すぐに電話を切る',priority:'critical'},{icon:'🏦',text:'銀行の公式窓口に連絡',priority:'high'},{icon:'📋',text:'警察相談 #9110',priority:'high'},{icon:'🔍',text:'消費者ホットライン 188',priority:'high'},{icon:'👮',text:'最寄りの警察署に届出',priority:'high'},{icon:'📱',text:'二段階認証を有効化',priority:'medium'},{icon:'🔒',text:'暗証番号を変更',priority:'high'}] },
-  ko: { country:'대한민국', actions:[{icon:'🚫',text:'절대 송금하지 마세요',priority:'critical'},{icon:'📞',text:'즉시 전화를 끊으세요',priority:'critical'},{icon:'🏦',text:'은행 공식 콜센터에 연락',priority:'high'},{icon:'📋',text:'금융감독원 1332 신고',priority:'high'},{icon:'🔍',text:'경찰청 182 신고',priority:'high'},{icon:'📱',text:'2단계 인증 활성화',priority:'medium'},{icon:'🔒',text:'비밀번호 변경',priority:'high'}] },
-  es: { country:'España', actions:[{icon:'🚫',text:'NO transfiera dinero ni datos personales',priority:'critical'},{icon:'📞',text:'Cuelgue inmediatamente',priority:'critical'},{icon:'🏦',text:'Contacte la línea de fraude de su banco',priority:'high'},{icon:'📋',text:'Denuncie: Policía Nacional 091',priority:'high'},{icon:'🔍',text:'Reporte en INCIBE: incibe.es',link:'https://incibe.es',priority:'high'},{icon:'📱',text:'Active verificación en dos pasos',priority:'medium'},{icon:'🔒',text:'Cambie contraseñas',priority:'high'}] },
-  fr: { country:'France', actions:[{icon:'🚫',text:'Ne transférez PAS d\'argent',priority:'critical'},{icon:'📞',text:'Raccrochez immédiatement',priority:'critical'},{icon:'🏦',text:'Contactez votre banque via le numéro officiel',priority:'high'},{icon:'📋',text:'Signalez sur Pharos',priority:'high'},{icon:'🔍',text:'Info Escroqueries: 0 805 805 817',priority:'high'},{icon:'📱',text:'Activez l\'authentification 2FA',priority:'medium'},{icon:'🔒',text:'Changez vos mots de passe',priority:'high'}] },
-  hi: { country:'भारत', actions:[{icon:'🚫',text:'पैसे ट्रांसफर न करें या OTP न बताएं',priority:'critical'},{icon:'📞',text:'तुरंत कॉल काटें',priority:'critical'},{icon:'🏦',text:'बैंक की आधिकारिक हेल्पलाइन पर कॉल करें',priority:'high'},{icon:'📋',text:'साइबर क्राइम हेल्पलाइन 1930',priority:'high'},{icon:'🔍',text:'cybercrime.gov.in पर शिकायत',link:'https://cybercrime.gov.in',priority:'high'},{icon:'📱',text:'2FA सक्रिय करें',priority:'medium'},{icon:'🔒',text:'UPI PIN और पासवर्ड बदलें',priority:'high'}] },
-  ar: { country:'الشرق الأوسط', actions:[{icon:'🚫',text:'لا تحول أي أموال',priority:'critical'},{icon:'📞',text:'أغلق المكالمة فوراً',priority:'critical'},{icon:'🏦',text:'اتصل بالخط الساخن لبنكك',priority:'high'},{icon:'📋',text:'أبلغ الجهات المختصة',priority:'high'},{icon:'📱',text:'فعّل التحقق بخطوتين',priority:'medium'},{icon:'🔒',text:'غيّر كلمات المرور',priority:'high'},{icon:'📝',text:'احتفظ بالأدلة',priority:'medium'}] },
+  en: { country:'United States', emergency:'911', actions:[{icon:'🚫',text:'Do NOT transfer money, gift cards, or cryptocurrency to anyone',priority:'critical'},{icon:'📞',text:'Hang up immediately - do not engage further with the caller',priority:'critical'},{icon:'🏦',text:'Contact your bank\'s official fraud hotline (number on back of your card)',priority:'high'},{icon:'📋',text:'Report to FTC: reportfraud.ftc.gov',link:'https://reportfraud.ftc.gov',priority:'high'},{icon:'🔍',text:'File FBI IC3 complaint: ic3.gov',link:'https://ic3.gov',priority:'high'},{icon:'📱',text:'Enable two-factor authentication on all financial accounts',priority:'medium'},{icon:'🔒',text:'Change passwords on any accounts you may have disclosed',priority:'high'},{icon:'📝',text:'Document everything: save call logs, screenshots, messages',priority:'medium'},{icon:'👥',text:'Alert family members - scammers often target multiple people',priority:'medium'},{icon:'⚖️',text:'Contact your state Attorney General\'s consumer protection office',priority:'low'}] },
+  id: { country:'Indonesia', emergency:'110', actions:[{icon:'🚫',text:'JANGAN transfer uang, pulsa, atau kripto ke siapapun',priority:'critical'},{icon:'📞',text:'Putuskan panggilan segera',priority:'critical'},{icon:'🏦',text:'Hubungi hotline resmi bank (cek di belakang kartu ATM)',priority:'high'},{icon:'📋',text:'Lapor ke OJK: 157',link:'https://ojk.go.id',priority:'high'},{icon:'🔍',text:'Lapor ke Kominfo: aduankonten.id',link:'https://aduankonten.id',priority:'high'},{icon:'👮',text:'Lapor ke Bareskrim: patrolisiber.id',link:'https://patrolisiber.id',priority:'high'},{icon:'📱',text:'Aktifkan verifikasi 2 langkah',priority:'medium'},{icon:'🔒',text:'Ganti PIN dan password mobile banking',priority:'high'},{icon:'📝',text:'Simpan semua bukti',priority:'medium'},{icon:'👥',text:'Peringatkan keluarga',priority:'medium'}] },
+  zh: { country:'中国', emergency:'110', actions:[{icon:'🚫',text:'切勿转账或提供银行信息',priority:'critical'},{icon:'📞',text:'立即挂断电话',priority:'critical'},{icon:'📋',text:'拨打反诈热线 96110',priority:'high'},{icon:'🔍',text:'下载国家反诈中心APP',priority:'high'},{icon:'👮',text:'向当地公安局报案',priority:'high'},{icon:'🔒',text:'修改网银密码',priority:'high'}] },
+  ja: { country:'日本', emergency:'110', actions:[{icon:'🚫',text:'絶対にお金を振り込まない',priority:'critical'},{icon:'📞',text:'すぐに電話を切る',priority:'critical'},{icon:'🏦',text:'銀行の公式窓口に連絡',priority:'high'},{icon:'📋',text:'警察相談 #9110',priority:'high'},{icon:'🔍',text:'消費者ホットライン 188',priority:'high'},{icon:'👮',text:'最寄りの警察署に届出',priority:'high'},{icon:'📱',text:'二段階認証を有効化',priority:'medium'},{icon:'🔒',text:'暗証番号を変更',priority:'high'}] },
+  ko: { country:'대한민국', emergency:'112', actions:[{icon:'🚫',text:'절대 송금하지 마세요',priority:'critical'},{icon:'📞',text:'즉시 전화를 끊으세요',priority:'critical'},{icon:'🏦',text:'은행 공식 콜센터에 연락',priority:'high'},{icon:'📋',text:'금융감독원 1332 신고',priority:'high'},{icon:'🔍',text:'경찰청 182 신고',priority:'high'},{icon:'📱',text:'2단계 인증 활성화',priority:'medium'},{icon:'🔒',text:'비밀번호 변경',priority:'high'}] },
+  es: { country:'España', emergency:'112', actions:[{icon:'🚫',text:'NO transfiera dinero ni datos personales',priority:'critical'},{icon:'📞',text:'Cuelgue inmediatamente',priority:'critical'},{icon:'🏦',text:'Contacte la línea de fraude de su banco',priority:'high'},{icon:'📋',text:'Denuncie: Policía Nacional 091',priority:'high'},{icon:'🔍',text:'Reporte en INCIBE: incibe.es',link:'https://incibe.es',priority:'high'},{icon:'📱',text:'Active verificación en dos pasos',priority:'medium'},{icon:'🔒',text:'Cambie contraseñas',priority:'high'}] },
+  fr: { country:'France', emergency:'17', actions:[{icon:'🚫',text:'Ne transférez PAS d\'argent',priority:'critical'},{icon:'📞',text:'Raccrochez immédiatement',priority:'critical'},{icon:'🏦',text:'Contactez votre banque via le numéro officiel',priority:'high'},{icon:'📋',text:'Signalez sur Pharos',priority:'high'},{icon:'🔍',text:'Info Escroqueries: 0 805 805 817',priority:'high'},{icon:'📱',text:'Activez l\'authentification 2FA',priority:'medium'},{icon:'🔒',text:'Changez vos mots de passe',priority:'high'}] },
+  hi: { country:'भारत', emergency:'112', actions:[{icon:'🚫',text:'पैसे ट्रांसफर न करें या OTP न बताएं',priority:'critical'},{icon:'📞',text:'तुरंत कॉल काटें',priority:'critical'},{icon:'🏦',text:'बैंक की आधिकारिक हेल्पलाइन पर कॉल करें',priority:'high'},{icon:'📋',text:'साइबर क्राइम हेल्पलाइन 1930',priority:'high'},{icon:'🔍',text:'cybercrime.gov.in पर शिकायत',link:'https://cybercrime.gov.in',priority:'high'},{icon:'📱',text:'2FA सक्रिय करें',priority:'medium'},{icon:'🔒',text:'UPI PIN और पासवर्ड बदलें',priority:'high'}] },
+  ar: { country:'المملكة العربية السعودية', emergency:'911', actions:[{icon:'🚫',text:'لا تحول أي أموال',priority:'critical'},{icon:'📞',text:'أغلق المكالمة فوراً',priority:'critical'},{icon:'🏦',text:'اتصل بالخط الساخن لبنكك',priority:'high'},{icon:'📋',text:'أبلغ عبر تطبيق كلنا أمن',priority:'high'},{icon:'🔍',text:'تواصل مع مؤسسة النقد (SAMA): 800-125-6666',priority:'high'},{icon:'📱',text:'فعّل التحقق بخطوتين',priority:'medium'},{icon:'🔒',text:'غيّر كلمات المرور',priority:'high'},{icon:'📝',text:'احتفظ بالأدلة',priority:'medium'}] },
 }
 
 export function getActionsForLang(langCode) {
@@ -467,10 +517,353 @@ export function getActionsForLang(langCode) {
   return RECOMMENDED_ACTIONS['en']
 }
 
-// ── Demo/mock alerts ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// ── VOICE DEMO SCRIPTS ──────────────────────────────────────────
+// [FIX] Longer dialog before lockdown. More scripts for EN & ID.
+// [FIX] Pinjol: "Halo Pak/Ibu" instead of "Selamat pagi"
+// [FIX] Lockdown triggers later after more conversation buildup
+// ══════════════════════════════════════════════════════════════════
+
+export const DEMO_SCRIPTS = {
+  en: [
+    {
+      id: 'en_bank',
+      title: 'Bank Impersonation',
+      severity: 'critical',
+      callerNumber: '+1 (XXX) XXX-XX42',
+      description: 'Caller poses as fraud prevention from a bank.',
+      dialog: [
+        { speaker:'caller', text:'Hello, am I speaking with the account holder? This is the fraud prevention department at your bank.', time:'00:03', delay:0 },
+        { speaker:'me', text:'Yes, this is me. What\'s going on?', time:'00:08', delay:5000 },
+        { speaker:'caller', text:'We have detected several suspicious transactions on your account. Someone attempted to make a large purchase from an overseas IP address.', time:'00:14', delay:6000 },
+        { speaker:'me', text:'Oh no, really? I haven\'t made any overseas purchases.', time:'00:20', delay:6000 },
+        { speaker:'caller', text:'That confirms our concern. For your protection, we need to verify your identity before we can block these unauthorized charges. We are running out of time — the transaction is still pending.', time:'00:28', delay:8000 },
+        { speaker:'me', text:'Okay, what do you need from me?', time:'00:33', delay:5000 },
+        { speaker:'caller', text:'First, can you confirm your full account number for verification purposes? This is standard procedure.', time:'00:39', delay:6000 },
+        { speaker:'me', text:'Um, it\'s... let me check...', time:'00:43', delay:4000 },
+        { speaker:'caller', text:'Please hurry — the fraudulent transaction will be completed within 10 minutes and your account will be permanently frozen. I need your account number and the 6-digit verification code that was just sent to your phone.', time:'00:52', delay:9000, flagged:true },
+        { speaker:'me', text:'I just got a code... it says 847291...', time:'00:58', delay:6000 },
+        { speaker:'caller', text:'Do NOT share this with anyone except our verified department. Read me the code now — this is your last chance before we freeze your account.', time:'01:06', delay:8000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:14', severity:'critical', pattern:'Bank Impersonation', quote:'"This is the fraud prevention department at your bank."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel' },
+        { id:2, time:'00:28', severity:'high', pattern:'Artificial Urgency', quote:'"We are running out of time — the transaction is still pending."', confidence:88, tactics:['SCARCITY','FEAR'], source:'FBI IC3 2024' },
+        { id:3, time:'00:52', severity:'critical', pattern:'Artificial Urgency', quote:'"Your account will be permanently frozen in 10 minutes."', confidence:94, tactics:['SCARCITY','FEAR'], source:'FBI IC3 2024' },
+        { id:4, time:'00:52', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"I need your account number and the 6-digit verification code."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'GASA 2024' },
+        { id:5, time:'01:06', severity:'high', pattern:'Isolation Tactic', quote:'"Do NOT share this with anyone except our verified department."', confidence:91, tactics:['ISOLATION','AUTHORITY'], source:'FTC Sentinel' },
+      ],
+    },
+    {
+      id: 'en_tech',
+      callerNumber: '+1 (XXX) XXX-XX87',
+      title: 'Tech Support Scam',
+      severity: 'high',
+      description: 'Caller claims your device is compromised.',
+      dialog: [
+        { speaker:'caller', text:'Hello, this is the Security Operations Center. We are calling because our system has flagged your computer for a critical security breach.', time:'00:03', delay:0 },
+        { speaker:'me', text:'What? What kind of breach?', time:'00:08', delay:5000 },
+        { speaker:'caller', text:'Our monitoring detected that your IP address has been compromised. Hackers are actively accessing your personal files and your online banking credentials as we speak.', time:'00:16', delay:8000 },
+        { speaker:'me', text:'That sounds really serious. What should I do?', time:'00:21', delay:5000 },
+        { speaker:'caller', text:'Don\'t worry, I\'m here to help you. But we need to act quickly before the hackers do more damage. First, I need you to install a remote access tool so I can secure your system.', time:'00:30', delay:9000 },
+        { speaker:'me', text:'Remote access? Is that safe?', time:'00:35', delay:5000 },
+        { speaker:'caller', text:'Absolutely, this is industry standard procedure. All major companies use this. I will need you to download the software from the link I\'m about to give you and grant me access to scan your system.', time:'00:44', delay:9000, flagged:true },
+        { speaker:'caller', text:'If we don\'t act immediately, your credit cards and bank accounts will be drained. You must install this now — we cannot protect you otherwise.', time:'00:53', delay:9000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:03', severity:'high', pattern:'Tech Support Impersonation', quote:'"This is the Security Operations Center."', confidence:92, tactics:['AUTHORITY'], source:'FBI IC3 2024' },
+        { id:2, time:'00:16', severity:'high', pattern:'Artificial Urgency', quote:'"Hackers are actively accessing your credentials as we speak."', confidence:85, tactics:['FEAR','SCARCITY'], source:'GASA 2024' },
+        { id:3, time:'00:44', severity:'critical', pattern:'Remote Access Takeover', quote:'"I need you to install a remote access tool."', confidence:96, tactics:['AUTHORITY','COMPLIANCE'], source:'FBI IC3 2024' },
+        { id:4, time:'00:53', severity:'critical', pattern:'Artificial Urgency', quote:'"Your credit cards and bank accounts will be drained."', confidence:94, tactics:['FEAR','SCARCITY'], source:'FTC Sentinel' },
+      ],
+    },
+    {
+      id: 'en_gov',
+      callerNumber: '+1 (XXX) XXX-XX15',
+      title: 'Government / Tax Scam',
+      severity: 'critical',
+      description: 'Caller threatens arrest from fake government agency.',
+      dialog: [
+        { speaker:'caller', text:'This is an enforcement officer from the Federal Tax Division. Am I speaking to the registered taxpayer at this number?', time:'00:03', delay:0 },
+        { speaker:'me', text:'Yes, that\'s me. What is this about?', time:'00:08', delay:5000 },
+        { speaker:'caller', text:'I\'m calling to inform you that there is a serious discrepancy in your tax filings. Our investigation has found that you owe a significant amount in back taxes and penalties.', time:'00:17', delay:9000 },
+        { speaker:'me', text:'I don\'t think that\'s right. I filed my taxes correctly.', time:'00:22', delay:5000 },
+        { speaker:'caller', text:'Our records indicate otherwise. I need to inform you that an arrest warrant has been issued in your name. However, you have a chance to resolve this right now by settling the outstanding balance.', time:'00:33', delay:11000 },
+        { speaker:'me', text:'An arrest warrant? That can\'t be right.', time:'00:37', delay:4000 },
+        { speaker:'caller', text:'I understand this is alarming. But if you do not settle today, officers will be dispatched to your residence. The only way to stop this is to purchase prepaid debit cards totaling $3,000 and read me the card numbers immediately.', time:'00:48', delay:11000, flagged:true },
+        { speaker:'caller', text:'Do not tell anyone about this call. This is a federal matter and disclosure could result in additional charges against you.', time:'00:57', delay:9000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:03', severity:'critical', pattern:'Government Impersonation', quote:'"This is an enforcement officer from the Federal Tax Division."', confidence:96, tactics:['AUTHORITY'], source:'FBI IC3 2024' },
+        { id:2, time:'00:33', severity:'critical', pattern:'Fake Warrant / Legal Threat', quote:'"An arrest warrant has been issued in your name."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'FBI IC3 2024' },
+        { id:3, time:'00:48', severity:'critical', pattern:'Gift Card Demand', quote:'"Purchase prepaid debit cards and read me the card numbers."', confidence:99, tactics:['AUTHORITY','URGENCY'], source:'FTC Sentinel' },
+        { id:4, time:'00:57', severity:'high', pattern:'Isolation Tactic', quote:'"Do not tell anyone about this call."', confidence:93, tactics:['ISOLATION','AUTHORITY'], source:'GASA 2024' },
+      ],
+    },
+    {
+      id: 'en_romance',
+      callerNumber: '+1 (XXX) XXX-XX63',
+      title: 'Romance Scam / Sextortion',
+      severity: 'critical',
+      description: 'Threatens to expose intimate content unless victim pays.',
+      dialog: [
+        { speaker:'caller', text:'Hey, it\'s me. We need to talk about something important. I know this is awkward.', time:'00:03', delay:0 },
+        { speaker:'me', text:'What do you mean? Who is this?', time:'00:07', delay:4000 },
+        { speaker:'caller', text:'Don\'t pretend you don\'t know me. We\'ve been chatting for months. I have all of our conversations saved — including the private photos and videos you sent me.', time:'00:16', delay:9000 },
+        { speaker:'me', text:'What photos? What are you talking about?', time:'00:20', delay:4000 },
+        { speaker:'caller', text:'You know exactly what I\'m talking about. The intimate content you shared with me. I have screenshots of everything — your face is clearly visible in all of them.', time:'00:29', delay:9000 },
+        { speaker:'me', text:'This has to be some kind of mistake...', time:'00:33', delay:4000 },
+        { speaker:'caller', text:'It\'s not a mistake. Here\'s what\'s going to happen. If you don\'t send me $2,000 in Bitcoin within the next hour, I will share all of these photos with your entire contact list — your friends, family, coworkers, everyone.', time:'00:44', delay:11000, flagged:true },
+        { speaker:'caller', text:'I already have your social media contacts downloaded. Don\'t test me. Send the Bitcoin to this wallet address now, or your reputation is finished.', time:'00:54', delay:10000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:16', severity:'high', pattern:'Isolation Tactic', quote:'"I have all of our conversations saved including private photos."', confidence:85, tactics:['FEAR','ISOLATION'], source:'GASA 2024' },
+        { id:2, time:'00:29', severity:'critical', pattern:'Extortion / Blackmail', quote:'"Intimate content... your face is clearly visible."', confidence:94, tactics:['FEAR','ISOLATION'], source:'FBI IC3 2024' },
+        { id:3, time:'00:44', severity:'critical', pattern:'Romance Scam / Sextortion', quote:'"Send me $2,000 in Bitcoin or I share photos with everyone."', confidence:98, tactics:['FEAR','ISOLATION'], source:'FBI IC3 2024' },
+        { id:4, time:'00:54', severity:'critical', pattern:'Crypto Transfer Scam', quote:'"Send the Bitcoin to this wallet address now."', confidence:97, tactics:['FEAR','URGENCY'], source:'FTC Sentinel' },
+      ],
+    },
+    {
+      id: 'en_crypto',
+      callerNumber: '+1 (XXX) XXX-XX29',
+      title: 'Crypto Investment Scam',
+      severity: 'critical',
+      description: 'Promises guaranteed crypto returns to steal funds.',
+      dialog: [
+        { speaker:'caller', text:'Hi there! I got your number from a mutual friend. I\'ve been helping people earn passive income through a crypto investment group and I thought you might be interested.', time:'00:04', delay:0 },
+        { speaker:'me', text:'Oh really? I\'ve heard about crypto but I don\'t know much about it.', time:'00:10', delay:6000 },
+        { speaker:'caller', text:'That\'s totally fine. You don\'t need to know anything — our platform does everything automatically. Members are making 300% returns in just 30 days. I can show you proof.', time:'00:20', delay:10000 },
+        { speaker:'me', text:'300%? That sounds too good to be true.', time:'00:25', delay:5000 },
+        { speaker:'caller', text:'I know it sounds unbelievable, but this is powered by a proprietary AI trading algorithm. Zero risk, guaranteed profits. There are only 5 spots left in this round — once they\'re full, registration closes.', time:'00:36', delay:11000, flagged:true },
+        { speaker:'me', text:'How much would I need to start?', time:'00:40', delay:4000 },
+        { speaker:'caller', text:'Just $500 in USDT to start. I\'ll send you the wallet address right now. You need to transfer within the next 30 minutes before the round closes. Your first withdrawal will be available in 48 hours.', time:'00:51', delay:11000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:20', severity:'high', pattern:'Investment Fraud', quote:'"Members are making 300% returns in just 30 days."', confidence:94, tactics:['GREED','SCARCITY'], source:'FBI IC3 2024' },
+        { id:2, time:'00:36', severity:'critical', pattern:'Investment Fraud', quote:'"Zero risk, guaranteed profits. Only 5 spots left."', confidence:97, tactics:['GREED','SCARCITY'], source:'FBI IC3 2024' },
+        { id:3, time:'00:51', severity:'critical', pattern:'Crypto Transfer Scam', quote:'"Transfer $500 in USDT to this wallet address."', confidence:98, tactics:['URGENCY','GREED'], source:'FTC Sentinel' },
+      ],
+    },
+    {
+      id: 'en_family',
+      callerNumber: '+1 (XXX) XXX-XX71',
+      title: 'Family Emergency Scam',
+      severity: 'high',
+      description: 'Caller impersonates a family member in distress.',
+      dialog: [
+        { speaker:'caller', text:'Mom? Mom, is that you? Please, I need help.', time:'00:02', delay:0 },
+        { speaker:'me', text:'Who is this? What happened?', time:'00:06', delay:4000 },
+        { speaker:'caller', text:'It\'s me, your son! I was in a car accident and I\'m at the hospital right now. They won\'t treat me until I pay the medical deposit.', time:'00:14', delay:8000 },
+        { speaker:'me', text:'Oh my God! Are you okay? Which hospital?', time:'00:18', delay:4000 },
+        { speaker:'caller', text:'I\'m okay but I\'m in a lot of pain. Please don\'t call Dad — he\'ll be so upset with me. The doctor says I need surgery but they need $5,000 for the deposit. Can you send it right away?', time:'00:29', delay:11000, flagged:true },
+        { speaker:'me', text:'$5,000? Let me think about this...', time:'00:33', delay:4000 },
+        { speaker:'caller', text:'Mom please, there\'s no time! The doctor says if I don\'t get surgery within the hour, my condition could get much worse. I need you to wire transfer the money right now. Please don\'t tell anyone — I\'m so embarrassed about this.', time:'00:44', delay:11000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:14', severity:'high', pattern:'Family Impersonation', quote:'"It\'s me, your son! I was in a car accident."', confidence:89, tactics:['FEAR','RECIPROCITY'], source:'FTC Sentinel' },
+        { id:2, time:'00:29', severity:'high', pattern:'Isolation Tactic', quote:'"Please don\'t call Dad — he\'ll be so upset."', confidence:91, tactics:['ISOLATION','FEAR'], source:'GASA 2024' },
+        { id:3, time:'00:44', severity:'critical', pattern:'Artificial Urgency', quote:'"Surgery within the hour or condition gets worse."', confidence:95, tactics:['FEAR','SCARCITY'], source:'FBI IC3 2024' },
+        { id:4, time:'00:44', severity:'critical', pattern:'Wire Transfer Instruction', quote:'"Wire transfer the money right now."', confidence:96, tactics:['AUTHORITY','URGENCY'], source:'FBI IC3 2024' },
+      ],
+    },
+  ],
+  id: [
+    {
+      id: 'id_bank',
+      callerNumber: '+62 XXX-XXXX-XX38',
+      title: 'Penipuan Bank',
+      severity: 'critical',
+      description: 'Penelepon mengaku dari divisi keamanan bank.',
+      dialog: [
+        { speaker:'caller', text:'Halo, selamat siang. Saya dari divisi keamanan rekening bank. Apakah benar ini dengan pemegang rekening?', time:'00:03', delay:0 },
+        { speaker:'me', text:'Iya benar, ada apa ya?', time:'00:08', delay:5000 },
+        { speaker:'caller', text:'Kami mendeteksi adanya transaksi mencurigakan di rekening Bapak/Ibu. Ada percobaan penarikan dari lokasi yang tidak biasa.', time:'00:15', delay:7000 },
+        { speaker:'me', text:'Wah serius? Saya tidak merasa melakukan transaksi itu.', time:'00:20', delay:5000 },
+        { speaker:'caller', text:'Benar, maka dari itu kami perlu segera memverifikasi identitas Anda untuk memblokir transaksi yang tidak sah ini. Prosedur standar keamanan kami.', time:'00:29', delay:9000 },
+        { speaker:'me', text:'Oh baik, apa yang perlu saya lakukan?', time:'00:33', delay:4000 },
+        { speaker:'caller', text:'Pertama, bisakah Anda mengkonfirmasi nomor rekening Anda? Ini standar prosedur verifikasi kami.', time:'00:40', delay:7000 },
+        { speaker:'me', text:'Nomor rekening saya... 1234...', time:'00:45', delay:5000 },
+        { speaker:'caller', text:'Baik. Sekarang untuk verifikasi terakhir, kami telah mengirimkan kode OTP ke nomor handphone Anda. Tolong bacakan kode 6 digit tersebut. Jika tidak segera diverifikasi, rekening akan dibekukan otomatis dalam 5 menit.', time:'00:55', delay:10000, flagged:true },
+        { speaker:'caller', text:'Ingat, jangan beritahukan kode ini kepada siapapun selain petugas resmi kami. Ini demi keamanan rekening Anda.', time:'01:04', delay:9000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:03', severity:'critical', pattern:'Bank Impersonation', quote:'"Saya dari divisi keamanan rekening bank."', confidence:97, tactics:['AUTHORITY','FEAR'], source:'FTC Sentinel' },
+        { id:2, time:'00:29', severity:'high', pattern:'Artificial Urgency', quote:'"Kami perlu segera memverifikasi identitas Anda."', confidence:88, tactics:['SCARCITY','AUTHORITY'], source:'GASA 2024' },
+        { id:3, time:'00:55', severity:'critical', pattern:'OTP / Credential Extraction', quote:'"Bacakan kode 6 digit OTP tersebut."', confidence:99, tactics:['AUTHORITY','COMMITMENT'], source:'GASA 2024' },
+        { id:4, time:'01:04', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan beritahukan kode ini kepada siapapun."', confidence:91, tactics:['ISOLATION','AUTHORITY'], source:'FTC Sentinel' },
+      ],
+    },
+    {
+      id: 'id_pinjol',
+      callerNumber: '+62 XXX-XXXX-XX54',
+      title: 'Penipuan Pinjaman Online (Pinjol)',
+      severity: 'high',
+      description: 'Debt collector pinjol ilegal mengancam sebarkan data.',
+      dialog: [
+        { speaker:'caller', text:'Halo Pak/Ibu, saya dari bagian penagihan. Saya ingin menginformasikan bahwa Anda memiliki tunggakan pinjaman yang sudah jatuh tempo.', time:'00:03', delay:0 },
+        { speaker:'me', text:'Pinjaman apa? Saya tidak merasa punya pinjaman.', time:'00:08', delay:5000 },
+        { speaker:'caller', text:'Menurut data kami, Anda terdaftar sebagai peminjam. Tunggakan Anda sudah sangat besar dan terus bertambah setiap hari. Anda harus segera melunasi agar tidak ada masalah.', time:'00:18', delay:10000 },
+        { speaker:'me', text:'Saya benar-benar tidak pernah mengajukan pinjaman.', time:'00:23', delay:5000 },
+        { speaker:'caller', text:'Pak/Ibu, data kami sudah jelas. KTP Anda terdaftar di sistem kami. Jika Anda tidak melunasi hari ini, kami akan menghubungi semua kontak di handphone Anda.', time:'00:33', delay:10000, flagged:true },
+        { speaker:'me', text:'Apa? Menghubungi kontak saya? Itu tidak boleh!', time:'00:37', delay:4000 },
+        { speaker:'caller', text:'Kami sudah memiliki akses ke daftar kontak Anda, foto-foto pribadi, dan data KTP Anda. Jika tidak bayar dalam 2 jam, kami akan sebarkan semua data ini ke media sosial dan ke semua kontak di HP Anda. Transfer sekarang ke rekening ini.', time:'00:49', delay:12000, flagged:true },
+        { speaker:'caller', text:'Jangan lapor ke polisi — ini urusan utang Anda sendiri. Polisi tidak akan membantu soal utang. Bayar sekarang atau malu sendiri.', time:'00:59', delay:10000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:18', severity:'high', pattern:'Artificial Urgency', quote:'"Tunggakan bertambah setiap hari."', confidence:82, tactics:['FEAR','SCARCITY'], source:'GASA 2024' },
+        { id:2, time:'00:33', severity:'high', pattern:'Pinjol Harassment (ID)', quote:'"Kami akan menghubungi semua kontak di handphone Anda."', confidence:94, tactics:['FEAR','ISOLATION'], source:'GASA 2024' },
+        { id:3, time:'00:49', severity:'critical', pattern:'Extortion / Blackmail', quote:'"Sebarkan data dan foto ke media sosial."', confidence:97, tactics:['FEAR','ISOLATION'], source:'GASA 2024' },
+        { id:4, time:'00:59', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan lapor ke polisi."', confidence:91, tactics:['ISOLATION','FEAR'], source:'GASA 2024' },
+      ],
+    },
+    {
+      id: 'id_mama',
+      callerNumber: '+62 XXX-XXXX-XX76',
+      title: 'Mama Minta Pulsa',
+      severity: 'medium',
+      description: 'Mengaku keluarga minta pulsa atau transfer darurat.',
+      dialog: [
+        { speaker:'caller', text:'Halo nak, ini mama. Mama lagi di rumah sakit mendampingi tante kamu yang sakit.', time:'00:03', delay:0 },
+        { speaker:'me', text:'Hah? Tante sakit? Tante siapa Ma?', time:'00:08', delay:5000 },
+        { speaker:'caller', text:'Tante Sri. Dia masuk UGD tadi siang. Kondisinya gawat dan dokter bilang harus segera operasi. Mama panik sekali nak.', time:'00:17', delay:9000 },
+        { speaker:'me', text:'Ya ampun, semoga cepat sembuh. Ada yang bisa saya bantu?', time:'00:22', delay:5000 },
+        { speaker:'caller', text:'Nak, mama butuh bantuan. Handphone mama kehabisan pulsa dan mama tidak bisa hubungi siapa-siapa. Bisakah kamu kirimkan pulsa atau transfer sedikit uang ke nomor ini? Darurat sekali nak.', time:'00:33', delay:11000, flagged:true },
+        { speaker:'me', text:'Berapa Ma? Dan ini nomor siapa?', time:'00:37', delay:4000 },
+        { speaker:'caller', text:'Kirimkan 500 ribu dulu nak ke nomor ini. Mama juga butuh untuk bayar deposit rumah sakit. Jangan bilang papa dulu ya, nanti mama yang ceritain. Cepat ya nak, mama sangat butuh sekarang.', time:'00:48', delay:11000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:03', severity:'medium', pattern:'Mama Minta Pulsa (ID)', quote:'"Ini mama, mama lagi di rumah sakit."', confidence:82, tactics:['RECIPROCITY','FEAR'], source:'GASA 2024' },
+        { id:2, time:'00:33', severity:'high', pattern:'Family Impersonation', quote:'"Kirimkan pulsa atau transfer uang ke nomor ini."', confidence:88, tactics:['RECIPROCITY','FEAR'], source:'GASA 2024' },
+        { id:3, time:'00:48', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan bilang papa dulu."', confidence:90, tactics:['ISOLATION','RECIPROCITY'], source:'GASA 2024' },
+      ],
+    },
+    {
+      id: 'id_giveaway',
+      callerNumber: '+62 XXX-XXXX-XX91',
+      title: 'Giveaway Palsu / Undian Berhadiah',
+      severity: 'medium',
+      description: 'Mengaku dari program giveaway dengan hadiah jutaan.',
+      dialog: [
+        { speaker:'caller', text:'Selamat! Saya menghubungi Anda karena nomor Anda terpilih sebagai pemenang program undian berhadiah nasional. Anda memenangkan 50 juta rupiah!', time:'00:04', delay:0 },
+        { speaker:'me', text:'Wah serius? Saya tidak pernah ikut undian apa-apa.', time:'00:09', delay:5000 },
+        { speaker:'caller', text:'Undian ini otomatis untuk semua pengguna provider seluler Anda. Nomor Anda terpilih secara acak oleh sistem komputer kami. Ini resmi dari perusahaan.', time:'00:19', delay:10000 },
+        { speaker:'me', text:'Hmm, tapi saya benar-benar tidak pernah mendaftar.', time:'00:24', delay:5000 },
+        { speaker:'caller', text:'Tidak perlu mendaftar, ini program loyalitas pelanggan. Untuk mencairkan hadiah Anda, cukup bayar pajak hadiah sebesar 1.5 juta ke rekening perusahaan kami. Setelah itu, 50 juta langsung masuk ke rekening Anda.', time:'00:36', delay:12000, flagged:true },
+        { speaker:'caller', text:'Tapi ini harus dilakukan hari ini karena batas waktu pencairan hanya sampai jam 5 sore. Lewat dari itu, hadiah akan hangus dan dialihkan ke pemenang cadangan.', time:'00:46', delay:10000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:04', severity:'medium', pattern:'Fake Prize / Lottery', quote:'"Anda memenangkan 50 juta rupiah!"', confidence:92, tactics:['GREED','RECIPROCITY'], source:'FTC Sentinel' },
+        { id:2, time:'00:36', severity:'high', pattern:'Advance Fee Fraud', quote:'"Bayar pajak hadiah sebesar 1.5 juta."', confidence:96, tactics:['GREED','COMMITMENT'], source:'GASA 2024' },
+        { id:3, time:'00:46', severity:'high', pattern:'Artificial Urgency', quote:'"Batas waktu pencairan hanya sampai jam 5 sore."', confidence:90, tactics:['SCARCITY','URGENCY'], source:'GASA 2024' },
+      ],
+    },
+    {
+      id: 'id_romance',
+      callerNumber: '+62 XXX-XXXX-XX17',
+      title: 'Penipuan Asmara / Pemerasan',
+      severity: 'critical',
+      description: 'Mengancam sebarkan foto/video intim korban.',
+      dialog: [
+        { speaker:'caller', text:'Halo sayang, aku mau bicara serius sama kamu. Kita sudah saling kenal cukup lama kan.', time:'00:03', delay:0 },
+        { speaker:'me', text:'Ya, ada apa? Kenapa serius?', time:'00:07', delay:4000 },
+        { speaker:'caller', text:'Kamu ingat kan semua percakapan kita? Foto-foto dan video yang kamu kirim ke aku? Aku simpan semuanya.', time:'00:15', delay:8000 },
+        { speaker:'me', text:'Apa maksudmu?', time:'00:18', delay:3000 },
+        { speaker:'caller', text:'Aku sudah punya semua screenshot percakapan dan foto-foto intim kamu. Wajah kamu jelas terlihat di semuanya. Aku juga sudah punya daftar kontak kamu — keluarga, teman kantor, semuanya.', time:'00:29', delay:11000, flagged:true },
+        { speaker:'me', text:'Kamu mau apa sebenarnya?', time:'00:33', delay:4000 },
+        { speaker:'caller', text:'Begini, kalau kamu tidak mau malu, transfer 5 juta ke rekening ini dalam waktu 1 jam. Kalau tidak, semua foto dan video kamu akan aku sebarkan ke semua kontak, media sosial, bahkan atasan kamu di kantor.', time:'00:45', delay:12000, flagged:true },
+        { speaker:'caller', text:'Jangan coba-coba lapor polisi. Kalau aku tahu kamu lapor, aku langsung sebarkan semuanya. Transfer sekarang atau menyesal selamanya.', time:'00:55', delay:10000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:29', severity:'critical', pattern:'Extortion / Blackmail', quote:'"Foto-foto intim kamu, wajah kamu jelas terlihat."', confidence:96, tactics:['FEAR','ISOLATION'], source:'GASA 2024' },
+        { id:2, time:'00:45', severity:'critical', pattern:'Penipuan Asmara / Pemerasan (ID)', quote:'"Transfer 5 juta atau foto disebarkan ke semua kontak."', confidence:98, tactics:['FEAR','ISOLATION'], source:'GASA 2024' },
+        { id:3, time:'00:55', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan coba-coba lapor polisi."', confidence:93, tactics:['ISOLATION','FEAR'], source:'GASA 2024' },
+      ],
+    },
+    {
+      id: 'id_crypto',
+      callerNumber: '+62 XXX-XXXX-XX43',
+      title: 'Penipuan Kripto / Investasi Bodong',
+      severity: 'critical',
+      description: 'Menjanjikan keuntungan kripto yang tidak realistis.',
+      dialog: [
+        { speaker:'caller', text:'Halo! Saya dapat nomor Anda dari grup investasi. Saya mau sharing peluang yang sangat menguntungkan — banyak member kami sudah profit besar.', time:'00:04', delay:0 },
+        { speaker:'me', text:'Peluang apa ini?', time:'00:08', delay:4000 },
+        { speaker:'caller', text:'Ini platform trading crypto dengan AI otomatis. Member kami rata-rata profit 200-300% dalam sebulan. Tanpa risiko karena sistemnya sudah dioptimalkan oleh ahli.', time:'00:19', delay:11000 },
+        { speaker:'me', text:'300% dalam sebulan? Itu sangat besar.', time:'00:24', delay:5000 },
+        { speaker:'caller', text:'Memang luar biasa! Ini karena teknologi AI trading kami yang eksklusif. Tapi slot terbatas — hanya tersisa 3 tempat lagi untuk round ini. Kalau penuh, harus tunggu bulan depan.', time:'00:36', delay:12000, flagged:true },
+        { speaker:'me', text:'Berapa modalnya?', time:'00:39', delay:3000 },
+        { speaker:'caller', text:'Cukup mulai dari 5 juta rupiah dalam bentuk USDT. Saya kirimkan alamat wallet sekarang. Harus transfer dalam 30 menit sebelum round ditutup. Penarikan pertama bisa dilakukan dalam 48 jam.', time:'00:51', delay:12000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:19', severity:'high', pattern:'Investment Fraud', quote:'"Profit 200-300% dalam sebulan, tanpa risiko."', confidence:94, tactics:['GREED','SCARCITY'], source:'FBI IC3 2024' },
+        { id:2, time:'00:36', severity:'critical', pattern:'Investment Fraud', quote:'"Slot terbatas, hanya tersisa 3 tempat."', confidence:96, tactics:['SCARCITY','GREED'], source:'GASA 2024' },
+        { id:3, time:'00:51', severity:'critical', pattern:'Crypto Transfer Scam', quote:'"Transfer 5 juta USDT ke alamat wallet ini."', confidence:98, tactics:['URGENCY','GREED'], source:'FTC Sentinel' },
+      ],
+    },
+    {
+      id: 'id_family',
+      callerNumber: '+62 XXX-XXXX-XX82',
+      title: 'Penipuan Identitas Keluarga',
+      severity: 'high',
+      description: 'Mengaku anggota keluarga yang kecelakaan atau sakit.',
+      dialog: [
+        { speaker:'caller', text:'Halo kak, ini adikmu. Kak tolong, aku lagi dalam masalah besar.', time:'00:02', delay:0 },
+        { speaker:'me', text:'Adik? Adik yang mana?', time:'00:06', delay:4000 },
+        { speaker:'caller', text:'Ini aku kak, adikmu! Aku habis kecelakaan motor di jalan, sekarang di rumah sakit. Tangan aku patah dan dokter bilang harus segera operasi.', time:'00:15', delay:9000 },
+        { speaker:'me', text:'Ya ampun! Kamu di rumah sakit mana?', time:'00:19', delay:4000 },
+        { speaker:'caller', text:'Aku di UGD sekarang kak. Tapi masalahnya, rumah sakit minta deposit 3 juta dulu sebelum operasi. Aku tidak bawa dompet dan HP aku hampir mati. Tolong kak, transfer ke nomor perawat ini.', time:'00:31', delay:12000, flagged:true },
+        { speaker:'me', text:'Tunggu, 3 juta? Ke nomor perawat?', time:'00:35', delay:4000 },
+        { speaker:'caller', text:'Iya kak, cepat ya. Dokternya bilang kalau tidak segera dioperasi bisa infeksi. Jangan bilang mama dulu, nanti mama panik. Aku yang cerita sendiri nanti setelah operasi. Transfer sekarang ya kak, aku kesakitan.', time:'00:47', delay:12000, flagged:true },
+      ],
+      alerts: [
+        { id:1, time:'00:15', severity:'high', pattern:'Family Impersonation', quote:'"Ini adikmu, aku habis kecelakaan motor."', confidence:89, tactics:['FEAR','RECIPROCITY'], source:'FTC Sentinel' },
+        { id:2, time:'00:31', severity:'high', pattern:'Wire Transfer Instruction', quote:'"Transfer ke nomor perawat ini."', confidence:90, tactics:['AUTHORITY','URGENCY'], source:'GASA 2024' },
+        { id:3, time:'00:47', severity:'high', pattern:'Isolation Tactic', quote:'"Jangan bilang mama dulu."', confidence:92, tactics:['ISOLATION','RECIPROCITY'], source:'GASA 2024' },
+      ],
+    },
+  ],
+}
+
+// ── Demo/mock alerts (legacy compat) ─────────────────────────────────────────
 export const MOCK_ALERTS = [
   { id:1, time:"00:23", severity:"critical", pattern:"Bank Impersonation",         quote:'"I am calling from your bank fraud prevention - we detected suspicious activity on your account."',  confidence:97, tactics:["AUTHORITY","FEAR"],        source:"FTC Sentinel"  },
   { id:2, time:"01:07", severity:"critical", pattern:"Artificial Urgency",         quote:'"Your account will be permanently frozen in 10 minutes if you do not act right now."',                confidence:94, tactics:["SCARCITY","FEAR"],        source:"FBI IC3 2024"  },
   { id:3, time:"01:52", severity:"critical", pattern:"OTP / Credential Extraction",quote:'"Please read me the 6-digit verification code that was just sent to your phone."',                    confidence:99, tactics:["AUTHORITY","COMMITMENT"],  source:"GASA 2024"     },
   { id:4, time:"02:31", severity:"high",     pattern:"Isolation Tactic",           quote:'"Do not discuss this with your family - this is a confidential fraud investigation."',                confidence:91, tactics:["ISOLATION","AUTHORITY"],   source:"FTC Sentinel"  },
 ]
+
+// ── Caller Number Display ────────────────────────────────
+// Shows masked caller number in caller HUD based on country code
+export const CALLER_NUMBER_PREFIX = {
+  en: '+1',
+  id: '+62',
+  zh: '+86',
+  ja: '+81',
+  ko: '+82',
+  es: '+34',
+  fr: '+33',
+  hi: '+91',
+  ar: '+966',
+  ms: '+60',
+  pt: '+55',
+  de: '+49',
+  ru: '+7',
+  th: '+66',
+  vi: '+84',
+  tr: '+90',
+}
+
+// Generate a masked caller number for display
+export function getCallerNumber(langCode, scriptCallerNumber) {
+  // If script provides a specific number, use it
+  if (scriptCallerNumber) return scriptCallerNumber
+  // Otherwise generate masked number from country code
+  const base = langCode?.split('-')[0] || 'en'
+  const prefix = CALLER_NUMBER_PREFIX[base] || '+1'
+  const lastTwo = String(Math.floor(Math.random() * 99)).padStart(2, '0')
+  if (prefix === '+1') return `${prefix} (XXX) XXX-XX${lastTwo}`
+  if (prefix === '+62') return `${prefix} XXX-XXXX-XX${lastTwo}`
+  if (prefix === '+86') return `${prefix} XXX-XXXX-XX${lastTwo}`
+  if (prefix === '+81') return `${prefix} XX-XXXX-XX${lastTwo}`
+  if (prefix === '+82') return `${prefix} XX-XXXX-XX${lastTwo}`
+  return `${prefix} XXXXXXXX${lastTwo}`
+}

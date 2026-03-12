@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { PF, MF, isChallengeAvailable, getChallengeForScenario, getSafeExitForLang } from '../utils/constants'
+import { PF, MF, isChallengeAvailable, getChallengeForScenario, getSafeExitForLang, getActionsForLang } from '../utils/constants'
 
 /**
  * InterventionOverlay
@@ -15,6 +15,8 @@ import { PF, MF, isChallengeAvailable, getChallengeForScenario, getSafeExitForLa
  *
  * 3. LOCKDOWN (score >= 90)
  *    → Red full-screen · Safe Exit ONLY · 30s auto-disconnect countdown
+ *
+ * [FIX] Emergency contacts now visible for ALL 9 countries
  */
 
 const overlayCSS = `
@@ -25,6 +27,24 @@ const overlayCSS = `
 @keyframes intv-countdown { 0% { width: 100%; } 100% { width: 0%; } }
 @keyframes intv-shake { 0%,100% { transform: translateX(0); } 10%,30%,50%,70%,90% { transform: translateX(-3px); } 20%,40%,60%,80% { transform: translateX(3px); } }
 `
+
+// [FIX] Emergency info per country/language — always shown in overlay
+const EMERGENCY_INFO = {
+  en: { flag:'🇺🇸', country:'United States', emergency:'911', report:'FTC: reportfraud.ftc.gov · FBI IC3: ic3.gov' },
+  id: { flag:'🇮🇩', country:'Indonesia', emergency:'110', report:'OJK: 157 · Bareskrim: patrolisiber.id' },
+  zh: { flag:'🇨🇳', country:'China', emergency:'110', report:'Hotline Anti-Penipuan: 96110' },
+  ja: { flag:'🇯🇵', country:'Japan', emergency:'110', report:'Polisi #9110 · Konsumen 188' },
+  ko: { flag:'🇰🇷', country:'South Korea', emergency:'112', report:'FSS 1332 · Polisi 182' },
+  es: { flag:'🇪🇸', country:'Spain', emergency:'112', report:'Policía Nacional 091 · INCIBE 017' },
+  fr: { flag:'🇫🇷', country:'France', emergency:'17', report:'PHAROS · Info Escroqueries: 0 805 805 817' },
+  hi: { flag:'🇮🇳', country:'India', emergency:'112', report:'Cybercrime 1930 · cybercrime.gov.in' },
+  ar: { flag:'🇸🇦', country:'Saudi Arabia', emergency:'911', report:'كلنا أمن · SAMA: 800-125-6666' },
+}
+
+function getEmergencyInfo(lang) {
+  const base = lang?.split('-')[0] || 'en'
+  return EMERGENCY_INFO[base] || EMERGENCY_INFO['en']
+}
 
 // Localized labels
 const LABELS = {
@@ -49,6 +69,7 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
   const challenge = challengeAvail ? getChallengeForScenario(pattern, lang) : null
   const safeExits = getSafeExitForLang(lang)
   const isFatal = !challengeAvail && level !== 'LOCKDOWN'
+  const emergencyInfo = getEmergencyInfo(lang)
 
   // State
   const [phase, setPhase] = useState('main') // main | challenge | result | safe_exit_confirm
@@ -57,7 +78,7 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
   const [countdown, setCountdown] = useState(level === 'LOCKDOWN' ? 30 : null)
   const countdownRef = useRef(null)
 
-  // [FIX] Lock body scroll when overlay is active — prevents position jumping
+  // Lock body scroll when overlay is active
   useEffect(() => {
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -80,7 +101,7 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
     return () => clearInterval(countdownRef.current)
   }, [level])
 
-  // ── Challenge flow ──
+  // Challenge flow
   const handleChallengeAnswer = (isScamIndicator) => {
     const newAnswers = [...answers, isScamIndicator]
     setAnswers(newAnswers)
@@ -102,7 +123,7 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
   }
   const c = colors[level] || colors.BLOCK
 
-  // ── Button component ──
+  // Button component
   const ActionBtn = ({ children, onClick, primary, danger, style: s = {} }) => {
     const [hov, setHov] = useState(false)
     const col = danger ? '#ff2d55' : primary ? '#30d158' : c.accent
@@ -121,10 +142,10 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
   return (
     <div style={{ position:'fixed', inset:0, zIndex:10000, background:c.overlayBg, backdropFilter:'blur(8px)',
       display:'flex', alignItems:'center', justifyContent:'center', animation:'intv-fadein 0.3s ease',
-      overflowY:'hidden', /* [FIX] prevent background scroll */
+      overflowY:'hidden',
     }}>
       <style>{overlayCSS}</style>
-      <div style={{ maxWidth:520, width:'90%', maxHeight:'90vh', overflowY:'auto', overflowX:'hidden', /* [FIX] prevent horizontal shift */
+      <div style={{ maxWidth:520, width:'90%', maxHeight:'90vh', overflowY:'auto', overflowX:'hidden',
         border:`2px solid ${c.border}`, background:'#020408',
         boxShadow:`0 0 60px ${c.accent}33, inset 0 0 30px ${c.accent}08`,
         animation:`intv-slidein 0.4s cubic-bezier(0.22,1,0.36,1)${level==='LOCKDOWN'?', intv-lockdown-bg 3s ease-in-out infinite':''}`,
@@ -149,7 +170,7 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
               </div>
             </div>
 
-            {/* [FIX] Description — LOCKDOWN now also shows doNotShare so it doesn't feel empty */}
+            {/* Description */}
             <div style={{ fontFamily:MF, fontSize:12, color:'rgba(255,255,255,0.7)', lineHeight:1.8, marginBottom:24,
               padding:'14px 18px', borderLeft:`3px solid ${c.accent}`, background:`${c.accent}08`,
             }}>
@@ -177,7 +198,7 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
             )}
 
             {/* Safe exit actions */}
-            <div style={{ marginBottom:20 }}>
+            <div style={{ marginBottom:12 }}>
               {safeExits.map((a,i) => (
                 <div key={i} style={{ fontFamily:MF, fontSize:10, color:'rgba(255,255,255,0.6)', padding:'8px 12px',
                   borderLeft:`2px solid ${a.priority==='critical'?'#ff2d55':'#ff9500'}33`, marginBottom:3,
@@ -187,6 +208,23 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
                 </div>
               ))}
             </div>
+
+            {/* [FIX] Emergency contact per country — always visible for ALL 9 countries */}
+            {emergencyInfo && (
+              <div style={{ marginBottom:20, padding:'10px 14px',
+                background:'rgba(255,45,85,0.08)', border:'1px solid rgba(255,45,85,0.25)',
+                textAlign:'center',
+              }}>
+                <div style={{ fontFamily:MF, fontSize:10, color:'#ff2d55', fontWeight:'bold' }}>
+                  🚨 {emergencyInfo.flag} Emergency: {emergencyInfo.emergency}
+                </div>
+                {emergencyInfo.report && (
+                  <div style={{ fontFamily:MF, fontSize:9, color:'rgba(255,255,255,0.5)', marginTop:4 }}>
+                    📋 {emergencyInfo.report}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Action buttons */}
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -284,6 +322,18 @@ export function InterventionOverlay({ intervention, language='en', onDismiss, on
                 </div>
               ))}
             </div>
+
+            {/* [FIX] Emergency contact also in result phase */}
+            {emergencyInfo && isLikelyScam && (
+              <div style={{ marginBottom:16, padding:'8px 12px',
+                background:'rgba(255,45,85,0.08)', border:'1px solid rgba(255,45,85,0.2)',
+                textAlign:'center',
+              }}>
+                <div style={{ fontFamily:MF, fontSize:10, color:'#ff2d55' }}>
+                  🚨 {emergencyInfo.flag} Emergency: {emergencyInfo.emergency} · {emergencyInfo.report}
+                </div>
+              </div>
+            )}
 
             {/* Action buttons based on result */}
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
