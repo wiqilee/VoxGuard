@@ -14,11 +14,11 @@ const GEMINI_TTS_MODEL = import.meta.env.VITE_GEMINI_TTS_MODEL || 'gemini-2.5-fl
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
 
 const GEMINI_CALLER_VOICE = {
-  en: 'Charon', id: 'Charon', zh: 'Charon', ja: 'Charon', ko: 'Charon',
-  es: 'Charon', fr: 'Charon', hi: 'Charon', ar: 'Charon',
-  ms: 'Charon', tl: 'Charon', th: 'Charon', vi: 'Charon', de: 'Charon',
-  it: 'Charon', nl: 'Charon', tr: 'Charon', pl: 'Charon', ru: 'Charon',
-  pt: 'Charon', 'pt-BR': 'Charon',
+  en: 'Puck', id: 'Puck', zh: 'Puck', ja: 'Puck', ko: 'Puck',
+  es: 'Puck', fr: 'Puck', hi: 'Puck', ar: 'Puck',
+  ms: 'Puck', tl: 'Puck', th: 'Puck', vi: 'Puck', de: 'Puck',
+  it: 'Puck', nl: 'Puck', tr: 'Puck', pl: 'Puck', ru: 'Puck',
+  pt: 'Puck', 'pt-BR': 'Puck',
 }
 const GEMINI_ME_VOICE = {
   en: 'Kore', id: 'Kore', zh: 'Kore', ja: 'Kore', ko: 'Kore',
@@ -235,7 +235,7 @@ const SCRIPTS_EN=[
 // ── INDONESIAN (7 scripts) — [FIX] Bank script fixed duplicate text ──
 const SCRIPTS_ID=[
   {id:'bank_id',label:'🏦 Penipuan Bank',category:'critical',sentences:[
-    {text:"Halo selamat siang. Saya dari pusat keamanan bank, dengan Bapak atau Ibu pemegang rekening?",delay:0,speaker:'caller'},
+    {text:"Halo Pak/Bu. Saya dari pusat keamanan bank, apakah benar dengan pemegang rekening?",delay:0,speaker:'caller'},
     {text:"Iya benar, ini saya. Ada apa ya?",delay:4500,speaker:'me'},
     {text:"Kami mendeteksi adanya transaksi mencurigakan sebesar 15 juta rupiah dari rekening Anda ke sebuah rekening di luar negeri.",delay:7500,speaker:'caller'},
     {text:"Saya tidak pernah melakukan transfer seperti itu!",delay:14000,speaker:'me'},
@@ -632,7 +632,9 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       source.connect(analyser)
       setLiveMic(true)
       // Generate a caller number for live mode
-      setCurrentCallerNumber(getCallerNumber(language))
+      const num = getCallerNumber(language)
+      setCurrentCallerNumber(num)
+      window.__voxguard_caller_number = num
     }catch(err){alert('Microphone access denied.')}
   }
   const stopLiveMic=()=>{
@@ -688,12 +690,15 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     // If dismissed or challenge passed, caller voice resumes normally
   }
 
-  // [FIX] Set caller number when script is selected
+  // [FIX] Set caller number when script is selected + store globally for report
   useEffect(()=>{
     if(script){
-      setCurrentCallerNumber(getCallerNumber(language))
+      const num = getCallerNumber(language)
+      setCurrentCallerNumber(num)
+      window.__voxguard_caller_number = num
     } else {
       setCurrentCallerNumber(null)
+      window.__voxguard_caller_number = null
     }
   },[script,language])
 

@@ -283,10 +283,6 @@ export default function App() {
   /* ══════════════════════════════════════════════════════════
      [FIX] THREAT SCORE — Realistic severity-based increments
      ────────────────────────────────────────────────────────
-     critical alerts: +22 to +30 (reaches BLOCK/LOCKDOWN fast)
-     high alerts:     +15 to +22
-     medium alerts:   +10 to +16
-     
      This ensures:
      - Bank Fraud (3 alerts, 2 critical): score reaches 70-85 → BLOCK
      - Gov + Gift Card (3 critical): score reaches 80-95 → LOCKDOWN
@@ -300,10 +296,10 @@ export default function App() {
     })
 
     // [FIX] Severity-based score increments
-    const baseIncrement = alert.severity === 'critical' ? 25
-                        : alert.severity === 'high' ? 18
+    const baseIncrement = alert.severity === 'critical' ? 32
+                        : alert.severity === 'high' ? 24
                         : 12
-    const randomBonus = Math.floor(Math.random() * 8)
+    const randomBonus = Math.floor(Math.random() * 9)
     const increment = baseIncrement + randomBonus
 
     setThreatScore(prev => {
