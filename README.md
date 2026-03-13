@@ -20,7 +20,7 @@
 [![Google Cloud Run](https://img.shields.io/badge/Cloud-Run-4285F4?style=flat-square&logo=googlecloud)](https://cloud.google.com/run)
 [![Built for](https://img.shields.io/badge/Built%20for-Gemini%20Live%20Agent%20Challenge-FF6B35?style=flat-square)](https://geminiliveagentchallenge.devpost.com)
 
-**The world's first real-time multimodal scam detection agent with active intervention.**
+**To our knowledge, the first real-time multimodal scam detection agent with active intervention.**
 Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection in under 80ms.
 
 <a href="https://voxguard-kappa.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel" alt="Live Demo"/></a> <a href="https://youtube.com"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a> <a href="YOUR_MEDIUM_URL_HERE"><img src="https://img.shields.io/badge/Article-Medium-000000?style=for-the-badge&logo=medium" alt="Medium Article"/></a> <a href="#-for-judges-2-minute-guide"><img src="https://img.shields.io/badge/For%20Judges-2%20Minute%20Guide-FF6B35?style=for-the-badge" alt="For Judges"/></a>
@@ -123,7 +123,7 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 <img src="docs/svgs/intervention.svg" alt="Live Scam Intervention Demo" width="100%"/>
 </div>
 
-No other tool does this. This is what sets VoxGuard apart.
+No existing tool we surveyed does this. This is what sets VoxGuard apart.
 
 When VoxGuard's threat engine determines you are about to take an irreversible action, it does not wait for you to check a dashboard. It takes over your screen, **speaks to you in a natural human voice**, explains exactly why this is dangerous, and forces a decision point.
 
@@ -297,7 +297,7 @@ VoxGuard's three-layer defense breaks that panic loop:
 
 The intervention overlay physically breaks that panic loop. It pauses the conversation. It forces a moment of reflection. The scenario-based verification challenge makes the victim confront the reality of what is happening, with questions tailored to the specific scam type they are experiencing. And if the victim is too far gone to respond, the 30-second lockdown countdown ends the call automatically.
 
-No other scam detection tool does this. Every other system either blocks calls before they connect (which misses new numbers) or sends a passive notification after the call ends (which is too late). VoxGuard is the first system that intervenes **during** the critical moment when the victim is about to hand over their money.
+No existing scam detection tool we surveyed does this. Every other system either blocks calls before they connect (which misses new numbers) or sends a passive notification after the call ends (which is too late). VoxGuard is, to our knowledge, the first system that intervenes **during** the critical moment when the victim is about to hand over their money.
 
 ### Intervention Tracking
 
@@ -430,7 +430,7 @@ All patterns grounded to published sources: FTC Consumer Sentinel, FBI IC3 2024,
 <img src="docs/svgs/psych-vectors.svg" alt="Psychological Vectors" width="260"/>
 </div>
 
-The **only scam detection system in the world** that maps psychological manipulation vectors in real-time using three analytical frameworks:
+The **only scam detection system we are aware of** that maps psychological manipulation vectors in real-time using three analytical frameworks:
 
 **Framework 1: Cialdini's 6 Influence Principles** maps which persuasion vectors the caller is deploying:
 
@@ -689,6 +689,8 @@ uvicorn app.main:app --reload --port 8000
 
 Three pre-loaded scripts for Demo Mode (no microphone needed):
 
+**English (EN) - 7 Scripts:**
+
 **Script A: Bank Impersonation (Critical)**
 > *"Hello, I'm calling from your bank's fraud prevention department. We've detected suspicious activity on your account. Your account will be frozen in 10 minutes unless you verify your identity. Please provide your account number and the OTP."*
 >
@@ -709,6 +711,27 @@ Three pre-loaded scripts for Demo Mode (no microphone needed):
 > **Intervention trigger:** Gift Card Demand fires instant BLOCK - Safe Exit only (fatal pattern).
 > **Voice warning:** *"Stop. No legitimate organization accepts payment through gift cards. This is a confirmed scam."*
 
+**Script D: AI Voice Clone (Critical)**
+> *The caller uses an AI-generated voice to impersonate the victim's child, fabricating a car accident and demanding $8,000 in bail via wire transfer.*
+>
+> **Intervention trigger:** Wire Transfer Instruction + Isolation Tactic. BLOCK fires on the bail demand.
+> **Voice warning:** *"Stop. This person is impersonating a family member. Verify their identity by calling them on their known number."*
+
+**Script E: Digital Arrest (Critical)**
+> *The caller poses as a federal cyber crime officer, claims the victim's identity was used in money laundering, and demands the victim stay on video call while transferring funds to a "government-secured holding account."*
+>
+> **Intervention trigger:** Government Impersonation + Safe Account Transfer fires instant BLOCK.
+> **Voice warning:** *"Stop immediately. Law enforcement never demands money transfers by phone. This is a scam."*
+
+**Script F: Job Offer Scam (High)**
+> *The caller offers a remote data entry position paying $5,000/month, then demands a $299 "training kit" payment via gift cards or cryptocurrency.*
+>
+> **Intervention trigger:** Gift Card Demand fires instant BLOCK when gift card payment is requested.
+> **Voice warning:** *"Stop. No legitimate employer asks you to pay upfront for a job. This is employment fraud."*
+
+**Script G: Family Emergency (High)**
+> *The caller impersonates a family member in distress, claims a car accident and hospital emergency, and demands wire transfer.*
+
 ---
 
 ## 🏆 For Judges: Full Evaluation Guide
@@ -721,7 +744,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 ### Technical Implementation (30%)
 
-- **Google GenAI SDK:** All Gemini calls use the official `google-generativeai` Python SDK
+- **Google GenAI SDK:** All Gemini calls use the official Google GenAI SDK for Python (`google-generativeai` package), the SDK specified by the contest requirements
 - **Gemini Live API:** `gemini-2.5-flash-native-audio` for real-time audio streaming with barge-in and enhanced audio quality
 - **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation
 - **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages
@@ -819,12 +842,12 @@ No proprietary or licensed data. No personal victim data. All examples reconstru
 
 ## 🔒 Privacy and Ethics
 
-- **No audio stored:** Processed in-stream, discarded immediately
-- **No raw audio transmission:** Rust WASM sends only preprocessed feature vectors and transcripts
-- **No TTS audio stored:** Voice intervention audio is generated on-demand and not persisted
-- **Explicit screen consent:** Screen capture requires explicit user activation
-- **No PII collection:** No personally identifiable information collected
-- **No brand names:** Demo scripts use generic institution names
+- **No audio persisted by default:** Audio is processed in real-time streams and discarded immediately after analysis. Raw audio is only retained when the user explicitly enables the REC recording feature.
+- **Minimal data transmission:** Rust WASM preprocesses audio locally. Only the necessary audio frames are streamed to the backend for Gemini Live API analysis. No raw audio is stored server-side.
+- **No TTS audio stored:** Voice intervention audio is generated on demand and not persisted.
+- **Explicit screen consent:** Screen capture requires explicit user activation.
+- **No PII collection:** No personally identifiable information is collected by VoxGuard.
+- **No brand names:** Demo scripts use generic institution names.
 - **Intervention is protective, not punitive:** The system helps users make informed decisions. It never prevents them from continuing a call if they choose to after the verification challenge.
 
 ---

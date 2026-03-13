@@ -10,7 +10,7 @@ import { LanguageSelector } from './components/LanguageSelector'
 import { HeaderPixels } from './components/PixelParticles'
 
 const TABS = ['monitor','psych','patterns','report','about']
-const DEMO = import.meta.env.VITE_DEMO_MODE === 'true' || true
+const CAN_DEMO = import.meta.env.VITE_DEMO_MODE === 'true' || true
 
 const ENGLISH_FALLBACK_LANGS = {
   'ms':'Malay','tl':'Filipino','th':'Thai','vi':'Vietnamese',
@@ -244,6 +244,7 @@ export default function App() {
   const [audioUrl,setAudioUrl]=useState(null)
   const [interventionHistory,setInterventionHistory]=useState([])
   const [actionPlan,setActionPlan]=useState(null)
+  const [demoMode,setDemoMode]=useState(false)
   const timerRef=useRef(null), demoRef=useRef(null), alertIdxRef=useRef(0)
   // [NEW] Ref to track latest state for handleStop/handleSafeExit
   const alertsRef = useRef([])
@@ -267,10 +268,10 @@ export default function App() {
   useEffect(()=>{ const t=setInterval(()=>setScanY(y=>(y+1.4)%100),16); return()=>clearInterval(t) },[])
 
   const ws=useWebSocket()
-  const audio=useAudioEngine({active:monitoring&&!DEMO,onChunk:ws.sendAudioChunk})
-  const screen=useScreenCapture({active:screenOn&&!DEMO,onFrame:ws.sendScreenFrame})
+  const audio=useAudioEngine({active:monitoring&&!CAN_DEMO,onChunk:ws.sendAudioChunk})
+  const screen=useScreenCapture({active:screenOn&&!CAN_DEMO,onFrame:ws.sendScreenFrame})
 
-  useEffect(()=>{ if(DEMO)return; setAlerts(ws.alerts);setThreatScore(ws.threatScore);setPsychScores(ws.psychScores);setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe') },[ws.alerts,ws.threatScore,ws.psychScores])
+  useEffect(()=>{ if(CAN_DEMO)return; setAlerts(ws.alerts);setThreatScore(ws.threatScore);setPsychScores(ws.psychScores);setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe') },[ws.alerts,ws.threatScore,ws.psychScores])
 
   useEffect(()=>{
     if(!monitoring){clearInterval(demoRef.current);return}
@@ -283,17 +284,12 @@ export default function App() {
   /* ══════════════════════════════════════════════════════════
      [FIX] THREAT SCORE — Realistic severity-based increments
      ────────────────────────────────────────────────────────
-     Bank ENhigh, critical, high24 → 56 → 80 | 80 BLOCK
-     Gov/Tax ENcritical, critical, critical32 → 64 → 98 | 98 LOCKDOWN
-     Romance ENcritical, critical, critical32 → 64 → 98 | 98 LOCKDOWN
-     Bank IDhigh, critical, high24 → 56 → 80 | 80 BLOCK
-     Pinjol IDhigh, critical, critical24 → 56 → 90 | 90 LOCKDOWN
+     Bank EN high, critical, high24 → 56 → 80 | 80 BLOCK
+     Gov/Tax EN critical, critical, critical32 → 64 → 98 | 98 LOCKDOWN
+     Romance EN critical, critical, critical32 → 64 → 98 | 98 LOCKDOWN
+     Bank ID high, critical, high24 → 56 → 80 | 80 BLOCK
+     Pinjol ID high, critical, critical24 → 56 → 90 | 90 LOCKDOWN
      Cryptohigh, critical, critical24 → 56 → 90 | 90 LOCKDOWN
-
-     This ensures:
-     - Bank Fraud (3 alerts, 2 critical): score reaches 70-85 → BLOCK
-     - Gov + Gift Card (3 critical): score reaches 80-95 → LOCKDOWN
-     - OTP patterns: instant BLOCK regardless of score
   ══════════════════════════════════════════════════════════ */
   const handleDemoAlert = (alert) => {
     setAlerts(prev => {
@@ -366,7 +362,7 @@ export default function App() {
       const plan = generateDemoActionPlan(currentAlerts, language, threatScoreRef.current, interventionHistoryRef.current)
       setActionPlan(plan)
     }
-    if (!DEMO) ws.endSession()
+    if (!CAN_DEMO) ws.endSession()
     setTab('report')
   }
 
@@ -384,7 +380,7 @@ export default function App() {
     alertsRef.current = []
     threatScoreRef.current = 0
     interventionHistoryRef.current = []
-    if(!DEMO){ws.reset();ws.startSession()}
+    if(!CAN_DEMO){ws.reset();ws.startSession()}
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -405,7 +401,7 @@ export default function App() {
       const plan = generateDemoActionPlan(currentAlerts, language, threatScoreRef.current, interventionHistoryRef.current)
       setActionPlan(plan)
     }
-    if (!DEMO) ws.endSession()
+    if (!CAN_DEMO) ws.endSession()
     setTab('report')
   }
 
@@ -496,7 +492,8 @@ export default function App() {
                   <div style={{ fontFamily:PF,fontSize:7,color:monitoring?tColor:'rgba(0,255,255,0.8)',letterSpacing:2,lineHeight:1,transition:'color 0.4s',textShadow:monitoring?`0 0 8px ${tColor}`:'0 0 6px rgba(0,255,255,0.4)' }}>{monitoring?'LIVE':'STANDBY'}</div>
                   {monitoring&&<div style={{ fontFamily:MF,fontSize:10,color:tColor+'cc',marginTop:3 }}>{fmt(sessionTime)}</div>}
                 </div>
-                {DEMO&&<div style={{ marginLeft:'auto',fontFamily:PF,fontSize:6,padding:'4px 8px',border:'1px solid rgba(255,214,10,0.5)',color:'#ffd60a',background:'rgba(255,214,10,0.1)',display:'flex',alignItems:'center',gap:4,textShadow:'0 0 6px #ffd60a' }}><div style={{ width:5,height:5,background:'#ffd60a',animation:'blink 1s step-end infinite',boxShadow:'0 0 4px #ffd60a' }}/>DEMO</div>}
+                {monitoring&&<div style={{ marginLeft:'auto',fontFamily:PF,fontSize:6,padding:'4px 8px',border:`1px solid ${demoMode?'rgba(255,214,10,0.5)':'rgba(48,209,88,0.5)'}`,color:demoMode?'#ffd60a':'#30d158',background:demoMode?'rgba(255,214,10,0.1)':'rgba(48,209,88,0.1)',display:'flex',alignItems:'center',gap:4,textShadow:`0 0 6px ${demoMode?'#ffd60a':'#30d158'}` }}><div style={{ width:5,height:5,background:demoMode?'#ffd60a':'#30d158',animation:'blink 1s step-end infinite',boxShadow:`0 0 4px ${demoMode?'#ffd60a':'#30d158'}` }}/>{demoMode?'DEMO':'LIVE'}</div>}
+                {!monitoring&&CAN_DEMO&&<div style={{ marginLeft:'auto',fontFamily:PF,fontSize:6,padding:'4px 8px',border:'1px solid rgba(255,214,10,0.5)',color:'#ffd60a',background:'rgba(255,214,10,0.1)',display:'flex',alignItems:'center',gap:4,textShadow:'0 0 6px #ffd60a' }}><div style={{ width:5,height:5,background:'#ffd60a',animation:'blink 1s step-end infinite',boxShadow:'0 0 4px #ffd60a' }}/>DEMO</div>}
               </div>
             </div>
           </header>
@@ -537,6 +534,8 @@ export default function App() {
               onInterventionEvent={handleInterventionEvent}
               onSafeExit={handleSafeExit}
               language={language}
+              demoMode={demoMode}
+              setDemoMode={setDemoMode}
             />}
             {tab==='psych'    && <PsychTab psychScores={psychScores} lieScores={lieScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}

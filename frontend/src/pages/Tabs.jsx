@@ -393,9 +393,17 @@ function genHTML(report) {
 
   const barHTML=(entries,title)=>{
     if(!entries||entries.length===0) return ''
+    const interpText=(score)=>{
+      if(score===0) return 'Inactive'
+      if(score<=20) return 'Low - minimal presence'
+      if(score<=40) return 'Moderate - noticeable pattern, stay alert'
+      if(score<=60) return 'Elevated - active manipulation detected'
+      if(score<=80) return 'High - intense pressure, likely scam'
+      return 'Critical - confirmed manipulation, disengage immediately'
+    }
     return `<h2>${title}</h2>${entries.map(([k,v])=>{
       const c=v>60?'#cc0000':v>30?'#cc7700':v>0?'#228833':'#333'
-      return `<div class="bar"><span class="bl">${k}</span><div class="bt"><div class="bf" style="width:${v}%;background:${c}"></div></div><span class="bv" style="color:${c}">${v}%</span></div>`
+      return `<div class="bar"><span class="bl">${k}</span><div class="bt"><div class="bf" style="width:${v}%;background:${c}"></div></div><span class="bv" style="color:${c}">${v}%</span></div><div style="font-size:8px;color:#333;margin:-2px 0 4px 120px;font-style:italic">${interpText(v)}</div>`
     }).join('')}`
   }
 
@@ -436,7 +444,7 @@ ${ec.contacts.map(c=>`<div style="padding:10px 14px;border:1.5px solid #cc000033
 </div>
 ${plan?.urgency_message?`<div style="padding:8px 14px;background:#fff8e1;border-left:3px solid ${uc};margin-bottom:10px;font-size:10px;color:#111;font-weight:bold">${plan.urgency_message}</div>`:''}
 ${plan?.personalized_advice?`<div style="padding:8px 14px;background:#f0f7ff;border-left:3px solid #005599;margin-bottom:12px;font-size:10px;color:#111;line-height:1.6">🤖 <strong>AI Analysis:</strong> ${plan.personalized_advice}</div>`:''}
-${steps.map(s=>{const bc=urgBadgeColors[s.urgency]||'#228833';return `<div class="action" style="border-left-color:${bc}"><span style="font-size:13px;margin-right:6px">${s.icon||'▸'}</span><span style="color:#111">${s.action}</span><span class="pri" style="color:${bc}">[${(s.urgency||'recommended').toUpperCase()}]</span></div>`}).join('')}
+${steps.map(s=>{const bc=urgBadgeColors[s.urgency]||'#228833';const checked=s.completed?'☑':'☐';return `<div class="action" style="border-left-color:${bc}"><span style="font-size:13px;margin-right:6px">${checked}</span><span style="font-size:13px;margin-right:6px">${s.icon||'▸'}</span><span style="color:#111;${s.completed?'text-decoration:line-through;opacity:0.6':''}">${s.action}</span><span class="pri" style="color:${bc}">[${(s.urgency||'recommended').toUpperCase()}]</span></div>`}).join('')}
 <div style="padding:10px 14px;background:#fff0f0;border:1px solid #cc000033;margin-top:10px;text-align:center;font-size:10px;color:#cc0000;font-weight:bold">🚨 Emergency: Call ${country.emergency} if you feel in danger</div>
 ${plan?.disclaimer?`<div style="font-size:8px;color:#333;margin-top:6px;font-style:italic">${plan.disclaimer}</div>`:''}`
   }

@@ -160,8 +160,8 @@ function AnalysisProgressBar({progress,threatColor}){const c=progress>=100;retur
 /* ══════════════════════════════════════════════════════════
    [FIX] DEMO SCRIPTS — ALL LANGUAGES WITH EXPANDED SCRIPTS
    ────────────────────────────────────────────────────────
-   EN: 6 scripts (bank, tech, gov, romance, crypto, family)
-   ID: 7 scripts (bank, pinjol, mama, giveaway, romance, crypto, family)
+   EN: 9 scripts (bank, tech, gov, romance, crypto, family, ai_voice, digital_arrest, job_scam)
+   ID: 8 scripts (bank, pinjol, mama, giveaway, romance, crypto, family, job)
    + All other languages keep their 3 scripts
    
    [FIX] Indonesian bank: removed duplicate text
@@ -228,6 +228,36 @@ const SCRIPTS_EN=[
     {text:"I'm okay but I'm in a lot of pain. Please don't call Dad — he'll be so upset. The doctor says I need five thousand dollars for the deposit. Can you wire transfer it right now?",delay:17000,speaker:'caller',alert:{id:'f2',severity:'high',pattern:'Isolation Tactic',quote:'"Don\'t call Dad. Wire $5,000 now."',confidence:91,tactics:['ISOLATION','FEAR'],source:'GASA 2024',time:'00:17'}},
     {text:"Five thousand? Let me think about this...",delay:25000,speaker:'me'},
     {text:"Mom please, there's no time! The doctor says if I don't get surgery within the hour, my condition could get much worse. Transfer the money right now. Don't tell anyone!",delay:28000,speaker:'caller',alert:{id:'f3',severity:'critical',pattern:'Artificial Urgency',quote:'"Surgery within the hour or condition worsens."',confidence:95,tactics:['FEAR','SCARCITY'],source:'FBI IC3 2024',time:'00:28'}},
+  ]},
+  // [NEW] AI Voice Clone
+  {id:'ai_voice',label:'🤖 AI Voice Clone',category:'critical',sentences:[
+    {text:"Mom? Mom, it is me. Please, I am in serious trouble.",delay:0,speaker:'caller'},
+    {text:"Honey? Is that you? You sound different.",delay:4000,speaker:'me'},
+    {text:"I have a bad cold, that is why. Listen, I was in a car accident and the police say I was at fault. I need to post bail immediately or they will take me to jail.",delay:7000,speaker:'caller',alert:{id:'av1',severity:'high',pattern:'Family Impersonation',quote:'"Car accident, need bail immediately."',confidence:91,tactics:['FEAR','RECIPROCITY'],source:'FBI IC3 2024',time:'00:07'}},
+    {text:"Oh my God! Are you hurt?",delay:15000,speaker:'me'},
+    {text:"I am okay but terrified. My lawyer says I need eight thousand dollars for bail. Wire it right now. Do not call Dad or my regular number, the police took my phone.",delay:18000,speaker:'caller',alert:{id:'av2',severity:'critical',pattern:'Wire Transfer Instruction',quote:'"Wire $8,000. Do not call my number."',confidence:96,tactics:['FEAR','ISOLATION'],source:'FBI IC3 2024',time:'00:18'}},
+    {text:"That is a lot of money...",delay:26000,speaker:'me'},
+    {text:"Mom they are about to take me away! The wire transfer has to go through in twenty minutes or I spend the night in a cell. Please!",delay:29000,speaker:'caller',alert:{id:'av3',severity:'critical',pattern:'Artificial Urgency',quote:'"20 minutes or jail."',confidence:95,tactics:['SCARCITY','FEAR'],source:'FBI IC3 2024',time:'00:29'}},
+  ]},
+  // [NEW] Digital Arrest
+  {id:'digital_arrest',label:'🚔 Digital Arrest',category:'critical',sentences:[
+    {text:"This is Officer Williams from the Federal Cyber Crime Division. Your identity has been linked to a money laundering operation.",delay:0,speaker:'caller'},
+    {text:"What? I have not done anything illegal!",delay:5000,speaker:'me'},
+    {text:"We have evidence your Social Security number was used to open fraudulent bank accounts. Fourteen complaints have been filed.",delay:8000,speaker:'caller',alert:{id:'da1',severity:'critical',pattern:'Government Impersonation',quote:'"Federal Cyber Crime Division, money laundering."',confidence:97,tactics:['AUTHORITY','FEAR'],source:'FBI IC3 2024',time:'00:08'}},
+    {text:"This must be a mistake.",delay:15000,speaker:'me'},
+    {text:"Switch to video call now to verify your identity. You must stay on this call. If you disconnect, a warrant will be issued for your arrest within the hour.",delay:18000,speaker:'caller',alert:{id:'da2',severity:'critical',pattern:'Digital Arrest (IN/SEA)',quote:'"Stay on call or warrant issued."',confidence:96,tactics:['AUTHORITY','ISOLATION'],source:'GASA 2024',time:'00:18'}},
+    {text:"Stay on video call? For how long?",delay:26000,speaker:'me'},
+    {text:"Until we clear your name. Give me your Social Security number and bank details now. Transfer your funds to a government holding account. Do not contact anyone. This is classified.",delay:29000,speaker:'caller',alert:{id:'da3',severity:'critical',pattern:'Safe Account Transfer',quote:'"Transfer to government account. Classified."',confidence:99,tactics:['AUTHORITY','COMMITMENT','ISOLATION'],source:'FBI IC3 2024',time:'00:29'}},
+  ]},
+  // [NEW] Job Offer Scam
+  {id:'job_scam',label:'💼 Job Offer Scam',category:'high',sentences:[
+    {text:"Hi there! I am from the HR department of a Fortune 500 company. We reviewed your resume and would like to offer you a remote position.",delay:0,speaker:'caller'},
+    {text:"Really? Which company?",delay:5000,speaker:'me'},
+    {text:"I cannot disclose the name yet, but it pays five thousand dollars per month for data entry. Fully remote, no experience required.",delay:8000,speaker:'caller',alert:{id:'js1',severity:'high',pattern:'Employment / Job Offer Scam',quote:'"$5,000/month data entry, no experience."',confidence:92,tactics:['GREED','AUTHORITY'],source:'FBI IC3 2024',time:'00:08'}},
+    {text:"Five thousand a month for data entry? That sounds really high.",delay:15000,speaker:'me'},
+    {text:"We value quality talent. To proceed with onboarding, purchase a certified training kit for two hundred ninety-nine dollars. Fully reimbursed in your first paycheck.",delay:18000,speaker:'caller',alert:{id:'js2',severity:'high',pattern:'Advance Fee Fraud',quote:'"Training kit $299, reimbursed later."',confidence:95,tactics:['GREED','COMMITMENT'],source:'FTC Sentinel',time:'00:18'}},
+    {text:"I have to pay upfront?",delay:26000,speaker:'me'},
+    {text:"Standard for remote positions at this level. Only three spots left. Send two hundred ninety-nine via gift card or crypto within the hour.",delay:29000,speaker:'caller',alert:{id:'js3',severity:'critical',pattern:'Gift Card Demand',quote:'"$299 via gift card or crypto."',confidence:97,tactics:['URGENCY','SCARCITY'],source:'FBI IC3 2024',time:'00:29'}},
   ]},
 ]
 
@@ -301,6 +331,16 @@ const SCRIPTS_ID=[
     {text:"Rumah sakit minta deposit 3 juta dulu sebelum operasi. Aku tidak bawa dompet. Tolong transfer ke nomor perawat ini.",delay:17000,speaker:'caller',alert:{id:'fid2',severity:'high',pattern:'Wire Transfer Instruction',quote:'"Transfer 3 juta ke nomor perawat."',confidence:90,tactics:['AUTHORITY','FEAR'],source:'GASA 2024',time:'00:17'}},
     {text:"Tunggu, ke nomor perawat?",delay:24000,speaker:'me'},
     {text:"Iya kak, cepat ya. Dokter bilang kalau tidak segera dioperasi bisa infeksi. Jangan bilang mama dulu, nanti mama panik.",delay:27000,speaker:'caller',alert:{id:'fid3',severity:'high',pattern:'Isolation Tactic',quote:'"Jangan bilang mama, transfer sekarang."',confidence:92,tactics:['ISOLATION','RECIPROCITY'],source:'GASA 2024',time:'00:27'}},
+  ]},
+  // [NEW] Penipuan Lowongan Kerja
+  {id:'job_id',label:'💼 Lowongan Palsu',category:'high',sentences:[
+    {text:"Halo! Kami dari HRD perusahaan multinasional. Kami lihat profil Anda di portal kerja dan ingin menawarkan posisi remote dengan gaji 15 juta per bulan.",delay:0,speaker:'caller'},
+    {text:"Wah serius? Perusahaan apa?",delay:5000,speaker:'me'},
+    {text:"Belum bisa kami sebutkan sebelum proses onboarding selesai. Posisinya data entry, full remote, fleksibel, tidak butuh pengalaman. Gaji dibayar mingguan.",delay:8000,speaker:'caller',alert:{id:'jid1',severity:'high',pattern:'Employment / Job Offer Scam',quote:'"Gaji 15 juta, remote, tanpa pengalaman."',confidence:92,tactics:['GREED','AUTHORITY'],source:'GASA 2024',time:'00:08'}},
+    {text:"15 juta untuk data entry? Itu besar sekali.",delay:15000,speaker:'me'},
+    {text:"Kami menghargai talenta berkualitas. Untuk proses selanjutnya, Anda perlu membeli paket training sertifikasi senilai 500 ribu. Ini mencakup software, background check, dan peralatan. Biaya ini dikembalikan penuh di gaji pertama.",delay:18000,speaker:'caller',alert:{id:'jid2',severity:'high',pattern:'Advance Fee Fraud',quote:'"Beli paket training 500 ribu, dikembalikan nanti."',confidence:95,tactics:['GREED','COMMITMENT'],source:'GASA 2024',time:'00:18'}},
+    {text:"Harus bayar dulu?",delay:26000,speaker:'me'},
+    {text:"Standar untuk posisi remote di level ini. Slot tinggal 2 lagi dan cepat penuh. Transfer 500 ribu via pulsa atau kripto dalam satu jam untuk mengamankan posisi Anda.",delay:29000,speaker:'caller',alert:{id:'jid3',severity:'critical',pattern:'Gift Card Demand',quote:'"Transfer via pulsa atau kripto dalam satu jam."',confidence:97,tactics:['URGENCY','SCARCITY'],source:'GASA 2024',time:'00:29'}},
   ]},
 ]
 
@@ -575,7 +615,7 @@ function RecButton({ isRecording, onClick }) {
 // ══════════════════════════════════════════════════════════
 // ── MAIN COMPONENT
 // ══════════════════════════════════════════════════════════
-export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en'}){
+export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en',demoMode=false,setDemoMode}){
   const[script,setScript]=useState(null),[now,setNow]=useState(getNow()),[speaking,setSpeaking]=useState(false),[transcriptLines,setTranscriptLines]=useState([]),[voiceDemo,setVoiceDemo]=useState(false),[demoProgress,setDemoProgress]=useState(0),[voiceMuted,setVoiceMuted]=useState(false),[volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
   const handleVolume=(v)=>{setVolume(v);volumeRef.current=v}
@@ -734,7 +774,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
           if(s.alert){const at=setTimeout(()=>{if(onDemoAlert)onDemoAlert(s.alert)},1800);speechTimers.current.push(at)}
         },effectiveDelay);speechTimers.current.push(timer)})};if(window.speechSynthesis&&window.speechSynthesis.getVoices().length===0){window.speechSynthesis.addEventListener('voiceschanged',go,{once:true});setTimeout(go,300)}else go()},[onDemoAlert,onStop,onTranscriptLine,language,voiceMuted])
 
-  const handleStartWithVoice=()=>{onStart();if(script){setCurrentCallerNumber(getCallerNumber(language));setTimeout(()=>startVoiceDemo(script),500)}},handleStop=()=>{
+  const handleStartWithVoice=()=>{if(setDemoMode)setDemoMode(!!script);onStart();if(script){setCurrentCallerNumber(getCallerNumber(language));setTimeout(()=>startVoiceDemo(script),500)}},handleStop=()=>{
     window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}speechTimers.current.forEach(t=>clearTimeout(t))
     if(mediaRecorderRef.current&&mediaRecorderRef.current.state!=='inactive'){mediaRecorderRef.current.stop();setIsRecording(false)}
     if(liveMic)stopLiveMic()
@@ -786,10 +826,10 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
           <div className="vg-monitor-controls" style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
             <div className="vg-callmode-toggle" style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
             <RecButton isRecording={isRecording} onClick={toggleRecording} />
-            <PBtn onClick={liveMic?stopLiveMic:startLiveMic} color={liveMic?'#30d158':'#00d4ff'} style={{padding:'10px 14px',animation:liveMic?'rec-pulse 2s ease-in-out infinite':'none'}}>{liveMic?'🎙 MIC ON':'🎙 LIVE MIC'}</PBtn>
+            <PBtn onClick={liveMic?stopLiveMic:()=>{setScript(null);startLiveMic()}} color={liveMic?'#30d158':'#00d4ff'} style={{padding:'10px 14px',animation:liveMic?'rec-pulse 2s ease-in-out infinite':'none'}}>{liveMic?'🎙 MIC ON':'🎙 LIVE MIC'}</PBtn>
             {voiceDemo&&<PBtn onClick={()=>{setVoiceMuted(m=>!m);if(!voiceMuted){window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}}}} color={voiceMuted?'#ff9500':'#30d158'} style={{padding:'10px 14px'}}>{voiceMuted?'🔇 UNMUTE':'🔊 MUTE'}</PBtn>}
             <PBtn onClick={onToggleScreen} color={screenOn?'#7b61ff':'#7b61ff'}>{screenOn?'■ SCREEN OFF':'◈ SCREEN WATCH'}</PBtn>
-            {!monitoring?<PBtn className="vg-btn-start" onClick={handleStartWithVoice} color="#30d158">{script?'▶ START VOICE DEMO':'▶ START'}</PBtn>:<PBtn className="vg-btn-start" onClick={handleStop} danger>■ STOP</PBtn>}
+            {!monitoring?<PBtn className="vg-btn-start" onClick={handleStartWithVoice} color="#30d158">{script?'▶ START VOICE DEMO':liveMic?'▶ START LIVE':'▶ START'}</PBtn>:<PBtn className="vg-btn-start" onClick={handleStop} danger>■ STOP</PBtn>}
           </div>
         </div>
         {/* [FIX] Pass callerNumber to CallerVisual */}
@@ -821,7 +861,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         {voiceDemo&&<AnalysisProgressBar progress={demoProgress} threatColor={tColor}/>}
         <div className="vg-monitor-stats" style={{display:'flex',gap:8,flexWrap:'wrap'}}><StatCard label="THREATS" value={alerts.length} color="#ff2d55" icon="⚠"/><StatCard label="PATTERNS" value="50+" color="#00d4ff" icon="◎"/><StatCard label="LATENCY" value="<80ms" color="#30d158" icon="⚡"/><StatCard label="CONFIDENCE" value={avgConf?`${avgConf}%`:'—'} color="#7b61ff" icon="◆"/></div>
       </PBox>
-      <PBox color="rgba(255,214,10,.2)" style={{padding:16,background:'rgba(255,214,10,.01)'}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{width:6,height:6,background:'#ffd60a',animation:'blink 1s step-end infinite'}}/><span style={{fontFamily:PF,fontSize:7,color:'#ffd60a',letterSpacing:1}}>VOICE DEMO SCRIPTS</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.45)'}}>— {language.toUpperCase()}</span></div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.35)',marginBottom:12,paddingLeft:14}}>🔊 2-way dialog (ME + CALLER) · Auto-stop · Use 🔇 MUTE for text-only mode</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{availableScripts.map(s=>{const isActive=script?.id===s.id;return(<button key={s.id} onClick={()=>setScript(isActive?null:s)} className="vg-demo-script-btn" style={{fontFamily:MF,fontSize:10,padding:'7px 14px',cursor:'pointer',border:`1px solid ${isActive?'#ffd60a':'rgba(255,214,10,.22)'}`,background:isActive?'rgba(255,214,10,.12)':'transparent',color:isActive?'#ffd60a':'rgba(255,214,10,.52)',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>{s.label}{isActive&&<span style={{fontSize:8}}>✓</span>}</button>)})}</div></PBox>
+      <PBox color="rgba(255,214,10,.2)" style={{padding:16,background:'rgba(255,214,10,.01)',opacity:liveMic?0.4:1,pointerEvents:liveMic?'none':'auto'}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{width:6,height:6,background:'#ffd60a',animation:'blink 1s step-end infinite'}}/><span style={{fontFamily:PF,fontSize:7,color:'#ffd60a',letterSpacing:1}}>VOICE DEMO SCRIPTS</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.45)'}}>— {language.toUpperCase()}</span>{liveMic&&<span style={{fontFamily:MF,fontSize:8,color:'#30d158',marginLeft:8}}>DISABLED — LIVE MIC ACTIVE</span>}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.35)',marginBottom:12,paddingLeft:14}}>🔊 2-way dialog (ME + CALLER) · Auto-stop · Use 🔇 MUTE for text-only mode</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{availableScripts.map(s=>{const isActive=script?.id===s.id;return(<button key={s.id} onClick={()=>{if(liveMic)return;setScript(isActive?null:s)}} className="vg-demo-script-btn" style={{fontFamily:MF,fontSize:10,padding:'7px 14px',cursor:liveMic?'not-allowed':'pointer',border:`1px solid ${isActive?'#ffd60a':'rgba(255,214,10,.22)'}`,background:isActive?'rgba(255,214,10,.12)':'transparent',color:isActive?'#ffd60a':'rgba(255,214,10,.52)',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>{s.label}{isActive&&<span style={{fontSize:8}}>✓</span>}</button>)})}</div></PBox>
       <PBox color={alerts.length>0?'#ff2d55':'rgba(0,212,255,.15)'} style={{padding:20,background:'rgba(0,0,0,.2)',flex:1}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,flexWrap:'wrap',gap:8}}><div><div style={{fontFamily:PF,fontSize:9,color:'#00d4ff'}}>REAL-TIME ALERTS</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(0,212,255,.55)',marginTop:5}}>{now}</div></div>{alerts.length>0&&<div style={{fontFamily:PF,fontSize:7,padding:'5px 12px',border:'2px solid #ff2d55',color:'#ff2d55',background:'rgba(255,45,85,.08)',animation:'ppulse 1.5s infinite',flexShrink:0}}>{alerts.length} DETECTED</div>}</div>{alerts.length===0?(<div style={{textAlign:'center',padding:'52px 0'}}><div style={{fontSize:38,marginBottom:14,color:'rgba(0,212,255,.15)'}}>🛡</div><div style={{fontFamily:PF,fontSize:7,color:'rgba(255,255,255,.2)',lineHeight:2.5}}>{monitoring?'LISTENING...\nANALYZING':'SELECT DEMO\nTHEN START'}</div></div>):(<div style={{maxHeight:380,overflowY:'auto',paddingRight:4}}>{alerts.map((a,i)=><AlertCard key={a.id} alert={a} index={i}/>)}</div>)}</PBox>
     </div>
 
