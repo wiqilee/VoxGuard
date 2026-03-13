@@ -615,7 +615,7 @@ function RecButton({ isRecording, onClick }) {
 // ══════════════════════════════════════════════════════════
 // ── MAIN COMPONENT
 // ══════════════════════════════════════════════════════════
-export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en',demoMode=false,setDemoMode}){
+export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en',demoMode=false,setDemoMode,onLiveMicChange}){
   const[script,setScript]=useState(null),[now,setNow]=useState(getNow()),[speaking,setSpeaking]=useState(false),[transcriptLines,setTranscriptLines]=useState([]),[voiceDemo,setVoiceDemo]=useState(false),[demoProgress,setDemoProgress]=useState(0),[voiceMuted,setVoiceMuted]=useState(false),[volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
   const handleVolume=(v)=>{setVolume(v);volumeRef.current=v}
@@ -670,6 +670,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       analyser.fftSize=256
       source.connect(analyser)
       setLiveMic(true)
+      if(onLiveMicChange) onLiveMicChange(true)
       // Generate a caller number for live mode
       const num = getCallerNumber(language)
       setCurrentCallerNumber(num)
@@ -680,6 +681,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     if(liveMicStream.current){liveMicStream.current.getTracks().forEach(t=>t.stop());liveMicStream.current=null}
     if(liveMicCtx.current){liveMicCtx.current.close().catch(()=>{});liveMicCtx.current=null}
     setLiveMic(false)
+    if(onLiveMicChange) onLiveMicChange(false)
   }
   useEffect(()=>{return()=>{stopLiveMic()}},[])
   useEffect(()=>{if(!monitoring&&liveMic)stopLiveMic()},[monitoring])

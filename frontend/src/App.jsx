@@ -10,7 +10,9 @@ import { LanguageSelector } from './components/LanguageSelector'
 import { HeaderPixels } from './components/PixelParticles'
 
 const TABS = ['monitor','psych','patterns','report','about']
-const CAN_DEMO = import.meta.env.VITE_DEMO_MODE === 'true' || true
+// When VITE_DEMO_MODE is unset or 'true', run in demo mode (no backend needed).
+// When VITE_DEMO_MODE is explicitly 'false', run in production mode (backend required).
+const CAN_DEMO = import.meta.env.VITE_DEMO_MODE !== 'false'
 
 const ENGLISH_FALLBACK_LANGS = {
   'ms':'Malay','tl':'Filipino','th':'Thai','vi':'Vietnamese',
@@ -268,10 +270,13 @@ export default function App() {
   useEffect(()=>{ const t=setInterval(()=>setScanY(y=>(y+1.4)%100),16); return()=>clearInterval(t) },[])
 
   const ws=useWebSocket()
-  const audio=useAudioEngine({active:monitoring&&!CAN_DEMO,onChunk:ws.sendAudioChunk})
+  // Audio engine activates when: (1) production mode and monitoring, OR (2) live mic is active in any mode
+  const [liveMicActive, setLiveMicActive] = useState(false)
+  const audio=useAudioEngine({active:(monitoring&&!CAN_DEMO)||(monitoring&&liveMicActive),onChunk:ws.sendAudioChunk})
   const screen=useScreenCapture({active:screenOn&&!CAN_DEMO,onFrame:ws.sendScreenFrame})
 
-  useEffect(()=>{ if(CAN_DEMO)return; setAlerts(ws.alerts);setThreatScore(ws.threatScore);setPsychScores(ws.psychScores);setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe') },[ws.alerts,ws.threatScore,ws.psychScores])
+  // In production mode, sync alerts from backend. In demo+live mode, also sync if WS is connected.
+  useEffect(()=>{ if(CAN_DEMO&&!liveMicActive)return; if(ws.alerts?.length)setAlerts(ws.alerts);if(ws.threatScore)setThreatScore(ws.threatScore);if(ws.psychScores)setPsychScores(ws.psychScores);if(ws.threatScore)setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe') },[ws.alerts,ws.threatScore,ws.psychScores,liveMicActive])
 
   useEffect(()=>{
     if(!monitoring){clearInterval(demoRef.current);return}
@@ -536,6 +541,7 @@ export default function App() {
               language={language}
               demoMode={demoMode}
               setDemoMode={setDemoMode}
+              onLiveMicChange={setLiveMicActive}
             />}
             {tab==='psych'    && <PsychTab psychScores={psychScores} lieScores={lieScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}

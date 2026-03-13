@@ -577,7 +577,7 @@ voxguard/
 │   │   │   ├── ThreatMeter.jsx            # SVG arc gauge: composite threat score 0-100
 │   │   │   ├── WaveformVisualizer.jsx     # Real-time audio waveform bar visualization
 │   │   │   ├── LanguageSelector.jsx       # Language dropdown (40 languages)
-│   │   │   └── PixelParticles.jsx        # Animated pixel particles (header + monitor)
+│   │   │   └── PixelParticles.jsx         # Animated pixel particles (header + monitor)
 │   │   ├── pages/
 │   │   │   ├── MonitorTab.jsx             # Main dashboard: waveform, alerts, explanation cards
 │   │   │   └── Tabs.jsx                   # Psych, Patterns, Report (with action plan), About
