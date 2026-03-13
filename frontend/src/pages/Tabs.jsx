@@ -749,6 +749,12 @@ export function PsychTab({psychScores,lieScores={}}){
           ))}
         </div>
       </div>
+      <div style={{marginBottom:16,padding:'10px 16px',border:'1px solid rgba(255,149,0,0.2)',background:'rgba(255,149,0,0.04)',display:'flex',alignItems:'flex-start',gap:10}}>
+        <span style={{fontSize:14,flexShrink:0}}>📌</span>
+        <div style={{fontFamily:MF,fontSize:10,color:'rgba(255,255,255,0.6)',lineHeight:1.7}}>
+          <strong style={{color:'#ff9500'}}>These scores measure the CALLER's manipulation tactics</strong>, not your behavior. Higher percentages mean the caller is more aggressively deploying that specific influence technique. Lie Detection indicators track deceptive behaviors in the caller's speech patterns. Together, they reveal the psychological architecture of the manipulation attempt in real time.
+        </div>
+      </div>
       <PBox className="psych-section" color="#ff950044" style={{padding:20,marginBottom:16}}>
         <div className="vg-psych-section" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
           <div style={{flex:1,minWidth:280}}>

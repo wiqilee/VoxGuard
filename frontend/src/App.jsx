@@ -275,8 +275,37 @@ export default function App() {
   const audio=useAudioEngine({active:(monitoring&&!CAN_DEMO)||(monitoring&&liveMicActive),onChunk:ws.sendAudioChunk})
   const screen=useScreenCapture({active:screenOn&&!CAN_DEMO,onFrame:ws.sendScreenFrame})
 
-  // In production mode, sync alerts from backend. In demo+live mode, also sync if WS is connected.
-  useEffect(()=>{ if(CAN_DEMO&&!liveMicActive)return; if(ws.alerts?.length)setAlerts(ws.alerts);if(ws.threatScore)setThreatScore(ws.threatScore);if(ws.psychScores)setPsychScores(ws.psychScores);if(ws.threatScore)setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe') },[ws.alerts,ws.threatScore,ws.psychScores,liveMicActive])
+  // In production/live mode, sync ALL data from backend WebSocket
+  useEffect(()=>{
+    if(CAN_DEMO&&!liveMicActive) return
+    // Sync alerts
+    if(ws.alerts?.length) setAlerts(ws.alerts)
+    // Sync threat score (only accept if higher than current to prevent drops)
+    if(ws.threatScore > 0) {
+      setThreatScore(prev => Math.max(prev, ws.threatScore))
+      setThreatLevel(ws.threatScore>75?'critical':ws.threatScore>45?'high':'safe')
+    }
+    // Sync psych scores (merge, keep highest)
+    if(ws.psychScores) {
+      setPsychScores(prev => {
+        const merged = {...prev}
+        Object.keys(ws.psychScores).forEach(k => {
+          merged[k] = Math.max(prev[k]||0, ws.psychScores[k]||0)
+        })
+        return merged
+      })
+    }
+    // Sync lie scores (merge, keep highest)
+    if(ws.lieScores) {
+      setLieScores(prev => {
+        const merged = {...prev}
+        Object.keys(ws.lieScores).forEach(k => {
+          merged[k] = Math.max(prev[k]||0, ws.lieScores[k]||0)
+        })
+        return merged
+      })
+    }
+  },[ws.alerts,ws.threatScore,ws.psychScores,ws.lieScores,liveMicActive])
 
   useEffect(()=>{
     if(!monitoring){clearInterval(demoRef.current);return}
@@ -367,7 +396,7 @@ export default function App() {
       const plan = generateDemoActionPlan(currentAlerts, language, threatScoreRef.current, interventionHistoryRef.current)
       setActionPlan(plan)
     }
-    if (!CAN_DEMO) ws.endSession()
+    if (!CAN_DEMO || liveMicActive) ws.endSession()
     setTab('report')
   }
 
@@ -385,7 +414,7 @@ export default function App() {
     alertsRef.current = []
     threatScoreRef.current = 0
     interventionHistoryRef.current = []
-    if(!CAN_DEMO){ws.reset();ws.startSession()}
+    if(!CAN_DEMO || liveMicActive){ws.reset();ws.startSession(language)}
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -406,7 +435,7 @@ export default function App() {
       const plan = generateDemoActionPlan(currentAlerts, language, threatScoreRef.current, interventionHistoryRef.current)
       setActionPlan(plan)
     }
-    if (!CAN_DEMO) ws.endSession()
+    if (!CAN_DEMO || liveMicActive) ws.endSession()
     setTab('report')
   }
 

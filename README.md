@@ -745,7 +745,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 ### Technical Implementation (30%)
 
 - **Google GenAI SDK:** All Gemini calls use the official Google GenAI SDK for Python (`google-generativeai` package), the SDK specified by the contest requirements
-- **Gemini Live API:** `gemini-2.5-flash-native-audio` for real-time audio streaming with barge-in and enhanced audio quality
+- **Gemini Live API:** `gemini-2.5-flash` for real-time audio streaming and live call analysis in the current deployment, chosen for broader compatibility; `gemini-live-2.5-flash-native-audio` remains a Vertex AI option limited to selected US and Europe regions.
 - **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation
 - **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages
 - **Rust WASM:** Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency

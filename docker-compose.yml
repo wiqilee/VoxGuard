@@ -1,6 +1,6 @@
 version: "3.9"
 
-# ── Scam Shield — Local Development Stack ─────────────────────
+# ── VoxGuard — Local Development Stack ─────────────────────
 # Usage: docker-compose up
 # Starts backend (FastAPI) + frontend (Vite) together.
 

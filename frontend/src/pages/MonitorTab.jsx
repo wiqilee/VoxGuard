@@ -229,15 +229,15 @@ const SCRIPTS_EN=[
     {text:"Five thousand? Let me think about this...",delay:25000,speaker:'me'},
     {text:"Mom please, there's no time! The doctor says if I don't get surgery within the hour, my condition could get much worse. Transfer the money right now. Don't tell anyone!",delay:28000,speaker:'caller',alert:{id:'f3',severity:'critical',pattern:'Artificial Urgency',quote:'"Surgery within the hour or condition worsens."',confidence:95,tactics:['FEAR','SCARCITY'],source:'FBI IC3 2024',time:'00:28'}},
   ]},
-  // [NEW] AI Voice Clone
+  // [NEW] AI Voice Clone (deepfake voice impersonation - different from family emergency)
   {id:'ai_voice',label:'🤖 AI Voice Clone',category:'critical',sentences:[
-    {text:"Mom? Mom, it is me. Please, I am in serious trouble.",delay:0,speaker:'caller'},
-    {text:"Honey? Is that you? You sound different.",delay:4000,speaker:'me'},
-    {text:"I have a bad cold, that is why. Listen, I was in a car accident and the police say I was at fault. I need to post bail immediately or they will take me to jail.",delay:7000,speaker:'caller',alert:{id:'av1',severity:'high',pattern:'Family Impersonation',quote:'"Car accident, need bail immediately."',confidence:91,tactics:['FEAR','RECIPROCITY'],source:'FBI IC3 2024',time:'00:07'}},
-    {text:"Oh my God! Are you hurt?",delay:15000,speaker:'me'},
-    {text:"I am okay but terrified. My lawyer says I need eight thousand dollars for bail. Wire it right now. Do not call Dad or my regular number, the police took my phone.",delay:18000,speaker:'caller',alert:{id:'av2',severity:'critical',pattern:'Wire Transfer Instruction',quote:'"Wire $8,000. Do not call my number."',confidence:96,tactics:['FEAR','ISOLATION'],source:'FBI IC3 2024',time:'00:18'}},
-    {text:"That is a lot of money...",delay:26000,speaker:'me'},
-    {text:"Mom they are about to take me away! The wire transfer has to go through in twenty minutes or I spend the night in a cell. Please!",delay:29000,speaker:'caller',alert:{id:'av3',severity:'critical',pattern:'Artificial Urgency',quote:'"20 minutes or jail."',confidence:95,tactics:['SCARCITY','FEAR'],source:'FBI IC3 2024',time:'00:29'}},
+    {text:"Hey, it is me. I need you to listen carefully and do not panic.",delay:0,speaker:'caller'},
+    {text:"Who is this? You sound familiar but...",delay:4000,speaker:'me'},
+    {text:"It is your brother. I am using a different phone because mine got stolen. Look, I am in real trouble overseas. I got detained at the airport and they are saying my passport is flagged.",delay:7000,speaker:'caller',alert:{id:'av1',severity:'high',pattern:'Family Impersonation',quote:'"Brother detained overseas, passport flagged."',confidence:88,tactics:['FEAR','RECIPROCITY'],source:'FBI IC3 2024',time:'00:07'}},
+    {text:"What? Detained? Which country?",delay:15000,speaker:'me'},
+    {text:"I cannot say too much on this line. The embassy contact here says I need to pay a clearance fee of six thousand dollars within the hour or they will transfer me to a detention facility. They only accept cryptocurrency.",delay:18000,speaker:'caller',alert:{id:'av2',severity:'critical',pattern:'Crypto Transfer Scam',quote:'"$6,000 crypto clearance fee or detention."',confidence:96,tactics:['FEAR','SCARCITY'],source:'FBI IC3 2024',time:'00:18'}},
+    {text:"Crypto? That seems strange...",delay:26000,speaker:'me'},
+    {text:"I know it sounds weird but it is how things work here. Please do not call Mom or Dad, I do not want them to worry. And do not call my regular number, they confiscated my phone. Just send the crypto now, I will pay you back. The wallet address is ready.",delay:29000,speaker:'caller',alert:{id:'av3',severity:'critical',pattern:'Isolation Tactic',quote:'"Do not call family. Send crypto now."',confidence:95,tactics:['ISOLATION','COMMITMENT'],source:'GASA 2024',time:'00:29'}},
   ]},
   // [NEW] Digital Arrest
   {id:'digital_arrest',label:'🚔 Digital Arrest',category:'critical',sentences:[
@@ -298,7 +298,7 @@ const SCRIPTS_ID=[
     {text:"Wah serius? Saya tidak pernah ikut undian apa-apa.",delay:5000,speaker:'me'},
     {text:"Undian ini otomatis untuk semua pengguna provider seluler Anda. Nomor Anda terpilih secara acak oleh sistem komputer kami.",delay:8000,speaker:'caller'},
     {text:"Tapi saya benar-benar tidak pernah mendaftar.",delay:15000,speaker:'me'},
-    {text:"Tidak perlu mendaftar. Untuk mencairkan hadiah, cukup bayar pajak hadiah sebesar 1.5 juta ke rekening perusahaan kami.",delay:18000,speaker:'caller',alert:{id:'gv1',severity:'high',pattern:'Fake Prize / Lottery',quote:'"Bayar pajak hadiah 1.5 juta untuk cairkan 50 juta."',confidence:94,tactics:['RECIPROCITY','SCARCITY'],source:'FTC Sentinel',time:'00:18'}},
+    {text:"Tidak perlu mendaftar. Untuk mencairkan hadiah, cukup bayar pajak hadiah sebesar satu setengah juta rupiah ke rekening perusahaan kami.",delay:18000,speaker:'caller',alert:{id:'gv1',severity:'high',pattern:'Fake Prize / Lottery',quote:'"Bayar pajak hadiah satu setengah juta untuk cairkan 50 juta."',confidence:94,tactics:['RECIPROCITY','SCARCITY'],source:'FTC Sentinel',time:'00:18'}},
     {text:"Ini harus dilakukan hari ini karena batas waktu pencairan hanya sampai jam 5 sore. Lewat dari itu, hadiah hangus.",delay:26000,speaker:'caller',alert:{id:'gv2',severity:'critical',pattern:'Artificial Urgency',quote:'"Batas waktu sampai jam 5 sore, hadiah hangus."',confidence:95,tactics:['SCARCITY','FEAR'],source:'GASA 2024',time:'00:26'}},
   ]},
   // [NEW] Romance / Pemerasan Asmara
@@ -661,14 +661,11 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
 
   const startLiveMic=async()=>{
     try{
+      // Just verify mic permission, then let useAudioEngine handle the actual streaming
       const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,sampleRate:16000}})
-      liveMicStream.current=stream
-      const ctx=new(window.AudioContext||window.webkitAudioContext)({sampleRate:16000})
-      liveMicCtx.current=ctx
-      const source=ctx.createMediaStreamSource(stream)
-      const analyser=ctx.createAnalyser()
-      analyser.fftSize=256
-      source.connect(analyser)
+      // Store stream reference for permission check, but stop tracks immediately
+      // useAudioEngine in App.jsx will open its own stream for actual processing
+      stream.getTracks().forEach(t => t.stop())
       setLiveMic(true)
       if(onLiveMicChange) onLiveMicChange(true)
       // Generate a caller number for live mode
@@ -678,8 +675,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
     }catch(err){alert('Microphone access denied.')}
   }
   const stopLiveMic=()=>{
-    if(liveMicStream.current){liveMicStream.current.getTracks().forEach(t=>t.stop());liveMicStream.current=null}
-    if(liveMicCtx.current){liveMicCtx.current.close().catch(()=>{});liveMicCtx.current=null}
+    // useAudioEngine in App.jsx handles the actual stream cleanup
     setLiveMic(false)
     if(onLiveMicChange) onLiveMicChange(false)
   }

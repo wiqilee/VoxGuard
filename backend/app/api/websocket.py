@@ -1,16 +1,16 @@
 """
 app.api.websocket
-─────────────────
+-----------------
 WebSocket endpoint for real-time scam detection sessions.
 
-Now integrates:
-  1. TTS Service        — Natural voice intervention audio
-  2. Explanation Service — Multimodal explanation cards (audio + vision)
-  3. Action Agent        — Guided step-by-step anti-scam recovery actions
+v3 fix: Only sends score_update when threat_score actually changes,
+not on every audio chunk. This prevents frontend from being flooded
+with low scores that overwrite high scores.
 """
 
 import json
 import logging
+import time
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -37,13 +37,13 @@ async def session_ws(ws: WebSocket):
     explainer = ExplanationService()
     action_agent = ActionAgentService()
 
-    # Session-level state
     session_language = "en"
     session_country = "US"
     last_vision_result = None
     transcript_context = ""
+    last_sent_score = -1
+    last_score_time = 0
 
-    # Send session start
     await ws.send_json({
         "type": "session_start",
         "session_id": engine.session.session_id,
@@ -60,10 +60,8 @@ async def session_ws(ws: WebSocket):
                 if result:
                     response = engine.ingest_audio_result(result)
 
-                    # Update transcript context for explanation cards
                     if result.get("transcript"):
                         transcript_context += " " + result["transcript"]
-                        # Keep last ~500 chars
                         if len(transcript_context) > 500:
                             transcript_context = transcript_context[-500:]
 
@@ -99,10 +97,9 @@ async def session_ws(ws: WebSocket):
                         int_data = intervention.get("intervention", {})
                         logger.warning(
                             f"[WS] INTERVENTION fired: {int_data.get('level')} "
-                            f"— pattern: {int_data.get('pattern')}"
+                            f"-- pattern: {int_data.get('pattern')}"
                         )
 
-                        # Generate TTS audio for intervention (async, non-blocking)
                         try:
                             tts_result = await tts.generate_intervention_audio(
                                 level=int_data.get("level", "WARN"),
@@ -121,13 +118,20 @@ async def session_ws(ws: WebSocket):
                         except Exception as e:
                             logger.error(f"[WS] TTS error: {e}")
 
-                # Periodic score update
-                await ws.send_json(engine.score_update())
+                # Only send score_update when score actually changed OR every 5 seconds
+                current_score = engine.session.threat_score
+                now = time.time()
+                if current_score != last_sent_score or (now - last_score_time > 5.0):
+                    if current_score != last_sent_score:
+                        logger.info(f"[WS] Score update: {last_sent_score} -> {current_score}")
+                    await ws.send_json(engine.score_update())
+                    last_sent_score = current_score
+                    last_score_time = now
 
             elif msg_type == "screen_frame":
                 result = await vision.process_frame(msg.get("data", ""))
                 if result:
-                    last_vision_result = result  # Store for explanation cards
+                    last_vision_result = result
                     vis_msg = engine.ingest_vision_result(result)
                     if vis_msg:
                         await ws.send_json(vis_msg)
@@ -139,7 +143,6 @@ async def session_ws(ws: WebSocket):
                 logger.info(f"[WS] Intervention {intervention_id} response: {user_action}")
 
                 if user_action == "safe_exit":
-                    # Generate action plan on safe exit
                     try:
                         plan = action_agent.generate_action_plan(
                             scam_pattern=msg.get("pattern", "Unknown"),
@@ -157,13 +160,10 @@ async def session_ws(ws: WebSocket):
                                 for e in engine.session.interventions
                             ],
                         )
-
-                        # Optionally enhance with AI
                         plan = await action_agent.generate_ai_enhanced_plan(
                             base_plan=plan,
                             transcript_summary=transcript_context,
                         )
-
                         await ws.send_json(plan)
                     except Exception as e:
                         logger.error(f"[WS] Action plan error: {e}")
@@ -188,6 +188,8 @@ async def session_ws(ws: WebSocket):
                 vision = VisionAnalyzerService()
                 transcript_context = ""
                 last_vision_result = None
+                last_sent_score = -1
+                last_score_time = 0
 
                 session_language = msg.get("language", session_language)
                 session_country = msg.get("country", session_country)
@@ -206,7 +208,6 @@ async def session_ws(ws: WebSocket):
                     if response["intervention"]:
                         await ws.send_json(response["intervention"])
 
-                # Generate action plan if threats were detected
                 if engine.session.threat_score >= 30 and engine.session.alerts:
                     try:
                         top_alert = engine.session.alerts[-1]
@@ -244,7 +245,6 @@ async def session_ws(ws: WebSocket):
                 })
 
             elif msg_type == "request_action_plan":
-                # Manual request for action plan (from Report tab)
                 try:
                     pattern = msg.get("pattern", "Unknown")
                     if engine.session.alerts:

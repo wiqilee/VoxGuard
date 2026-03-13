@@ -79,7 +79,7 @@ class SessionState:
     start_time: float = field(default_factory=time.time)
     alerts: list[Alert] = field(default_factory=list)
     interventions: list[InterventionEvent] = field(default_factory=list)
-    threat_score: int = 8
+    threat_score: int = 0
     language_risk: int = 0
     behavioral_risk: int = 0
     visual_risk: int = 0
@@ -116,8 +116,8 @@ class SessionState:
 
 
 class ThreatEngine:
-    SEVERITY_DELTA = {"critical": 28, "high": 18, "medium": 10, "low": 5}
-    TACTIC_DELTA = 22
+    SEVERITY_DELTA = {"critical": 45, "high": 30, "medium": 18, "low": 8}
+    TACTIC_DELTA = 28
 
     def __init__(self):
         self.session = SessionState()
@@ -182,8 +182,7 @@ class ThreatEngine:
         response = {"alert": None, "intervention": None}
 
         if not gemini_result.get("is_scam"):
-            self.session.behavioral_risk = min(100, self.session.behavioral_risk + 1)
-            self._recompute_score()
+            # No scam detected in this chunk, do not change scores
             return response
 
         severity = gemini_result.get("severity", "medium")
@@ -193,20 +192,26 @@ class ThreatEngine:
         lie_indicators = gemini_result.get("lie_indicators", [])
 
         delta = self.SEVERITY_DELTA.get(severity, 12)
-        self.session.language_risk = min(100, self.session.language_risk + delta)
+        # Cumulative bonus: each subsequent detection adds more weight
+        alert_count = len(self.session.alerts)
+        cumulative_bonus = min(20, alert_count * 5)
+        self.session.language_risk = min(100, self.session.language_risk + delta + cumulative_bonus)
 
         if tactics:
+            tactic_boost = self.TACTIC_DELTA * len(tactics)
             self.session.behavioral_risk = min(
-                100, self.session.behavioral_risk + self.TACTIC_DELTA * len(tactics) // 2
+                100, self.session.behavioral_risk + tactic_boost
             )
 
         for t in tactics:
-            if t in self.session.psych_scores:
-                self.session.psych_scores[t] = min(100, self.session.psych_scores[t] + self.TACTIC_DELTA)
+            key = t.upper()
+            if key in self.session.psych_scores:
+                self.session.psych_scores[key] = min(100, self.session.psych_scores[key] + self.TACTIC_DELTA)
 
         for li in lie_indicators:
-            if li in self.session.lie_scores:
-                self.session.lie_scores[li] = min(100, self.session.lie_scores[li] + self.TACTIC_DELTA)
+            key = li.upper()
+            if key in self.session.lie_scores:
+                self.session.lie_scores[key] = min(100, self.session.lie_scores[key] + self.TACTIC_DELTA)
 
         self._recompute_score()
         self.session.detected_patterns.add(pattern)
@@ -280,6 +285,8 @@ class ThreatEngine:
             "language_risk": self.session.language_risk,
             "behavioral_risk": self.session.behavioral_risk,
             "visual_risk": self.session.visual_risk,
+            "psych_scores": self.session.psych_scores,
+            "lie_scores": self.session.lie_scores,
         }
 
     def session_summary(self) -> dict:

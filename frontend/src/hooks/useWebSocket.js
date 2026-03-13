@@ -10,7 +10,7 @@ export function useWebSocket() {
 
   const [connected,       setConnected]       = useState(false)
   const [alerts,          setAlerts]          = useState([])
-  const [threatScore,     setThreatScore]     = useState(8)
+  const [threatScore,     setThreatScore]     = useState(0)
   const [psychScores,     setPsychScores]     = useState({ SCARCITY:0,AUTHORITY:0,FEAR:0,RECIPROCITY:0,ISOLATION:0,COMMITMENT:0 })
   const [lieScores,       setLieScores]       = useState({ INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0 })
   const [sessionId,       setSessionId]       = useState(null)
@@ -89,7 +89,10 @@ export function useWebSocket() {
 
   // ── WebSocket Connection ────────────────────────────────
   const connect = useCallback(() => {
-    if (import.meta.env.VITE_DEMO_MODE === 'true') return
+    // In pure demo mode (Vercel), skip WS connection unless WS_URL is explicitly set
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+    const hasWsUrl = import.meta.env.VITE_WS_URL
+    if (isDemoMode && !hasWsUrl) return
 
     try {
       const ws = new WebSocket(WS_URL)
@@ -113,21 +116,15 @@ export function useWebSocket() {
             case 'threat_alert':
               setAlerts(prev => [msg.alert, ...prev])
               setThreatScore(msg.threat_score)
+              // Use backend psych_scores directly (already accumulated by threat_engine)
               if (msg.psych_scores) setPsychScores(msg.psych_scores)
               if (msg.lie_scores) setLieScores(msg.lie_scores)
-              if (msg.tactics) {
-                setPsychScores(prev => {
-                  const next = { ...prev }
-                  msg.tactics.forEach(t => {
-                    next[t] = Math.min(100, (prev[t] || 0) + (msg.tactic_delta || 25))
-                  })
-                  return next
-                })
-              }
               break
 
             case 'score_update':
               setThreatScore(msg.threat_score)
+              if (msg.psych_scores) setPsychScores(msg.psych_scores)
+              if (msg.lie_scores) setLieScores(msg.lie_scores)
               break
 
             case 'intervention':
@@ -277,7 +274,7 @@ export function useWebSocket() {
   const reset = useCallback(() => {
     stopTTS()
     setAlerts([])
-    setThreatScore(8)
+    setThreatScore(0)
     setPsychScores({ SCARCITY:0,AUTHORITY:0,FEAR:0,RECIPROCITY:0,ISOLATION:0,COMMITMENT:0 })
     setLieScores({ INCONSISTENCY:0,VAGUENESS:0,OVERDETAIL:0,DEFLECTION:0,PRESSURE:0 })
     setSessionId(null)
