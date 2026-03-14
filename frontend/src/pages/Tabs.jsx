@@ -877,10 +877,21 @@ function PatternCard({p,c,hit,onClick}){const[h,setH]=useState(false);return(
 export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores={},transcript=[],language='en',audioUrl=null,interventionHistory=[],actionPlan=null,onCloseActionPlan}){
   const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const[saved,setSaved]=useState([]);const[msg,setMsg]=useState('')
+  const[completedSteps,setCompletedSteps]=useState(new Set())
   useEffect(()=>setSaved(loadReports()),[])
-  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,callerNumber:window.__voxguard_caller_number||null,id:Date.now().toString(),savedAt:new Date().toISOString()}
+
+  // Build actionPlan with completion status baked into steps for export
+  const actionPlanWithCompletion = actionPlan ? {
+    ...actionPlan,
+    steps: (actionPlan.steps || []).map(s => ({
+      ...s,
+      completed: completedSteps.has(s.step),
+    })),
+  } : null
+
+  const cur={alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan:actionPlanWithCompletion,callerNumber:window.__voxguard_caller_number||null,id:Date.now().toString(),savedAt:new Date().toISOString()}
   const actionsData=getActionsForLang(language)
-  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan,audioUrl,callerNumber:window.__voxguard_caller_number||null});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
+  const doSave=()=>{if(!alerts.length)return;saveReport({alerts,sessionTime,threatScore,psychScores,lieScores,transcript,language,interventionHistory,actionPlan:actionPlanWithCompletion,audioUrl,callerNumber:window.__voxguard_caller_number||null});setSaved(loadReports());setMsg('✓ Saved!');setTimeout(()=>setMsg(''),2500)}
 
   return(<div style={{maxWidth:900,margin:'0 auto'}}>
     <style>{tabsCSS}</style>
@@ -897,7 +908,7 @@ export function ReportTab({alerts,sessionTime,threatScore,psychScores,lieScores=
             <div style={{fontFamily:MF,fontSize:9,color:'rgba(255,149,0,0.6)',marginBottom:8}}>
               Tailored to the specific scam pattern detected in this session. Steps are prioritized by urgency.
             </div>
-            <ActionAgent plan={actionPlan} onClose={onCloseActionPlan} />
+            <ActionAgent plan={actionPlan} onClose={onCloseActionPlan} completedSteps={completedSteps} onStepChange={setCompletedSteps} />
           </div>
         )}
 

@@ -21,6 +21,7 @@ export function useWebSocket() {
   const [explanationCard, setExplanationCard] = useState(null)
   const [actionPlan,      setActionPlan]      = useState(null)
   const [ttsPlaying,      setTtsPlaying]      = useState(false)
+  const [liveTranscript,  setLiveTranscript]  = useState([])
 
   // ── TTS Audio Playback ──────────────────────────────────
   const playTTSAudio = useCallback((base64Audio, mimeType = 'audio/wav', fallbackText = '') => {
@@ -111,6 +112,17 @@ export function useWebSocket() {
           switch (msg.type) {
             case 'session_start':
               setSessionId(msg.session_id)
+              break
+
+            case 'transcript':
+              // [FIX] Handle live transcript from backend audio analysis
+              setLiveTranscript(prev => [...prev, {
+                text: msg.text,
+                speaker: msg.speaker || 'caller',
+                time: new Date(msg.timestamp ? msg.timestamp * 1000 : Date.now())
+                  .toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                flagged: false,
+              }])
               break
 
             case 'threat_alert':
@@ -289,6 +301,7 @@ export function useWebSocket() {
     setIntervention(null)
     setExplanationCard(null)
     setActionPlan(null)
+    setLiveTranscript([])
   }, [stopTTS])
 
   return {
@@ -313,6 +326,9 @@ export function useWebSocket() {
 
     // v2: Action agent
     actionPlan, setActionPlan, requestActionPlan,
+
+    // v2: Live transcript from backend
+    liveTranscript, setLiveTranscript,
 
     // Language
     setLanguage,

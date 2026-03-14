@@ -86,6 +86,14 @@ async def session_ws(ws: WebSocket):
                         if len(transcript_context) > 500:
                             transcript_context = transcript_context[-500:]
 
+                        # [FIX] Send transcript to frontend for live display
+                        await ws.send_json({
+                            "type": "transcript",
+                            "text": result["transcript"],
+                            "speaker": result.get("speaker", "caller"),
+                            "timestamp": time.time(),
+                        })
+
                     # Send alert if detected
                     if response["alert"]:
                         await ws.send_json(response["alert"])

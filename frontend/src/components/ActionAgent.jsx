@@ -24,20 +24,27 @@ const STEP_URGENCY_COLORS = {
   ongoing:     '#888888',
 }
 
-export default function ActionAgent({ plan, onClose }) {
-  const [completedSteps, setCompletedSteps] = useState(new Set())
+export default function ActionAgent({ plan, onClose, completedSteps: externalCompleted, onStepChange }) {
+  // Use external state if provided (for report sync), otherwise local state
+  const [localCompleted, setLocalCompleted] = useState(new Set())
+  const completedSteps = externalCompleted instanceof Set ? externalCompleted : localCompleted
 
   const toggleStep = useCallback((stepNum) => {
-    setCompletedSteps(prev => {
-      const next = new Set(prev)
-      if (next.has(stepNum)) {
-        next.delete(stepNum)
-      } else {
-        next.add(stepNum)
-      }
-      return next
-    })
-  }, [])
+    const next = new Set(completedSteps)
+    if (next.has(stepNum)) {
+      next.delete(stepNum)
+    } else {
+      next.add(stepNum)
+    }
+
+    // Update local state
+    setLocalCompleted(next)
+
+    // Notify parent so report/export can access completion state
+    if (onStepChange) {
+      onStepChange(next)
+    }
+  }, [completedSteps, onStepChange])
 
   if (!plan || !plan.steps) return null
 
