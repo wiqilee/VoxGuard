@@ -77,7 +77,9 @@ Every 30 seconds, someone somewhere in the world loses money to a phone or video
 
 According to the **FBI IC3 2024 Annual Report**, internet crime losses in the United States hit **$16.6 billion** in 2024, with phone and video call fraud growing faster than any other category. Globally, GASA puts estimated losses at over **$1.026 trillion** per year.
 
-Last year, my neighbor's father wired **$12,000** to someone posing as a bank representative. He knew about scams. He had seen the warnings. But when the caller said his account would be frozen in ten minutes and asked for his one-time password, he handed it over without hesitation. That moment stayed with me. Not because of the money, but because of the gap it exposed. He had a phone, common sense, and years of experience. None of it helped in the thirty seconds that mattered most.
+Last year, my neighbor’s father wired **$12,000** to someone impersonating a bank representative. He knew scams were everywhere. He had seen the warnings, read the advice, and understood the basics. But when the caller said his account would be frozen within ten minutes and asked for his one-time password, he handed it over immediately.
+
+I kept thinking about that moment. Not because of the money, but because of what it revealed: most anti-scam advice fails at the exact moment it matters. He had a phone, life experience, and enough caution to know better. None of that helped in the thirty seconds when pressure, fear, and urgency took over.
 
 So I built **VoxGuard**, a real-time multimodal AI agent that listens to live conversations, detects scam patterns as they emerge, and intervenes before the damage is done. Not after the call. Not the next day. Right there, in the moment the scammer asks for your OTP.
 
