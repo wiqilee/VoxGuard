@@ -8,13 +8,14 @@ severity, and user's language. Uses gemini-2.5-flash-preview-tts for
 human-quality speech output.
 
 Voice Profiles:
-  WARN     → Calm, advisory tone
-  BLOCK    → Firm, urgent tone
-  LOCKDOWN → Sharp, commanding tone
+  WARN     → Calm, advisory tone (Kore)
+  BLOCK    → Firm, urgent tone (Puck)
+  LOCKDOWN → Sharp, commanding tone (Charon)
 
 Output: base64-encoded WAV audio sent to frontend via WebSocket.
 """
 
+import asyncio
 import base64
 import json
 import logging
@@ -140,21 +141,40 @@ class TTSService:
     """Generates natural spoken intervention audio via Gemini TTS."""
 
     def __init__(self):
-        self._model = None
-        self._init_model()
+        self._client = None
+        self._model_name = _settings.gemini_tts_model
+        self._init_client()
 
-    def _init_model(self):
+    def _init_client(self):
         if not _settings.google_api_key:
             logger.warning("[TTSService] No GOOGLE_API_KEY, TTS disabled")
             return
         try:
-            import google.generativeai as genai
+            from google import genai
 
-            genai.configure(api_key=_settings.google_api_key)
-            self._model = genai.GenerativeModel(_settings.gemini_tts_model)
-            logger.info(f"[TTSService] Model ready: {_settings.gemini_tts_model}")
+            self._client = genai.Client(api_key=_settings.google_api_key)
+            logger.info(f"[TTSService] Client ready, model: {self._model_name}")
+        except ImportError:
+            # Fallback to legacy SDK
+            try:
+                import google.generativeai as genai
+
+                genai.configure(api_key=_settings.google_api_key)
+                self._client = genai
+                self._legacy_sdk = True
+                logger.info(f"[TTSService] Legacy SDK ready: {self._model_name}")
+            except Exception as e:
+                logger.error(f"[TTSService] Init failed: {e}")
         except Exception as e:
             logger.error(f"[TTSService] Init failed: {e}")
+
+    @property
+    def _legacy_sdk(self):
+        return getattr(self, '_is_legacy_sdk', False)
+
+    @_legacy_sdk.setter
+    def _legacy_sdk(self, value):
+        self._is_legacy_sdk = value
 
     def _get_script(self, level: str, pattern: str, language: str) -> str:
         """Get the best matching intervention script."""
@@ -194,9 +214,9 @@ class TTSService:
         if not script:
             return None
 
-        # If no model available, return text-only (frontend uses browser TTS as fallback)
-        if not self._model:
-            logger.warning("[TTSService] No model, returning text-only fallback")
+        # If no client available, return text-only (frontend uses browser TTS as fallback)
+        if not self._client:
+            logger.warning("[TTSService] No client, returning text-only fallback")
             return {
                 "audio_base64": None,
                 "script_text": script,
@@ -213,27 +233,7 @@ class TTSService:
 
             voice = voice_config.get(level, "Kore")
 
-            response = await self._model.generate_content_async(
-                contents=script,
-                generation_config={
-                    "response_modalities": ["AUDIO"],
-                    "speech_config": {
-                        "voice_config": {
-                            "prebuilt_voice_config": {
-                                "voice_name": voice,
-                            }
-                        }
-                    },
-                },
-            )
-
-            # Extract audio data from response
-            audio_data = None
-            if response.candidates:
-                for part in response.candidates[0].content.parts:
-                    if hasattr(part, "inline_data") and part.inline_data:
-                        audio_data = part.inline_data.data
-                        break
+            audio_data = await self._generate_with_client(script, voice)
 
             if audio_data:
                 audio_b64 = base64.b64encode(audio_data).decode("utf-8")
@@ -254,12 +254,81 @@ class TTSService:
                 }
 
         except Exception as e:
-            logger.error(f"[TTSService] Generation error: {e}")
+            logger.error(f"[TTSService] Generation error: {e}", exc_info=True)
             return {
                 "audio_base64": None,
                 "script_text": script,
                 "fallback": "browser_tts",
             }
+
+    async def _generate_with_client(self, script: str, voice: str) -> Optional[bytes]:
+        """Generate audio using the appropriate SDK version."""
+        try:
+            if self._legacy_sdk:
+                return await self._generate_legacy(script, voice)
+            else:
+                return await self._generate_modern(script, voice)
+        except Exception as e:
+            logger.error(f"[TTSService] Audio generation failed: {e}", exc_info=True)
+            return None
+
+    async def _generate_modern(self, script: str, voice: str) -> Optional[bytes]:
+        """Generate audio using google-genai (modern SDK)."""
+        from google.genai import types
+
+        response = await asyncio.to_thread(
+            self._client.models.generate_content,
+            model=self._model_name,
+            contents=script,
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name=voice,
+                        )
+                    )
+                ),
+            ),
+        )
+
+        # Extract audio from response
+        if response.candidates:
+            for part in response.candidates[0].content.parts:
+                if part.inline_data and part.inline_data.data:
+                    logger.info(f"[TTSService] Got audio: {part.inline_data.mime_type}, {len(part.inline_data.data)} bytes")
+                    return part.inline_data.data
+
+        return None
+
+    async def _generate_legacy(self, script: str, voice: str) -> Optional[bytes]:
+        """Generate audio using google-generativeai (legacy SDK)."""
+        model = self._client.GenerativeModel(self._model_name)
+
+        # Run sync call in thread to not block event loop
+        response = await asyncio.to_thread(
+            model.generate_content,
+            script,
+            generation_config={
+                "response_modalities": ["AUDIO"],
+                "speech_config": {
+                    "voice_config": {
+                        "prebuilt_voice_config": {
+                            "voice_name": voice,
+                        }
+                    }
+                },
+            },
+        )
+
+        # Extract audio from response
+        if response.candidates:
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, "inline_data") and part.inline_data:
+                    if hasattr(part.inline_data, "data") and part.inline_data.data:
+                        return part.inline_data.data
+
+        return None
 
     async def generate_explanation_audio(
         self,
