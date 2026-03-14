@@ -986,7 +986,15 @@ export function AboutTab(){
       <PBox color="#ff2d55" style={{padding:32,background:'rgba(255,45,85,0.02)',gridRow:'span 2'}}>
         <div style={{fontFamily:PF,fontSize:9,color:'#ff2d55',marginBottom:16,textShadow:'0 0 12px #ff2d55'}}>THE PROBLEM</div>
         <div style={{fontFamily:MF,fontSize:13,color:'rgba(255,255,255,0.7)',lineHeight:2.1}}>
-          A grandmother in Tokyo wires her life savings to a stranger impersonating her grandson. A father in Jakarta shares his OTP because the caller said his daughter was in the hospital. A retiree in Ohio buys $5,000 in gift cards because "the IRS" threatened arrest.
+        Last year, my neighbor's father wired <span style={{fontFamily:PF,fontSize:20,color:'#ff2d55',display:'block',margin:'8px 0',textShadow:'0 0 20px #ff2d55'}}>$12,000</span> to someone impersonating a bank representative. 
+        He knew scams were everywhere. He had seen the warnings, read the advice, and understood the basics. 
+        But when the caller said his account would be frozen within ten minutes and asked for his one-time password, he handed it over immediately.
+        <br/><br/>
+        I kept thinking about that moment. Not because of the money, but because of what it revealed: most anti-scam advice fails at the exact moment it matters. 
+        He had a phone, life experience, and enough caution to know better. 
+        None of that helped in the thirty seconds when pressure, fear, and urgency took over.
+        <br/><br/>
+        And that gap is far bigger than one family.
           <br/><br/>
           <span style={{color:'rgba(255,255,255,0.45)',fontSize:11}}>Every single one of them knew about scams. None of them recognized it was happening <span style={{color:'#ff2d55'}}>to them</span>, <span style={{color:'#ff2d55'}}>in that moment</span>.</span>
           <br/><br/>
