@@ -829,7 +829,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 ### Technical Implementation (30%)
 
-- **Google GenAI SDK:** All Gemini calls use the official Google GenAI SDK for Python (`google-generativeai` package), the SDK specified by the contest requirements
+- **Google GenAI SDK:** All Gemini functionality is implemented with the official Google GenAI SDK for Python (google-genai), and the live audio path uses the Gemini Live API for real-time interaction on Google Cloud Run.
 - **Gemini Audio Analysis:** `gemini-2.5-flash` for audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Audio chunks are buffered (2-second flush with VAD), sent as base64 to the standard Gemini API, and return structured JSON with transcript, scam indicators, tactics, and lie indicators. `gemini-2.5-flash-native-audio-preview-12-2025` is available via the Live API on Vertex AI for true bidirectional streaming with barge-in support.
 - **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation
 - **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages
@@ -892,7 +892,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 **Wiqi Lee** - Data Scientist, AI/ML Researcher, Software Engineer, Cellist
 
-Languages: Python, Java, Rust, Julia
+Programming Languages: Python, Java, Rust, Julia
 
 Submitted to: **Gemini Live Agent Challenge 2026** `#GeminiLiveAgentChallenge`
 
