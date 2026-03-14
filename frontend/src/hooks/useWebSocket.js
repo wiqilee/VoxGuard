@@ -156,6 +156,13 @@ export function useWebSocket() {
               // Handled by parent component
               break
 
+            case 'ping':
+              // Respond to backend keepalive ping
+              if (wsRef.current?.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({ type: 'pong', ts: Date.now() }))
+              }
+              break
+
             case 'error':
               setError(msg.message)
               break
