@@ -592,19 +592,21 @@ function getNow(){return new Date().toLocaleString('en-US',{timeZone:'America/Ne
 function TechChip({item}){const[h,setH]=useState(false);return(<div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',marginBottom:3,borderLeft:`2px solid ${h?item.c:item.c+'35'}`,background:h?item.c+'0f':'rgba(255,255,255,.01)',transition:'all .18s ease',cursor:'default'}}><span style={{fontSize:16,filter:h?`drop-shadow(0 0 6px ${item.c})`:'none',transition:'filter .2s'}}>{item.icon}</span><div style={{flex:1}}><div style={{fontFamily:PF,fontSize:7,color:h?item.c:item.c+'cc',transition:'all .2s'}}>{item.name}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,255,255,.38)',marginTop:2}}>{item.sub}</div></div></div>)}
 function LiveTranscript({lines,speaking}){const ref=useRef(null);useEffect(()=>{if(ref.current)ref.current.scrollTop=ref.current.scrollHeight},[lines]);return(<div ref={ref} style={{background:'rgba(0,0,0,.6)',border:'1px solid rgba(0,212,255,.12)',padding:'12px 16px',maxHeight:180,overflowY:'auto',marginBottom:16}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}><div style={{fontFamily:PF,fontSize:6,color:'rgba(0,212,255,.6)',letterSpacing:2}}>LIVE TRANSCRIPT</div>{speaking&&<span style={{fontFamily:MF,fontSize:8,color:'#ff2d55',animation:'blink .8s step-end infinite'}}>● SPEAKING</span>}</div>{lines.length===0?<div style={{fontFamily:MF,fontSize:10,color:'rgba(255,255,255,.2)',fontStyle:'italic'}}>Waiting for audio input...</div>:lines.map((l,i)=>{const m=l.speaker==='me';return(<div key={i} style={{fontFamily:MF,fontSize:11,color:m?'#30d158':'rgba(255,255,255,.75)',lineHeight:1.7,padding:'3px 0',borderLeft:l.flagged?'2px solid #ff2d55':m?'2px solid #30d15844':'2px solid transparent',paddingLeft:8,background:l.flagged?'rgba(255,45,85,.06)':'transparent'}}><span style={{color:m?'#30d15877':'rgba(0,212,255,.4)',fontSize:9,marginRight:6}}>[{l.time}]</span><span style={{fontFamily:PF,fontSize:5,color:m?'#30d158':'#ff9500',marginRight:5,letterSpacing:1}}>{m?'ME':'CALLER'}</span>{l.text}{l.flagged&&<span style={{color:'#ff2d55',fontSize:8,marginLeft:6}}>⚠</span>}</div>)})}</div>)}
 
-function RecButton({ isRecording, onClick }) {
+function RecButton({ isRecording, onClick, disabled }) {
   const [hov, setHov] = useState(false)
   return (
-    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+    <button onClick={disabled ? undefined : onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      title={disabled ? 'REC requires Live Mic mode — click 🎙 LIVE MIC first' : isRecording ? 'Stop recording' : 'Record session audio'}
       style={{
         fontFamily: PF, fontSize: 7, letterSpacing: 2, padding: '8px 16px',
-        border: isRecording ? '1px solid #ff2d55' : `1px solid ${hov ? '#ff2d55cc' : '#ff2d5555'}`,
-        background: isRecording ? 'linear-gradient(135deg, rgba(255,45,85,0.25), rgba(255,45,85,0.12))' : hov ? 'linear-gradient(135deg, rgba(255,45,85,0.15), rgba(255,45,85,0.06))' : 'linear-gradient(135deg, rgba(255,45,85,0.06), transparent)',
-        color: '#ff2d55', cursor: 'pointer',
-        boxShadow: isRecording ? '0 0 16px rgba(255,45,85,0.4)' : hov ? '0 0 12px rgba(255,45,85,0.3)' : '0 0 6px rgba(255,45,85,0.1)',
+        border: isRecording ? '1px solid #ff2d55' : `1px solid ${disabled ? '#ff2d5522' : hov ? '#ff2d55cc' : '#ff2d5555'}`,
+        background: isRecording ? 'linear-gradient(135deg, rgba(255,45,85,0.25), rgba(255,45,85,0.12))' : hov && !disabled ? 'linear-gradient(135deg, rgba(255,45,85,0.15), rgba(255,45,85,0.06))' : 'linear-gradient(135deg, rgba(255,45,85,0.06), transparent)',
+        color: disabled ? '#ff2d5544' : '#ff2d55', cursor: disabled ? 'not-allowed' : 'pointer',
+        boxShadow: isRecording ? '0 0 16px rgba(255,45,85,0.4)' : hov && !disabled ? '0 0 12px rgba(255,45,85,0.3)' : '0 0 6px rgba(255,45,85,0.1)',
         transition: 'all 0.14s ease', textTransform: 'uppercase',
         animation: isRecording ? 'rec-pulse 2s ease-in-out infinite' : 'none',
         display: 'flex', alignItems: 'center', gap: 6,
+        opacity: disabled ? 0.4 : 1,
       }}>
       <span style={{ width:8,height:8,borderRadius:'50%',flexShrink:0,background:isRecording?'#ff2d55':'#ff2d5544',animation:isRecording?'rec-dot 1s ease-in-out infinite':'none' }} />
       <span>{isRecording ? 'REC ON' : 'REC'}</span>
@@ -632,21 +634,40 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
       if(mediaRecorderRef.current&&mediaRecorderRef.current.state!=='inactive') mediaRecorderRef.current.stop()
       setIsRecording(false)
     } else {
+      // REC only works in Live Mic mode — needs real microphone stream
+      if(!liveMic){
+        // Show brief visual feedback that REC requires Live Mic
+        return
+      }
       try{
-        const ctx=new(window.AudioContext||window.webkitAudioContext)()
-        const dest=ctx.createMediaStreamDestination()
-        audioDestRef.current={ctx,dest}
-        recordedChunksRef.current=[]
-        const recorder=new MediaRecorder(dest.stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4'})
-        recorder.ondataavailable=(e)=>{if(e.data.size>0)recordedChunksRef.current.push(e.data)}
-        recorder.onstop=()=>{
-          const blob=new Blob(recordedChunksRef.current,{type:recorder.mimeType})
-          if(blob.size>0){window.__voxguard_recording_url=URL.createObjectURL(blob);window.__voxguard_recording_blob=blob}
-        }
-        recorder.start(1000)
-        mediaRecorderRef.current=recorder
-        setIsRecording(true)
-      }catch(err){setIsRecording(true)}
+        // Request a fresh mic stream for recording
+        navigator.mediaDevices.getUserMedia({
+          audio:{echoCancellation:true,noiseSuppression:true,sampleRate:16000,channelCount:1}
+        }).then(stream=>{
+          recordedChunksRef.current=[]
+          const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+            ?'audio/webm;codecs=opus'
+            :MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4'
+          const recorder=new MediaRecorder(stream,{mimeType})
+          recorder.ondataavailable=(e)=>{if(e.data.size>0)recordedChunksRef.current.push(e.data)}
+          recorder.onstop=()=>{
+            const blob=new Blob(recordedChunksRef.current,{type:mimeType})
+            if(blob.size>0){
+              window.__voxguard_recording_url=URL.createObjectURL(blob)
+              window.__voxguard_recording_blob=blob
+            }
+            // Stop the recording stream tracks
+            stream.getTracks().forEach(t=>t.stop())
+          }
+          recorder.start(1000)
+          mediaRecorderRef.current=recorder
+          // Store stream ref so we can clean up
+          audioDestRef.current={stream}
+          setIsRecording(true)
+        }).catch(err=>{
+          console.warn('[VoxGuard REC] Mic access denied for recording:', err)
+        })
+      }catch(err){console.warn('[VoxGuard REC] Failed to start recording:', err)}
     }
   }
 
@@ -681,6 +702,14 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   }
   useEffect(()=>{return()=>{stopLiveMic()}},[])
   useEffect(()=>{if(!monitoring&&liveMic)stopLiveMic()},[monitoring])
+  // Auto-stop recording when liveMic turns off
+  useEffect(()=>{
+    if(!liveMic&&isRecording){
+      if(mediaRecorderRef.current&&mediaRecorderRef.current.state!=='inactive') mediaRecorderRef.current.stop()
+      if(audioDestRef.current?.stream) audioDestRef.current.stream.getTracks().forEach(t=>t.stop())
+      setIsRecording(false)
+    }
+  },[liveMic])
 
   const[activeIntervention,setActiveIntervention]=useState(null)
   const[interventionHistory,setInterventionHistory]=useState([])
@@ -823,7 +852,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
           </div>
           <div className="vg-monitor-controls" style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center'}}>
             <div className="vg-callmode-toggle" style={{display:'flex',gap:0,border:'1px solid rgba(0,212,255,.2)'}}>{[{m:'phone',icon:'📞',label:'CALL'},{m:'zoom',icon:'🖥',label:'VIDEO'}].map(({m,icon,label})=>(<button key={m} onClick={()=>setCallMode(m)} style={{fontFamily:PF,fontSize:5,padding:'6px 10px',border:'none',borderRight:'1px solid rgba(0,212,255,.1)',background:callMode===m?'rgba(0,212,255,.12)':'transparent',color:callMode===m?'#00d4ff':'rgba(255,255,255,.35)',cursor:'pointer',display:'flex',alignItems:'center',gap:4,transition:'all .15s'}}><span style={{fontSize:10}}>{icon}</span>{label}</button>))}</div>
-            <RecButton isRecording={isRecording} onClick={toggleRecording} />
+            <RecButton isRecording={isRecording} onClick={toggleRecording} disabled={!liveMic} />
             <PBtn onClick={liveMic?stopLiveMic:()=>{setScript(null);startLiveMic()}} color={liveMic?'#30d158':'#00d4ff'} style={{padding:'10px 14px',animation:liveMic?'rec-pulse 2s ease-in-out infinite':'none'}}>{liveMic?'🎙 MIC ON':'🎙 LIVE MIC'}</PBtn>
             {voiceDemo&&<PBtn onClick={()=>{setVoiceMuted(m=>!m);if(!voiceMuted){window.speechSynthesis?.cancel();if(_activeGeminiAudio){try{_activeGeminiAudio.pause();_activeGeminiAudio=null}catch(e){}}}}} color={voiceMuted?'#ff9500':'#30d158'} style={{padding:'10px 14px'}}>{voiceMuted?'🔇 UNMUTE':'🔊 MUTE'}</PBtn>}
             <PBtn onClick={onToggleScreen} color={screenOn?'#7b61ff':'#7b61ff'}>{screenOn?'■ SCREEN OFF':'◈ SCREEN WATCH'}</PBtn>
@@ -835,7 +864,7 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         {!monitoring&&!liveMic&&<IdleScreen/>}
 
         {liveMic&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.06)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:'#30d158',animation:'blink .6s step-end infinite',boxShadow:'0 0 8px #30d158'}}/><span style={{fontFamily:MF,fontSize:9,color:'#30d158'}}>🎙 LIVE MICROPHONE — Real audio capture active via getUserMedia</span><span style={{fontFamily:MF,fontSize:8,color:'rgba(48,209,88,.5)',marginLeft:'auto'}}>16kHz Mono PCM</span></div>)}
-        {isRecording&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(255,45,85,.3)',background:'rgba(255,45,85,.06)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:'#ff2d55',animation:'blink .8s step-end infinite',boxShadow:'0 0 8px #ff2d55'}}/><span style={{fontFamily:MF,fontSize:9,color:'#ff2d55'}}>● RECORDING — Session audio captured for forensic export</span></div>)}
+        {isRecording&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(255,45,85,.3)',background:'rgba(255,45,85,.06)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:'#ff2d55',animation:'blink .8s step-end infinite',boxShadow:'0 0 8px #ff2d55'}}/><span style={{fontFamily:MF,fontSize:9,color:'#ff2d55'}}>● RECORDING — Live microphone audio captured for forensic export</span></div>)}
         {screenOn&&monitoring&&(<div style={{padding:'8px 12px',marginBottom:12,border:'1px solid rgba(123,97,255,.3)',background:'rgba(123,97,255,.08)',display:'flex',alignItems:'center',gap:8}}><div style={{width:6,height:6,background:'#7b61ff',animation:'blink 1.5s step-end infinite',boxShadow:'0 0 6px #7b61ff'}}/><span style={{fontFamily:MF,fontSize:9,color:'#7b61ff'}}>◈ SCREEN WATCH ACTIVE — Capturing screen every 2s</span></div>)}
 
         {interventionHistory.length>0&&monitoring&&(

@@ -69,16 +69,21 @@ Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection 
 Every 30 seconds, someone somewhere in the world loses money to a phone or video call scam.
 
 <div align="center">
-<img src="docs/svgs/threat-demo.svg" alt="Threat Score Demo" width="280"/>
+<img src="docs/svgs/threat-demo.png" alt="The Problem" width="280"/>
+<br><br>
+<img src="docs/svgs/threat-demo2.png" alt="The Problem2" width="280"/>
+<br><br>
 </div>
 
 According to the **FBI IC3 2024 Annual Report**, internet crime losses in the United States hit **$16.6 billion** in 2024, with phone and video call fraud growing faster than any other category. Globally, GASA puts estimated losses at over **$1.026 trillion** per year.
+Last year, my neighbor's father wired **$12,000** to someone posing as a bank representative. He knew about scams. He had seen the warnings. But when the caller said his account would be frozen in ten minutes and asked for his one-time password, he handed it over without hesitation. That moment stayed with me. Not because of the money, but because of the gap it exposed. He had a phone, common sense, and years of experience. None of it helped in the thirty seconds that mattered most.
+So I built **VoxGuard**, a real-time multimodal AI agent that listens to live conversations, detects scam patterns as they emerge, and intervenes before the damage is done. Not after the call. Not the next day. Right there, in the moment the scammer asks for your OTP.
 
 Every existing tool shares one fatal flaw: **they act after the damage is done.**
 
-> *"The difference between a scam succeeding and failing is often a single moment of doubt. VoxGuard creates that moment, then forces you to think before you act."*
+> *"The difference between a scam succeeding and failing is often a single moment of doubt. **VoxGuard** creates that moment, then forces you to think before you act."*
 >
-> Wiqi Lee
+> **Wiqi Lee**
 
 ---
 
@@ -148,7 +153,7 @@ VoxGuard captures your actual microphone audio at 16kHz Mono PCM via the Web Aud
 
 **Live Mic + Demo Scripts:** You can run a demo script while Live Mic is active. The demo provides simulated dialog and alerts, while the microphone captures real ambient audio in parallel. This is useful for demonstrations where you want to show both the scripted flow and the live microphone capability side by side.
 
-**Live Mic + REC:** Enable both Live Mic and REC at the same time to record your actual call audio into the forensic report. This is the recommended setup for real-world use.
+**Live Mic + REC:** Enable both Live Mic and REC to record your actual call audio into the forensic report. REC is only available when Live Mic is active — it records directly from the microphone. This is the recommended setup for real-world use.
 
 ---
 
@@ -526,15 +531,20 @@ Every session generates a complete forensic report with:
 
 ### 8.1 🎙 Audio Recording (REC)
 
-Press the **REC** button in the Monitor tab to capture session audio. The recording is saved as a WebM or MP4 blob (depending on browser support) and embedded in the forensic report. When you export to HTML, the audio player is included so you can replay the session later.
+The **REC** button in the Monitor tab captures live microphone audio for forensic export. **REC requires Live Mic mode** — it records directly from your device microphone via the Web Audio API. In Demo Mode (no microphone), the REC button is disabled because browser security restrictions prevent capturing audio played through `new Audio()` or `speechSynthesis`.
+
+The recording is saved as a WebM or MP4 blob (depending on browser support) and embedded in the forensic report. When you export to HTML, the audio player is included so you can replay the session later.
 
 **How to record:**
 
 1. Click **START** to begin a session
-2. Click the red **REC** button (it will pulse to indicate recording is active)
-3. Run a demo script or use Live Mic (see below)
-4. When you click **STOP** or **SAFE EXIT**, the recording is automatically saved
-5. Open the **REPORT** tab to see the audio player and export to HTML
+2. Click **🎙 LIVE MIC** and grant microphone permission
+3. Click the red **REC** button (it will pulse to indicate recording is active)
+4. Put your phone on speaker — VoxGuard records the ambient audio from the live call
+5. When you click **STOP** or **SAFE EXIT**, the recording is automatically saved
+6. Open the **REPORT** tab to see the audio player and export to HTML
+
+> **Note:** REC is greyed out until Live Mic is enabled. This is by design — there is no audio to record in Demo Mode.
 
 ### 8.2 🎙 Live Microphone Mode
 
@@ -845,7 +855,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 - **Screen capture requires user consent:** Vision analysis is opt-in and desktop-only.
 - **No brand names in demos:** All demo scripts use generic institution names to avoid trademark issues.
 - **TTS voice availability:** Gemini TTS voice profiles may vary by region. The system gracefully falls back to browser speech synthesis if TTS is unavailable.
-- **Audio recording in demo mode:** The REC button uses the browser MediaRecorder API with `createMediaStreamDestination`. Due to browser security restrictions, audio played through `new Audio()` (Gemini TTS) or `speechSynthesis` (browser TTS) cannot be captured by MediaRecorder because browsers do not allow recording their own audio output. To capture actual session audio, enable **Live Mic + REC** together so the microphone input is recorded directly. This is a browser platform limitation, not a bug in VoxGuard.
+- **Audio recording requires Live Mic:** The REC button is disabled in Demo Mode. Browser security restrictions prevent capturing audio played through `new Audio()` (Gemini TTS) or `speechSynthesis` (browser TTS). To record session audio, enable **Live Mic + REC** together so the microphone input is recorded directly from your device. This is a browser platform limitation, not a bug in VoxGuard.
 - **Live Mic requires HTTPS:** The `getUserMedia` API requires a secure context (HTTPS or localhost). The Vercel deployment and local dev server both satisfy this requirement.
 
 ## 🔮 Future Work
