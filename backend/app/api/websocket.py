@@ -3,11 +3,12 @@ app.api.websocket
 -----------------
 WebSocket endpoint for real-time scam detection sessions.
 
-v3 fix: Only sends score_update when threat_score actually changes,
-not on every audio chunk. This prevents frontend from being flooded
-with low scores that overwrite high scores.
+v4 fix: Added keepalive ping to prevent Cloud Run idle timeout.
+Only sends score_update when threat_score actually changes,
+not on every audio chunk.
 """
 
+import asyncio
 import json
 import logging
 import time
@@ -23,6 +24,9 @@ from app.services.action_agent import ActionAgentService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Keepalive interval (seconds) - must be less than Cloud Run request timeout
+KEEPALIVE_INTERVAL = 30
 
 
 @router.websocket("/ws/session")
@@ -43,6 +47,23 @@ async def session_ws(ws: WebSocket):
     transcript_context = ""
     last_sent_score = -1
     last_score_time = 0
+
+    # Background keepalive to prevent Cloud Run idle timeout
+    keepalive_task = None
+
+    async def _keepalive():
+        """Send periodic ping to keep WebSocket alive on Cloud Run."""
+        try:
+            while True:
+                await asyncio.sleep(KEEPALIVE_INTERVAL)
+                try:
+                    await ws.send_json({"type": "ping", "ts": time.time()})
+                except Exception:
+                    break
+        except asyncio.CancelledError:
+            pass
+
+    keepalive_task = asyncio.create_task(_keepalive())
 
     await ws.send_json({
         "type": "session_start",
@@ -270,6 +291,10 @@ async def session_ws(ws: WebSocket):
                 except Exception as e:
                     logger.error(f"[WS] Action plan request error: {e}")
 
+            elif msg_type in ("pong", "ping"):
+                # Keepalive response from frontend, ignore silently
+                pass
+
     except WebSocketDisconnect:
         logger.info("[WS] Client disconnected")
     except Exception as e:
@@ -278,3 +303,10 @@ async def session_ws(ws: WebSocket):
             await ws.send_json({"type": "error", "message": str(e)})
         except Exception:
             pass
+    finally:
+        if keepalive_task:
+            keepalive_task.cancel()
+            try:
+                await keepalive_task
+            except asyncio.CancelledError:
+                pass

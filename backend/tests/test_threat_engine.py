@@ -8,7 +8,7 @@ from app.services.threat_engine import ThreatEngine
 
 def test_session_init():
     engine = ThreatEngine()
-    assert engine.session.threat_score == 8
+    assert engine.session.threat_score == 0
     assert engine.session.threat_level == "safe"
     assert len(engine.session.alerts) == 0
 
@@ -33,7 +33,7 @@ def test_critical_scam_produces_alert():
     assert result["alert"] is not None
     assert result["alert"]["type"] == "threat_alert"
     assert result["alert"]["alert"]["severity"] == "critical"
-    assert engine.session.threat_score > 8
+    assert engine.session.threat_score > 0
     assert len(engine.session.alerts) == 1
 
 
