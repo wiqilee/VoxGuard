@@ -117,6 +117,41 @@ Every existing tool shares one fatal flaw: **they act after the damage is done.*
 
 ---
 
+## 🎮 Two Operating Modes
+
+VoxGuard operates in two modes that can run **simultaneously**:
+
+### Demo Mode (No setup needed)
+
+> Open [voxguard-kappa.vercel.app](https://voxguard-kappa.vercel.app), click **START**, and select a demo script.
+
+VoxGuard plays a simulated scam conversation with realistic 2-way dialog (ME + CALLER), fires real-time alerts, and triggers live interventions when danger is detected. Demo Mode runs entirely in the browser — no microphone, no backend, no API key required. This is the fastest way for judges to see the full detection → intervention → action agent flow.
+
+**Available Demo Scripts:** Bank Impersonation, Tech Support Scam, Government/Tax Scam, AI Voice Clone, Digital Arrest, Job Offer Scam, Family Emergency — plus 9 regional variants in Indonesian, Chinese, Japanese, Korean, Spanish, French, Hindi, Arabic, Malay, and Portuguese.
+
+### Live Mode (Real call protection)
+
+> Click **START**, then click the **🎙 LIVE MIC** button. Grant microphone permission.
+
+VoxGuard captures your actual microphone audio at 16kHz Mono PCM via the Web Audio API. Audio is preprocessed through the Rust WASM engine (Wiener noise reduction, spectral subtraction, VAD) and streamed to the backend through WebSocket. The backend sends audio to Gemini for real-time transcription and threat analysis.
+
+**How to use with a real call:**
+1. Click **START** to begin a session
+2. Click **🎙 LIVE MIC** — grant microphone permission
+3. A green status banner appears: `LIVE MICROPHONE — Real audio capture active`
+4. Put your phone on speaker and place it near your device, or use the same device for both the call and VoxGuard
+5. VoxGuard listens to the live call and detects scam patterns as they happen
+6. Optionally click **REC** to record session audio into the forensic report
+7. Click **🎙 MIC ON** again to disconnect the microphone
+
+**Requirements:** Live Mode requires a running backend on Google Cloud Run with a valid Gemini API key (`VITE_WS_URL` environment variable pointing to the backend WebSocket endpoint).
+
+**Live Mic + Demo Scripts:** You can run a demo script while Live Mic is active. The demo provides simulated dialog and alerts, while the microphone captures real ambient audio in parallel. This is useful for demonstrations where you want to show both the scripted flow and the live microphone capability side by side.
+
+**Live Mic + REC:** Enable both Live Mic and REC at the same time to record your actual call audio into the forensic report. This is the recommended setup for real-world use.
+
+---
+
 ## 🚨 Live Scam Intervention
 
 <div align="center">
@@ -359,7 +394,7 @@ Three concurrent input streams feed the system:
 
 | Model | Version | Purpose |
 |-------|---------|---------|
-| **Gemini Live API** | gemini-2.5-flash-native-audio | Real-time audio streaming with barge-in, enhanced audio quality, NLF pattern detection |
+| **Gemini Audio** | gemini-2.5-flash | Real-time audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Transcription + scam pattern detection. `gemini-2.5-flash-native-audio-preview-12-2025` available for Live API WebSocket streaming on Vertex AI. |
 | **Gemini Vision** | gemini-2.5-flash | Screenshot analysis: fake UI detection, phishing domain identification, QR code scanning |
 | **Gemini Text** | gemini-2.5-flash | Transcript analysis, psychological scoring, 50+ pattern matching, explanation generation |
 | **Gemini TTS** | gemini-2.5-flash-preview-tts | Natural voice intervention with contextual scripts in 9 languages |
@@ -657,7 +692,7 @@ VoxGuard uses three `.env` files to separate frontend, backend, and shared confi
 | `frontend/.env` | `VITE_GEMINI_API_KEY` | Gemini API key for demo mode TTS (client-side) |
 | `frontend/.env` | `VITE_WS_URL` | Backend WebSocket URL (e.g., `wss://your-backend.run.app/ws/session`) |
 | `backend/.env` | `GOOGLE_API_KEY` | Gemini API key for backend services (audio, vision, TTS, psych) |
-| `backend/.env` | `GEMINI_MODEL` | Audio model (default: `gemini-2.5-flash-native-audio`) |
+| `backend/.env` | `GEMINI_MODEL` | Audio model (default: `gemini-2.5-flash`) |
 | `backend/.env` | `GEMINI_VISION_MODEL` | Vision model (default: `gemini-2.5-flash`) |
 | `backend/.env` | `GEMINI_TTS_MODEL` | TTS model (default: `gemini-2.5-flash-preview-tts`) |
 | `backend/.env` | `GOOGLE_CLOUD_PROJECT` | GCP project ID for Cloud Run deployment |
@@ -667,7 +702,22 @@ VoxGuard uses three `.env` files to separate frontend, backend, and shared confi
 
 ## ⚡ Quick Start
 
-### Prerequisites
+### Try It Now (No installation needed):
+
+> **Judges:** Just open the live demo — no setup required for Demo Mode.
+
+```
+1. Open https://voxguard-kappa.vercel.app
+2. Click START
+3. Click any Demo Script (e.g., "Bank Impersonation")
+4. Watch the intervention fire when the scammer asks for your OTP
+```
+
+> **Note:** The Vercel deployment runs in Demo Mode with simulated 2-way dialog. Full real-time audio analysis (Live Mic mode) requires the backend running on Cloud Run with a Gemini API key. See below for local setup.
+
+### Local Development Setup
+
+#### Prerequisites
 - Node.js 20+, Python 3.11+, Rust 1.75+ with `wasm32-unknown-unknown` target
 - `wasm-pack` installed
 - Google Gemini API key
@@ -766,7 +816,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 ### Technical Implementation (30%)
 
 - **Google GenAI SDK:** All Gemini calls use the official Google GenAI SDK for Python (`google-generativeai` package), the SDK specified by the contest requirements
-- **Gemini Live API:** `gemini-2.5-flash` for real-time audio streaming and live call analysis in the current deployment, chosen for broader compatibility; `gemini-live-2.5-flash-native-audio` remains a Vertex AI option limited to selected US and Europe regions.
+- **Gemini Audio Analysis:** `gemini-2.5-flash` for audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Audio chunks are buffered (2-second flush with VAD), sent as base64 to the standard Gemini API, and return structured JSON with transcript, scam indicators, tactics, and lie indicators. `gemini-2.5-flash-native-audio-preview-12-2025` is available via the Live API on Vertex AI for true bidirectional streaming with barge-in support.
 - **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation
 - **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages
 - **Rust WASM:** Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency
