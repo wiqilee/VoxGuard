@@ -69,14 +69,16 @@ Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection 
 Every 30 seconds, someone somewhere in the world loses money to a phone or video call scam.
 
 <div align="center">
-<img src="docs/svgs/threat-demo.png" alt="The Problem" width="280"/>
+<img src="docs/svgs/threat-demo.png" alt="The Problem" width="100%"/>
 <br><br>
-<img src="docs/svgs/threat-demo2.png" alt="The Problem2" width="280"/>
+<img src="docs/svgs/threat-demo2.png" alt="The Problem2" width="100%"/>
 <br><br>
 </div>
 
 According to the **FBI IC3 2024 Annual Report**, internet crime losses in the United States hit **$16.6 billion** in 2024, with phone and video call fraud growing faster than any other category. Globally, GASA puts estimated losses at over **$1.026 trillion** per year.
+
 Last year, my neighbor's father wired **$12,000** to someone posing as a bank representative. He knew about scams. He had seen the warnings. But when the caller said his account would be frozen in ten minutes and asked for his one-time password, he handed it over without hesitation. That moment stayed with me. Not because of the money, but because of the gap it exposed. He had a phone, common sense, and years of experience. None of it helped in the thirty seconds that mattered most.
+
 So I built **VoxGuard**, a real-time multimodal AI agent that listens to live conversations, detects scam patterns as they emerge, and intervenes before the damage is done. Not after the call. Not the next day. Right there, in the moment the scammer asks for your OTP.
 
 Every existing tool shares one fatal flaw: **they act after the damage is done.**
