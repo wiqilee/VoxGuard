@@ -75,7 +75,6 @@ class VisionAnalyzerClient:
         if not self._model:
             return {"threat_detected": False}
         try:
-            import google.generativeai as genai
             image_part = {"mime_type": "image/jpeg", "data": base64_jpeg}
             prompt = """Analyze this screenshot for visual scam indicators:
 fake bank login, phishing form, malicious QR code, spoofed government site,

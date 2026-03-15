@@ -1,285 +1,307 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1150" width="1600" height="1150">
-<defs>
-  <filter id="gl"><feGaussianBlur stdDeviation="3" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-  <linearGradient id="hg" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0%" stop-color="#ff2d55"/><stop offset="25%" stop-color="#ff9500"/>
-    <stop offset="50%" stop-color="#00d4ff"/><stop offset="75%" stop-color="#7b61ff"/>
-    <stop offset="100%" stop-color="#30d158"/>
-  </linearGradient>
-  <marker id="ac" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0,0 10,3.5 0,7" fill="#00d4ff"/></marker>
-  <marker id="ab" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0,0 10,3.5 0,7" fill="#4285F4"/></marker>
-</defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" font-family="'JetBrains Mono', 'Fira Code', 'Consolas', monospace">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0e1a"/>
+      <stop offset="100%" stop-color="#0d1220"/>
+    </linearGradient>
+    <linearGradient id="headerGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#00f0ff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Arrow markers — medium size, not clipped -->
+    <marker id="arrDown" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 3, 0 6" fill="#00ccff"/>
+    </marker>
+    <marker id="arrUp" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="8 0, 0 3, 8 6" fill="#00ccff"/>
+    </marker>
+    <marker id="arrDownBlue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 3, 0 6" fill="#4285F4"/>
+    </marker>
+    <marker id="arrUpBlue" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="8 0, 0 3, 8 6" fill="#4285F4"/>
+    </marker>
+  </defs>
 
-<!-- Background -->
-<rect width="1600" height="1150" fill="#0a0e14" rx="12"/>
-<rect x="0" y="0" width="1600" height="5" fill="url(#hg)" rx="2"/>
+  <!-- Background -->
+  <rect width="1280" height="900" fill="url(#bgGrad)"/>
 
-<!-- Title -->
-<text x="50" y="52" font-family="monospace" font-size="26" font-weight="bold" fill="#00d4ff" filter="url(#gl)">VOXGUARD</text>
-<text x="260" y="52" font-family="monospace" font-size="16" fill="#ffffff">Real-Time Multimodal AI Scam Detection Architecture</text>
-<text x="50" y="78" font-family="monospace" font-size="12" fill="#e0e4ea">Built for Gemini Live Agent Challenge 2026 · Wiqi Lee · MIT License</text>
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="1280" height="50" fill="url(#headerGrad)"/>
+  <text x="30" y="33" fill="#00f0ff" font-size="24" font-weight="bold" letter-spacing="4">VOXGUARD</text>
+  <text x="220" y="33" fill="#ffffff" font-size="15">Real-Time Multimodal AI Scam Detection Architecture</text>
+  <text x="30" y="47" fill="#ffffff" font-size="10">Built for Gemini Live Agent Challenge 2026 · Wiqi Lee · MIT License</text>
 
-<!-- ═══ LAYER LABELS (left) ═══ -->
-<text x="24" y="170" font-family="monospace" font-size="10" fill="#ff9500" font-weight="bold" transform="rotate(-90,24,170)" letter-spacing="2">LAYER 1</text>
-<text x="24" y="440" font-family="monospace" font-size="10" fill="#00d4ff" font-weight="bold" transform="rotate(-90,24,440)" letter-spacing="2">LAYER 2</text>
-<text x="24" y="740" font-family="monospace" font-size="10" fill="#30d158" font-weight="bold" transform="rotate(-90,24,740)" letter-spacing="2">LAYER 3</text>
-<text x="24" y="1010" font-family="monospace" font-size="10" fill="#4285F4" font-weight="bold" transform="rotate(-90,24,1010)" letter-spacing="2">LAYER 4</text>
+  <!-- Latency Badge -->
+  <rect x="648" y="58" width="118" height="48" rx="8" fill="none" stroke="#ff3366" stroke-width="2"/>
+  <text x="707" y="82" fill="#ff3366" font-size="22" font-weight="bold" text-anchor="middle" filter="url(#glow)">&lt;80ms</text>
+  <text x="707" y="99" fill="#ffffff" font-size="10" text-anchor="middle">End-to-end latency</text>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- LAYER 1: INPUT SOURCES                              -->
-<!-- ═══════════════════════════════════════════════════ -->
+  <!-- ==================== LAYER 1: INPUT SOURCES (y=56..112) ==================== -->
+  <text x="22" y="100" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle" transform="rotate(-90, 22, 92)">L A Y E R  1</text>
 
-<rect x="60" y="105" width="220" height="80" rx="6" fill="#111821" stroke="#ff9500" stroke-width="1.5"/>
-<text x="82" y="135" font-family="monospace" font-size="14" font-weight="bold" fill="#ff9500">📞 Caller Audio</text>
-<text x="82" y="155" font-family="monospace" font-size="12" fill="#e0e4ea">Phone / WhatsApp / Zoom</text>
-<text x="82" y="173" font-family="monospace" font-size="12" fill="#e0e4ea">Any call platform</text>
+  <rect x="55" y="58" width="172" height="50" rx="6" fill="#1a1e2e" stroke="#ff6b35" stroke-width="1.5"/>
+  <text x="65" y="76" fill="#ff6b35" font-size="11" font-weight="bold">🔊 Caller Audio</text>
+  <text x="65" y="90" fill="#ffffff" font-size="10">Phone / WhatsApp / Zoom</text>
+  <text x="65" y="102" fill="#e0e4ec" font-size="9">Any call platform</text>
 
-<rect x="310" y="105" width="220" height="80" rx="6" fill="#111821" stroke="#30d158" stroke-width="1.5"/>
-<text x="332" y="135" font-family="monospace" font-size="14" font-weight="bold" fill="#30d158">🎙 User Microphone</text>
-<text x="332" y="155" font-family="monospace" font-size="12" fill="#e0e4ea">Web Audio API</text>
-<text x="332" y="173" font-family="monospace" font-size="12" fill="#e0e4ea">16kHz Mono PCM capture</text>
+  <rect x="248" y="58" width="172" height="50" rx="6" fill="#1a1e2e" stroke="#00ccff" stroke-width="1.5"/>
+  <text x="258" y="76" fill="#00ccff" font-size="11" font-weight="bold">🎙 User Microphone</text>
+  <text x="258" y="90" fill="#ffffff" font-size="10">Web Audio API</text>
+  <text x="258" y="102" fill="#e0e4ec" font-size="9">16kHz Mono PCM capture</text>
 
-<rect x="560" y="105" width="220" height="80" rx="6" fill="#111821" stroke="#7b61ff" stroke-width="1.5"/>
-<text x="582" y="135" font-family="monospace" font-size="14" font-weight="bold" fill="#7b61ff">🖥 Screen Share</text>
-<text x="582" y="155" font-family="monospace" font-size="12" fill="#e0e4ea">getDisplayMedia API</text>
-<text x="582" y="173" font-family="monospace" font-size="12" fill="#e0e4ea">JPEG 1280px / 2 sec</text>
+  <rect x="441" y="58" width="172" height="50" rx="6" fill="#1a1e2e" stroke="#aa55ff" stroke-width="1.5"/>
+  <text x="451" y="76" fill="#aa55ff" font-size="11" font-weight="bold">🖥 Screen Share</text>
+  <text x="451" y="90" fill="#ffffff" font-size="10">getDisplayMedia API</text>
+  <text x="451" y="102" fill="#e0e4ec" font-size="9">JPEG 1280px / 2 sec</text>
 
-<!-- Latency badge -->
-<rect x="820" y="110" width="160" height="65" rx="6" fill="transparent" stroke="#ff2d55" stroke-width="1.5" stroke-dasharray="5,3"/>
-<text x="845" y="143" font-family="monospace" font-size="28" font-weight="bold" fill="#ff2d55" filter="url(#gl)">&lt;80ms</text>
-<text x="845" y="165" font-family="monospace" font-size="11" fill="#e0e4ea">End-to-end latency</text>
+  <!-- ═══ ARROWS: Layer 1 → Layer 2 (SOLID = direct in-browser data flow) ═══ -->
+  <line x1="141" y1="110" x2="141" y2="133" stroke="#00ccff" stroke-width="2" marker-end="url(#arrDown)"/>
+  <line x1="334" y1="110" x2="334" y2="133" stroke="#00ccff" stroke-width="2" marker-end="url(#arrDown)"/>
+  <line x1="527" y1="110" x2="527" y2="133" stroke="#00ccff" stroke-width="2" marker-end="url(#arrDown)"/>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- LAYER 2: BROWSER                                    -->
-<!-- ═══════════════════════════════════════════════════ -->
+  <!-- ==================== LAYER 2: BROWSER (y=136..365) ==================== -->
+  <text x="22" y="255" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle" transform="rotate(-90, 22, 248)">L A Y E R  2</text>
 
-<!-- Arrows down -->
-<line x1="170" y1="185" x2="170" y2="215" stroke="#ff9500" stroke-width="2" marker-end="url(#ac)"/>
-<line x1="420" y1="185" x2="420" y2="215" stroke="#30d158" stroke-width="2" marker-end="url(#ac)"/>
-<line x1="670" y1="185" x2="670" y2="215" stroke="#7b61ff" stroke-width="2" marker-end="url(#ac)"/>
+  <rect x="40" y="136" width="730" height="229" rx="8" fill="#111522" stroke="#2a3050" stroke-width="1"/>
+  <text x="60" y="157" fill="#00f0ff" font-size="13" font-weight="bold">BROWSER LAYER</text>
+  <text x="230" y="157" fill="#ffffff" font-size="11">React 18 + Vite 5 + JSX</text>
 
-<rect x="50" y="222" width="940" height="300" rx="8" fill="#111821" stroke="#00d4ff" stroke-width="1.5"/>
-<text x="74" y="250" font-family="monospace" font-size="14" font-weight="bold" fill="#00d4ff" filter="url(#gl)">BROWSER LAYER</text>
-<text x="260" y="250" font-family="monospace" font-size="12" fill="#e0e4ea">React 18 + Vite 5 + JSX</text>
+  <rect x="60" y="168" width="165" height="52" rx="5" fill="#1a1e2e" stroke="#ff9500" stroke-width="1.5"/>
+  <text x="70" y="186" fill="#ff9500" font-size="10" font-weight="bold">⚙ Rust WASM Engine</text>
+  <text x="70" y="200" fill="#ffffff" font-size="9">Wiener NR · Spectral Sub · VAD</text>
+  <text x="70" y="212" fill="#e0e4ec" font-size="9">Float32 PCM · Zero-copy</text>
 
-<!-- Rust WASM -->
-<rect x="74" y="268" width="270" height="72" rx="5" fill="#1a0800" stroke="#CE422B" stroke-width="1.5"/>
-<text x="94" y="294" font-family="monospace" font-size="13" font-weight="bold" fill="#CE422B">⚙ Rust WASM Engine</text>
-<text x="94" y="314" font-family="monospace" font-size="11" fill="#ffffff">Wiener NR · Spectral Sub · VAD</text>
-<text x="94" y="330" font-family="monospace" font-size="11" fill="#ffffff">Float32 PCM · Zero-copy</text>
+  <rect x="240" y="168" width="165" height="52" rx="5" fill="#1a1e2e" stroke="#00ccff" stroke-width="1.5"/>
+  <text x="250" y="186" fill="#00ccff" font-size="10" font-weight="bold">↔ WebSocket</text>
+  <text x="250" y="200" fill="#ffffff" font-size="9">Bidirectional streaming</text>
+  <text x="250" y="212" fill="#e0e4ec" font-size="9">Audio + Screen frames</text>
 
-<!-- WebSocket -->
-<rect x="364" y="268" width="220" height="72" rx="5" fill="#001520" stroke="#00d4ff" stroke-width="1"/>
-<text x="384" y="294" font-family="monospace" font-size="13" font-weight="bold" fill="#00d4ff">⟷ WebSocket</text>
-<text x="384" y="314" font-family="monospace" font-size="11" fill="#ffffff">Bidirectional streaming</text>
-<text x="384" y="330" font-family="monospace" font-size="11" fill="#ffffff">Audio + Screen frames</text>
+  <rect x="420" y="168" width="165" height="52" rx="5" fill="#1a1e2e" stroke="#aa55ff" stroke-width="1.5"/>
+  <text x="430" y="186" fill="#aa55ff" font-size="10" font-weight="bold">📸 Screen Capture</text>
+  <text x="430" y="200" fill="#ffffff" font-size="9">Opt-in JPEG frames</text>
+  <text x="430" y="212" fill="#e0e4ec" font-size="9">2-second interval</text>
 
-<!-- Screen Capture -->
-<rect x="604" y="268" width="220" height="72" rx="5" fill="#100020" stroke="#7b61ff" stroke-width="1"/>
-<text x="624" y="294" font-family="monospace" font-size="13" font-weight="bold" fill="#7b61ff">📸 Screen Capture</text>
-<text x="624" y="314" font-family="monospace" font-size="11" fill="#ffffff">Opt-in JPEG frames</text>
-<text x="624" y="330" font-family="monospace" font-size="11" fill="#ffffff">2-second interval</text>
+  <rect x="604" y="168" width="148" height="52" rx="5" fill="#1a1e2e" stroke="#445566" stroke-width="1"/>
+  <text x="616" y="186" fill="#ffcc00" font-size="11" font-weight="bold">⚠ WARN ≥ 55</text>
+  <text x="616" y="202" fill="#ff3366" font-size="11" font-weight="bold">🛑 BLOCK ≥ 75</text>
+  <text x="616" y="218" fill="#ff0000" font-size="11" font-weight="bold">🚨 LOCK ≥ 90</text>
 
-<!-- Intervention tiers -->
-<rect x="844" y="268" width="130" height="72" rx="5" fill="#1a0505" stroke="#ff2d55" stroke-width="1.5"/>
-<text x="856" y="292" font-family="monospace" font-size="11" font-weight="bold" fill="#ffd60a">⚠ WARN  ≥ 55</text>
-<text x="856" y="310" font-family="monospace" font-size="11" font-weight="bold" fill="#ff9500">🛑 BLOCK ≥ 75</text>
-<text x="856" y="328" font-family="monospace" font-size="11" font-weight="bold" fill="#ff2d55">🚨 LOCK  ≥ 90</text>
+  <!-- Row 2 -->
+  <rect x="60" y="230" width="138" height="38" rx="4" fill="#1a1e2e" stroke="#ff3366" stroke-width="1"/>
+  <text x="69" y="246" fill="#ff3366" font-size="9" font-weight="bold">🚨 Intervention</text>
+  <text x="69" y="260" fill="#ffffff" font-size="9">WARN/BLOCK/LOCKDOWN</text>
 
-<!-- UI Components -->
-<rect x="74" y="356" width="150" height="55" rx="5" fill="#150008" stroke="#ff2d5588" stroke-width="1"/>
-<text x="90" y="380" font-family="monospace" font-size="11" font-weight="bold" fill="#ff2d55">🛑 Intervention</text>
-<text x="90" y="398" font-family="monospace" font-size="10" fill="#ffffff">WARN/BLOCK/LOCKDOWN</text>
+  <rect x="210" y="230" width="138" height="38" rx="4" fill="#1a1e2e" stroke="#00cc88" stroke-width="1"/>
+  <text x="219" y="246" fill="#00cc88" font-size="9" font-weight="bold">🛡 Action Agent</text>
+  <text x="219" y="260" fill="#ffffff" font-size="9">Recovery checklist</text>
 
-<rect x="240" y="356" width="150" height="55" rx="5" fill="#0a1a0a" stroke="#30d15888" stroke-width="1"/>
-<text x="256" y="380" font-family="monospace" font-size="11" font-weight="bold" fill="#30d158">🛡 Action Agent</text>
-<text x="256" y="398" font-family="monospace" font-size="10" fill="#ffffff">Recovery checklist</text>
+  <rect x="360" y="230" width="120" height="38" rx="4" fill="#1a1e2e" stroke="#ffcc00" stroke-width="1"/>
+  <text x="369" y="246" fill="#ffcc00" font-size="9" font-weight="bold">📊 Threat Meter</text>
+  <text x="369" y="260" fill="#ffffff" font-size="9">0-100 composite</text>
 
-<rect x="406" y="356" width="150" height="55" rx="5" fill="#001520" stroke="#00d4ff88" stroke-width="1"/>
-<text x="422" y="380" font-family="monospace" font-size="11" font-weight="bold" fill="#00d4ff">📊 Threat Meter</text>
-<text x="422" y="398" font-family="monospace" font-size="10" fill="#ffffff">0-100 composite</text>
+  <rect x="492" y="230" width="120" height="38" rx="4" fill="#1a1e2e" stroke="#aa55ff" stroke-width="1"/>
+  <text x="501" y="246" fill="#aa55ff" font-size="9" font-weight="bold">🧠 Psych Display</text>
+  <text x="501" y="260" fill="#ffffff" font-size="9">6 Cialdini + 5 Lie</text>
 
-<rect x="572" y="356" width="150" height="55" rx="5" fill="#100015" stroke="#7b61ff88" stroke-width="1"/>
-<text x="588" y="380" font-family="monospace" font-size="11" font-weight="bold" fill="#7b61ff">🧠 Psych Display</text>
-<text x="588" y="398" font-family="monospace" font-size="10" fill="#ffffff">6 Cialdini + 5 Lie</text>
+  <rect x="624" y="230" width="128" height="38" rx="4" fill="#1a1e2e" stroke="#ff6b35" stroke-width="1"/>
+  <text x="633" y="246" fill="#ff6b35" font-size="9" font-weight="bold">📋 Report/PDF</text>
+  <text x="633" y="260" fill="#ffffff" font-size="9">Forensic export</text>
 
-<rect x="738" y="356" width="150" height="55" rx="5" fill="#0f0f00" stroke="#ffd60a88" stroke-width="1"/>
-<text x="754" y="380" font-family="monospace" font-size="11" font-weight="bold" fill="#ffd60a">📋 Report/PDF</text>
-<text x="754" y="398" font-family="monospace" font-size="10" fill="#ffffff">Forensic export</text>
+  <!-- TTS bar -->
+  <rect x="60" y="277" width="692" height="22" rx="4" fill="#151a2a" stroke="#334455" stroke-width="0.5"/>
+  <text x="71" y="292" fill="#ffffff" font-size="9">🔊 Natural Voice Intervention · Gemini TTS · Kore / Puck / Charon · 9 languages · Verification Challenge</text>
 
-<!-- Voice bar -->
-<rect x="74" y="422" width="900" height="32" rx="4" fill="#001a2a22" stroke="#00d4ff44" stroke-width="1"/>
-<text x="90" y="444" font-family="monospace" font-size="11" fill="#ffffff">🔊 Natural Voice Intervention · Gemini TTS · Kore / Puck / Charon · 9 languages · Verification Challenge</text>
+  <!-- Tab bar -->
+  <text x="95" y="322" fill="#00ccff" font-size="12" font-weight="bold">MONITOR</text>
+  <text x="200" y="322" fill="#ff9500" font-size="12" font-weight="bold">PSYCH</text>
+  <text x="285" y="322" fill="#00cc88" font-size="12" font-weight="bold">PATTERNS</text>
+  <text x="395" y="322" fill="#ff6b35" font-size="12" font-weight="bold">REPORT</text>
+  <text x="485" y="322" fill="#ffffff" font-size="12" font-weight="bold">ABOUT</text>
 
-<!-- Tabs -->
-<rect x="74" y="464" width="900" height="28" rx="4" fill="transparent" stroke="#1e2a3a" stroke-width="1"/>
-<text x="140" y="484" font-family="monospace" font-size="12" font-weight="bold" fill="#00d4ff">MONITOR</text>
-<text x="300" y="484" font-family="monospace" font-size="12" font-weight="bold" fill="#ff9500">PSYCH</text>
-<text x="440" y="484" font-family="monospace" font-size="12" font-weight="bold" fill="#7b61ff">PATTERNS</text>
-<text x="600" y="484" font-family="monospace" font-size="12" font-weight="bold" fill="#30d158">REPORT</text>
-<text x="760" y="484" font-family="monospace" font-size="12" font-weight="bold" fill="#e0e4ea">ABOUT</text>
+  <!-- ═══ ARROWS: Layer 2 ↔ Layer 3 (DASHED = network boundary, BIDIRECTIONAL) ═══ -->
+  <!-- Down arrow: browser sends audio/screen to backend -->
+  <line x1="375" y1="368" x2="375" y2="407" stroke="#00ccff" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#arrDown)"/>
+  <!-- Up arrow: backend sends alerts/TTS/explanations back -->
+  <line x1="425" y1="407" x2="425" y2="368" stroke="#00ccff" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#arrDown)"/>
+  <!-- Label -->
+  <text x="440" y="393" fill="#00ccff" font-size="11" font-weight="bold">WebSocket wss://</text>
+  <text x="275" y="393" fill="#ffffff" font-size="8">audio + screen ▼</text>
+  <text x="275" y="383" fill="#ffffff" font-size="8">▲ alerts + TTS</text>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- Arrow Browser → Backend                             -->
-<!-- ═══════════════════════════════════════════════════ -->
-<line x1="480" y1="522" x2="480" y2="565" stroke="#00d4ff" stroke-width="2" marker-end="url(#ac)"/>
-<text x="496" y="550" font-family="monospace" font-size="11" fill="#ffffff">WebSocket wss://</text>
+  <!-- ==================== LAYER 3: BACKEND (y=410..620) ==================== -->
+  <text x="22" y="520" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle" transform="rotate(-90, 22, 515)">L A Y E R  3</text>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- LAYER 3: BACKEND                                    -->
-<!-- ═══════════════════════════════════════════════════ -->
+  <rect x="40" y="410" width="730" height="210" rx="8" fill="#111522" stroke="#2a3050" stroke-width="1"/>
+  <text x="60" y="432" fill="#4285F4" font-size="13" font-weight="bold">BACKEND → GOOGLE CLOUD RUN</text>
+  <text x="335" y="432" fill="#ffffff" font-size="11">Python 3.11 + FastAPI + WebSocket + Auto-scaling</text>
 
-<rect x="50" y="572" width="940" height="260" rx="8" fill="#111821" stroke="#30d158" stroke-width="1.5"/>
-<text x="74" y="600" font-family="monospace" font-size="14" font-weight="bold" fill="#30d158" filter="url(#gl)">BACKEND — GOOGLE CLOUD RUN</text>
-<text x="410" y="600" font-family="monospace" font-size="12" fill="#e0e4ea">Python 3.11 + FastAPI + WebSocket + Auto-scaling</text>
+  <!-- FastAPI Router -->
+  <rect x="60" y="442" width="160" height="36" rx="4" fill="#1a2a1e" stroke="#00cc88" stroke-width="1.5"/>
+  <text x="70" y="458" fill="#00cc88" font-size="10" font-weight="bold">🌐 FastAPI Router</text>
+  <text x="70" y="471" fill="#ffffff" font-size="9">websocket.py · /ws/session</text>
 
-<!-- FastAPI -->
-<rect x="74" y="616" width="220" height="55" rx="5" fill="#0a1a0a" stroke="#30d158" stroke-width="1"/>
-<text x="94" y="640" font-family="monospace" font-size="12" font-weight="bold" fill="#30d158">🌐 FastAPI Router</text>
-<text x="94" y="660" font-family="monospace" font-size="11" fill="#ffffff">websocket.py · /ws/session</text>
+  <!-- 5 analysis services -->
+  <rect x="60" y="486" width="130" height="44" rx="4" fill="#1a1e2e" stroke="#ff3366" stroke-width="1"/>
+  <text x="68" y="502" fill="#ff3366" font-size="9" font-weight="bold">🎙 Audio Analyzer</text>
+  <text x="68" y="514" fill="#ffffff" font-size="8">VAD + Gemini stream</text>
+  <text x="68" y="524" fill="#e0e4ec" font-size="8">Transcript + patterns</text>
 
-<!-- Services row 1 -->
-<rect x="74" y="686" width="165" height="65" rx="5" fill="#001520" stroke="#00d4ff88" stroke-width="1"/>
-<text x="88" y="708" font-family="monospace" font-size="11" font-weight="bold" fill="#00d4ff">🎙 Audio Analyzer</text>
-<text x="88" y="726" font-family="monospace" font-size="10" fill="#ffffff">VAD + Gemini stream</text>
-<text x="88" y="742" font-family="monospace" font-size="10" fill="#ffffff">Transcript + patterns</text>
+  <rect x="200" y="486" width="130" height="44" rx="4" fill="#1a1e2e" stroke="#aa55ff" stroke-width="1"/>
+  <text x="208" y="502" fill="#aa55ff" font-size="9" font-weight="bold">🖥 Vision Analyzer</text>
+  <text x="208" y="514" fill="#ffffff" font-size="8">Screenshot → Gemini</text>
+  <text x="208" y="524" fill="#e0e4ec" font-size="8">Phishing / fake UI</text>
 
-<rect x="254" y="686" width="165" height="65" rx="5" fill="#100020" stroke="#7b61ff88" stroke-width="1"/>
-<text x="268" y="708" font-family="monospace" font-size="11" font-weight="bold" fill="#7b61ff">🖥 Vision Analyzer</text>
-<text x="268" y="726" font-family="monospace" font-size="10" fill="#ffffff">Screenshot → Gemini</text>
-<text x="268" y="742" font-family="monospace" font-size="10" fill="#ffffff">Phishing / fake UI</text>
+  <rect x="340" y="486" width="130" height="44" rx="4" fill="#1a1e2e" stroke="#ffcc00" stroke-width="1"/>
+  <text x="348" y="502" fill="#ffcc00" font-size="9" font-weight="bold">🧠 Psych Analyzer</text>
+  <text x="348" y="514" fill="#ffffff" font-size="8">6 Cialdini + 5 Lie</text>
+  <text x="348" y="524" fill="#e0e4ec" font-size="8">+ intervention rec</text>
 
-<rect x="434" y="686" width="165" height="65" rx="5" fill="#1a0f00" stroke="#ff950088" stroke-width="1"/>
-<text x="448" y="708" font-family="monospace" font-size="11" font-weight="bold" fill="#ff9500">🧠 Psych Analyzer</text>
-<text x="448" y="726" font-family="monospace" font-size="10" fill="#ffffff">6 Cialdini + 5 Lie</text>
-<text x="448" y="742" font-family="monospace" font-size="10" fill="#ffffff">+ intervention rec</text>
+  <rect x="480" y="486" width="130" height="44" rx="4" fill="#1a1e2e" stroke="#ff6b35" stroke-width="1"/>
+  <text x="488" y="502" fill="#ff6b35" font-size="9" font-weight="bold">⚡ Threat Engine</text>
+  <text x="488" y="514" fill="#ffffff" font-size="8">0.45L + 0.35B + 0.20V</text>
+  <text x="488" y="524" fill="#e0e4ec" font-size="8">500ms scoring cycle</text>
 
-<rect x="614" y="686" width="165" height="65" rx="5" fill="#150008" stroke="#ff2d5588" stroke-width="1"/>
-<text x="628" y="708" font-family="monospace" font-size="11" font-weight="bold" fill="#ff2d55">📊 Threat Engine</text>
-<text x="628" y="726" font-family="monospace" font-size="10" fill="#ffffff">0.45L + 0.35B + 0.20V</text>
-<text x="628" y="742" font-family="monospace" font-size="10" fill="#ffffff">500ms scoring cycle</text>
+  <rect x="620" y="486" width="130" height="44" rx="4" fill="#1a1e2e" stroke="#00cc88" stroke-width="1"/>
+  <text x="628" y="502" fill="#00cc88" font-size="9" font-weight="bold">🛡 Action Agent</text>
+  <text x="628" y="514" fill="#ffffff" font-size="8">9 countries · recovery</text>
+  <text x="628" y="524" fill="#e0e4ec" font-size="8">AI-enhanced plans</text>
 
-<rect x="794" y="686" width="180" height="65" rx="5" fill="#0a1a0a" stroke="#30d15888" stroke-width="1"/>
-<text x="808" y="708" font-family="monospace" font-size="11" font-weight="bold" fill="#30d158">🛡 Action Agent</text>
-<text x="808" y="726" font-family="monospace" font-size="10" fill="#ffffff">9 countries · recovery</text>
-<text x="808" y="742" font-family="monospace" font-size="10" fill="#ffffff">AI-enhanced plans</text>
+  <!-- Row 2 -->
+  <rect x="60" y="538" width="130" height="38" rx="4" fill="#1a1e2e" stroke="#00ccff" stroke-width="1"/>
+  <text x="68" y="554" fill="#00ccff" font-size="9" font-weight="bold">🔊 TTS Service</text>
+  <text x="68" y="568" fill="#ffffff" font-size="8">Gemini TTS voices</text>
 
-<!-- Services row 2 -->
-<rect x="74" y="764" width="165" height="50" rx="5" fill="#001520" stroke="#00d4ff55" stroke-width="1"/>
-<text x="88" y="786" font-family="monospace" font-size="11" font-weight="bold" fill="#00d4ff">🔊 TTS Service</text>
-<text x="88" y="804" font-family="monospace" font-size="10" fill="#ffffff">Gemini TTS voices</text>
+  <rect x="200" y="538" width="130" height="38" rx="4" fill="#1a1e2e" stroke="#e0e4ec" stroke-width="1"/>
+  <text x="208" y="554" fill="#ffffff" font-size="9" font-weight="bold">📝 Explanation SVC</text>
+  <text x="208" y="568" fill="#ffffff" font-size="8">Multimodal cards</text>
 
-<rect x="254" y="764" width="165" height="50" rx="5" fill="#100015" stroke="#7b61ff55" stroke-width="1"/>
-<text x="268" y="786" font-family="monospace" font-size="11" font-weight="bold" fill="#7b61ff">📋 Explanation SVC</text>
-<text x="268" y="804" font-family="monospace" font-size="10" fill="#ffffff">Multimodal cards</text>
+  <rect x="340" y="538" width="130" height="38" rx="4" fill="#1a1e2e" stroke="#ff9500" stroke-width="1"/>
+  <text x="348" y="554" fill="#ff9500" font-size="9" font-weight="bold">📚 Pattern DB</text>
+  <text x="348" y="568" fill="#ffffff" font-size="8">50+ verified patterns</text>
 
-<rect x="434" y="764" width="165" height="50" rx="5" fill="#0f0f00" stroke="#ffd60a88" stroke-width="1"/>
-<text x="448" y="786" font-family="monospace" font-size="11" font-weight="bold" fill="#ffd60a">📚 Pattern DB</text>
-<text x="448" y="804" font-family="monospace" font-size="10" fill="#ffffff">50+ verified patterns</text>
+  <rect x="480" y="538" width="130" height="38" rx="4" fill="#0d1f2e" stroke="#4285F4" stroke-width="2.5"/>
+  <text x="488" y="554" fill="#4285F4" font-size="9" font-weight="bold">🗄 Cloud Firestore</text>
+  <text x="488" y="568" fill="#ffffff" font-size="8">Session + forensic data</text>
 
-<!-- Scoring formula — FIXED: wider box, no cutoff -->
-<rect x="614" y="764" width="360" height="50" rx="5" fill="transparent" stroke="#1e2a3a" stroke-width="1"/>
-<text x="628" y="784" font-family="monospace" font-size="11" font-weight="bold" fill="#ff2d55">Score = 0.45×Lang + 0.35×Behav + 0.20×Visual</text>
-<text x="628" y="804" font-family="monospace" font-size="10" fill="#ffffff">Triggers: 55 WARN · 75 BLOCK · 90 LOCKDOWN</text>
+  <rect x="620" y="538" width="130" height="38" rx="4" fill="#0d1f2e" stroke="#4285F4" stroke-width="2.5"/>
+  <text x="628" y="554" fill="#4285F4" font-size="9" font-weight="bold">☁ Cloud Storage</text>
+  <text x="628" y="568" fill="#ffffff" font-size="8">Audio recordings</text>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- Arrow Backend → Gemini                              -->
-<!-- ═══════════════════════════════════════════════════ -->
-<line x1="480" y1="832" x2="480" y2="870" stroke="#4285F4" stroke-width="2" marker-end="url(#ab)"/>
-<text x="496" y="858" font-family="monospace" font-size="11" fill="#ffffff">Google GenAI SDK</text>
+  <!-- Scoring formula -->
+  <text x="60" y="596" fill="#ff9500" font-size="10" font-weight="bold">Score = 0.45×Lang + 0.35×Behav + 0.20×Visual</text>
+  <text x="440" y="596" fill="#ff3366" font-size="10" font-weight="bold">Triggers: 55 WARN · 75 BLOCK · 90 LOCKDOWN</text>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- LAYER 4: GEMINI AI                                  -->
-<!-- ═══════════════════════════════════════════════════ -->
+  <!-- ═══ ARROWS: Layer 3 ↔ Layer 4 (DASHED = API boundary, BIDIRECTIONAL) ═══ -->
+  <line x1="375" y1="623" x2="375" y2="665" stroke="#4285F4" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#arrDownBlue)"/>
+  <line x1="425" y1="665" x2="425" y2="623" stroke="#4285F4" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#arrDownBlue)"/>
+  <text x="440" y="648" fill="#4285F4" font-size="11" font-weight="bold">Google GenAI SDK</text>
+  <text x="275" y="648" fill="#ffffff" font-size="8">request ▼</text>
+  <text x="275" y="638" fill="#ffffff" font-size="8">▲ response</text>
 
-<rect x="50" y="878" width="940" height="140" rx="8" fill="#111821" stroke="#4285F4" stroke-width="1.5"/>
-<text x="74" y="906" font-family="monospace" font-size="14" font-weight="bold" fill="#4285F4" filter="url(#gl)">GOOGLE GEMINI AI</text>
-<text x="300" y="906" font-family="monospace" font-size="12" fill="#e0e4ea">google-generativeai Python SDK · Gemini Developer API</text>
+  <!-- ==================== LAYER 4: GOOGLE GEMINI AI (y=668..780) ==================== -->
+  <text x="22" y="730" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle" transform="rotate(-90, 22, 725)">L A Y E R  4</text>
 
-<!-- Models -->
-<rect x="74" y="922" width="215" height="80" rx="5" fill="#0a1530" stroke="#4285F4" stroke-width="1.5"/>
-<text x="92" y="946" font-family="monospace" font-size="12" font-weight="bold" fill="#4285F4">🎙 Gemini Live API</text>
-<text x="92" y="966" font-family="monospace" font-size="11" fill="#ffffff">gemini-2.5-flash</text>
-<text x="92" y="984" font-family="monospace" font-size="10" fill="#e0e4ea">Real-time audio streaming</text>
-<text x="92" y="998" font-family="monospace" font-size="10" fill="#e0e4ea">Transcript + detection</text>
+  <rect x="40" y="668" width="730" height="100" rx="8" fill="#111522" stroke="#2a3050" stroke-width="1"/>
+  <text x="60" y="690" fill="#4285F4" font-size="13" font-weight="bold">GOOGLE GEMINI AI</text>
+  <text x="265" y="690" fill="#ffffff" font-size="11">google-generativeai Python SDK · Gemini Developer API</text>
 
-<rect x="304" y="922" width="215" height="80" rx="5" fill="#0a1530" stroke="#4285F4" stroke-width="1"/>
-<text x="322" y="946" font-family="monospace" font-size="12" font-weight="bold" fill="#4285F4">👁 Gemini Vision</text>
-<text x="322" y="966" font-family="monospace" font-size="11" fill="#ffffff">gemini-2.5-flash</text>
-<text x="322" y="984" font-family="monospace" font-size="10" fill="#e0e4ea">Screenshot analysis</text>
-<text x="322" y="998" font-family="monospace" font-size="10" fill="#e0e4ea">Phishing · Fake UI · QR</text>
+  <rect x="60" y="700" width="165" height="52" rx="5" fill="#1a1e2e" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="70" y="718" fill="#4285F4" font-size="10" font-weight="bold">🎙 Gemini Live API</text>
+  <text x="70" y="732" fill="#ffffff" font-size="9">gemini-2.5-flash</text>
+  <text x="70" y="744" fill="#e0e4ec" font-size="8">Real-time audio streaming</text>
 
-<rect x="534" y="922" width="215" height="80" rx="5" fill="#0a1530" stroke="#4285F4" stroke-width="1"/>
-<text x="552" y="946" font-family="monospace" font-size="12" font-weight="bold" fill="#4285F4">🔊 Gemini TTS</text>
-<text x="552" y="966" font-family="monospace" font-size="11" fill="#ffffff">gemini-2.5-flash-</text>
-<text x="552" y="980" font-family="monospace" font-size="11" fill="#ffffff">preview-tts</text>
-<text x="552" y="998" font-family="monospace" font-size="10" fill="#e0e4ea">Kore · Puck · Charon</text>
+  <rect x="240" y="700" width="163" height="52" rx="5" fill="#1a1e2e" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="250" y="718" fill="#4285F4" font-size="10" font-weight="bold">👁 Gemini Vision</text>
+  <text x="250" y="732" fill="#ffffff" font-size="9">gemini-2.5-flash</text>
+  <text x="250" y="744" fill="#e0e4ec" font-size="8">Screenshot analysis</text>
 
-<rect x="764" y="922" width="210" height="80" rx="5" fill="#0a1530" stroke="#ffd60a88" stroke-width="1"/>
-<text x="782" y="946" font-family="monospace" font-size="12" font-weight="bold" fill="#ffd60a">📚 Grounding DB</text>
-<text x="782" y="966" font-family="monospace" font-size="11" fill="#ffffff">scam_patterns.json</text>
-<text x="782" y="984" font-family="monospace" font-size="10" fill="#e0e4ea">50+ patterns · FTC · FBI</text>
-<text x="782" y="998" font-family="monospace" font-size="10" fill="#e0e4ea">GASA · MAS · ACCC</text>
+  <rect x="418" y="700" width="163" height="52" rx="5" fill="#1a1e2e" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="428" y="718" fill="#4285F4" font-size="10" font-weight="bold">🔊 Gemini TTS</text>
+  <text x="428" y="732" fill="#ffffff" font-size="9">gemini-2.5-flash-preview-tts</text>
+  <text x="428" y="744" fill="#e0e4ec" font-size="8">Kore / Puck / Charon</text>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- RIGHT PANEL: Features + Tech + Flow                 -->
-<!-- ═══════════════════════════════════════════════════ -->
+  <rect x="596" y="700" width="160" height="52" rx="5" fill="#1a1e2e" stroke="#ff9500" stroke-width="1.5"/>
+  <text x="606" y="718" fill="#ff9500" font-size="10" font-weight="bold">📚 Grounding DB</text>
+  <text x="606" y="732" fill="#ffffff" font-size="9">scam_patterns.json</text>
+  <text x="606" y="744" fill="#e0e4ec" font-size="8">50+ · FTC · FBI · GASA · MAS</text>
 
-<!-- Key Capabilities -->
-<rect x="1030" y="105" width="530" height="380" rx="8" fill="#111821" stroke="#1e2a3a" stroke-width="1"/>
-<text x="1055" y="138" font-family="monospace" font-size="15" font-weight="bold" fill="#00d4ff">KEY CAPABILITIES</text>
+  <!-- ==================== RIGHT SIDEBAR ==================== -->
 
-<text x="1055" y="172" font-family="monospace" font-size="12" fill="#ff2d55">● First real-time during-call intervention</text>
-<text x="1055" y="196" font-family="monospace" font-size="12" fill="#ff2d55">● Natural voice warnings (Gemini TTS)</text>
-<text x="1055" y="220" font-family="monospace" font-size="12" fill="#ff2d55">● Multimodal explanation cards</text>
-<text x="1055" y="244" font-family="monospace" font-size="12" fill="#ff9500">● 6 Cialdini psychological vectors</text>
-<text x="1055" y="268" font-family="monospace" font-size="12" fill="#ff9500">● 5 FBI CBCA lie detection indicators</text>
-<text x="1055" y="292" font-family="monospace" font-size="12" fill="#30d158">● Guided action agent (9 countries)</text>
-<text x="1055" y="316" font-family="monospace" font-size="12" fill="#30d158">● Verification challenge (7 scam types)</text>
-<text x="1055" y="340" font-family="monospace" font-size="12" fill="#7b61ff">● 2-way transcript (ME + CALLER)</text>
-<text x="1055" y="364" font-family="monospace" font-size="12" fill="#7b61ff">● Screen share phishing detection</text>
-<text x="1055" y="388" font-family="monospace" font-size="12" fill="#00d4ff">● 50+ grounded scam patterns</text>
-<text x="1055" y="412" font-family="monospace" font-size="12" fill="#00d4ff">● 40 languages · 9 fully native</text>
-<text x="1055" y="436" font-family="monospace" font-size="12" fill="#ffd60a">● Forensic HTML/PDF export</text>
-<text x="1055" y="460" font-family="monospace" font-size="12" fill="#ffd60a">● Session gallery + audio playback</text>
+  <!-- KEY CAPABILITIES -->
+  <rect x="800" y="55" width="462" height="290" rx="8" fill="#111522" stroke="#2a3050" stroke-width="1"/>
+  <text x="820" y="78" fill="#00f0ff" font-size="14" font-weight="bold">KEY CAPABILITIES</text>
 
-<!-- Tech Stack -->
-<rect x="1030" y="505" width="530" height="195" rx="8" fill="#111821" stroke="#1e2a3a" stroke-width="1"/>
-<text x="1055" y="535" font-family="monospace" font-size="15" font-weight="bold" fill="#30d158">TECH STACK</text>
+  <circle cx="820" cy="97" r="4" fill="#ff3366"/>
+  <text x="834" y="102" fill="#ffffff" font-size="10">First real-time during-call intervention</text>
+  <circle cx="820" cy="115" r="4" fill="#00ccff"/>
+  <text x="834" y="120" fill="#ffffff" font-size="10">Natural voice warnings (Gemini TTS)</text>
+  <circle cx="820" cy="133" r="4" fill="#aa55ff"/>
+  <text x="834" y="138" fill="#ffffff" font-size="10">Multimodal explanation cards</text>
+  <circle cx="820" cy="151" r="4" fill="#ffcc00"/>
+  <text x="834" y="156" fill="#ffffff" font-size="10">6 Cialdini psychological vectors</text>
+  <circle cx="820" cy="169" r="4" fill="#ff6b35"/>
+  <text x="834" y="174" fill="#ffffff" font-size="10">5 FBI CBCA lie detection indicators</text>
+  <circle cx="820" cy="187" r="4" fill="#00cc88"/>
+  <text x="834" y="192" fill="#ffffff" font-size="10">Guided action agent (9 countries)</text>
+  <circle cx="820" cy="205" r="4" fill="#ff9500"/>
+  <text x="834" y="210" fill="#ffffff" font-size="10">Verification challenge (7 scam types)</text>
+  <circle cx="820" cy="223" r="4" fill="#00ccff"/>
+  <text x="834" y="228" fill="#ffffff" font-size="10">2-way transcript (ME + CALLER)</text>
+  <circle cx="820" cy="241" r="4" fill="#aa55ff"/>
+  <text x="834" y="246" fill="#ffffff" font-size="10">Screen share phishing detection</text>
+  <circle cx="820" cy="259" r="4" fill="#ff3366"/>
+  <text x="834" y="264" fill="#ffffff" font-size="10">50+ grounded scam patterns</text>
+  <circle cx="820" cy="277" r="4" fill="#00cc88"/>
+  <text x="834" y="282" fill="#ffffff" font-size="10">40 languages · 9 fully native</text>
+  <circle cx="820" cy="295" r="4" fill="#ffcc00"/>
+  <text x="834" y="300" fill="#ffffff" font-size="10">Forensic HTML/PDF export</text>
+  <circle cx="820" cy="313" r="4" fill="#4285F4"/>
+  <text x="834" y="318" fill="#4285F4" font-size="10" font-weight="bold">3 Google Cloud services in production</text>
+  <circle cx="820" cy="331" r="4" fill="#ff9500"/>
+  <text x="834" y="336" fill="#ffffff" font-size="10">Session gallery + audio playback</text>
 
-<text x="1055" y="565" font-family="monospace" font-size="12" font-weight="bold" fill="#00d4ff">Frontend</text>
-<text x="1170" y="565" font-family="monospace" font-size="12" fill="#ffffff">React 18 · Vite 5 · JSX</text>
-<text x="1055" y="589" font-family="monospace" font-size="12" font-weight="bold" fill="#CE422B">WASM</text>
-<text x="1170" y="589" font-family="monospace" font-size="12" fill="#ffffff">Rust · wasm-pack · Wiener NR</text>
-<text x="1055" y="613" font-family="monospace" font-size="12" font-weight="bold" fill="#30d158">Backend</text>
-<text x="1170" y="613" font-family="monospace" font-size="12" fill="#ffffff">Python 3.11 · FastAPI · WS</text>
-<text x="1055" y="637" font-family="monospace" font-size="12" font-weight="bold" fill="#4285F4">AI</text>
-<text x="1170" y="637" font-family="monospace" font-size="12" fill="#ffffff">Gemini 2.5 Flash · TTS</text>
-<text x="1055" y="661" font-family="monospace" font-size="12" font-weight="bold" fill="#ff9500">Infra</text>
-<text x="1170" y="661" font-family="monospace" font-size="12" fill="#ffffff">Cloud Run · Vercel · Docker</text>
-<text x="1055" y="685" font-family="monospace" font-size="12" font-weight="bold" fill="#7b61ff">Deploy</text>
-<text x="1170" y="685" font-family="monospace" font-size="12" fill="#ffffff">GitHub Actions CI/CD</text>
+  <!-- TECH STACK -->
+  <rect x="800" y="358" width="462" height="130" rx="8" fill="#111522" stroke="#2a3050" stroke-width="1"/>
+  <text x="820" y="382" fill="#00f0ff" font-size="14" font-weight="bold">TECH STACK</text>
 
-<!-- Intervention Flow -->
-<rect x="1030" y="720" width="530" height="178" rx="8" fill="#111821" stroke="#1e2a3a" stroke-width="1"/>
-<text x="1055" y="750" font-family="monospace" font-size="15" font-weight="bold" fill="#ff9500">INTERVENTION FLOW</text>
+  <text x="820" y="402" fill="#ff6b35" font-size="11" font-weight="bold">Frontend</text>
+  <text x="930" y="402" fill="#ffffff" font-size="11">React 18 · Vite 5 · JSX</text>
+  <text x="820" y="420" fill="#ff9500" font-size="11" font-weight="bold">WASM</text>
+  <text x="930" y="420" fill="#ffffff" font-size="11">Rust · wasm-pack · Wiener NR</text>
+  <text x="820" y="438" fill="#00cc88" font-size="11" font-weight="bold">Backend</text>
+  <text x="930" y="438" fill="#ffffff" font-size="11">Python 3.11 · FastAPI · WS</text>
+  <text x="820" y="456" fill="#ffcc00" font-size="11" font-weight="bold">AI</text>
+  <text x="930" y="456" fill="#ffffff" font-size="11">Gemini 2.5 Flash · TTS</text>
+  <text x="820" y="474" fill="#4285F4" font-size="11" font-weight="bold">Infra</text>
+  <text x="930" y="474" fill="#ffffff" font-size="11">Cloud Run · Firestore · Cloud Storage</text>
 
-<text x="1055" y="780" font-family="monospace" font-size="11" fill="#ffffff">1. Audio chunk → Rust WASM → WebSocket</text>
-<text x="1055" y="800" font-family="monospace" font-size="11" fill="#ffffff">2. Backend → Gemini → transcript + analysis</text>
-<text x="1055" y="820" font-family="monospace" font-size="11" fill="#ffffff">3. Threat Engine scores → intervention check</text>
-<text x="1055" y="840" font-family="monospace" font-size="11" fill="#ff2d55" font-weight="bold">4. Score ≥ threshold OR fatal pattern match</text>
-<text x="1055" y="860" font-family="monospace" font-size="11" fill="#ff2d55" font-weight="bold">5. → Overlay + TTS voice + Explanation card</text>
-<text x="1055" y="880" font-family="monospace" font-size="11" fill="#30d158" font-weight="bold">6. Safe Exit → Action Agent → Recovery plan</text>
+  <!-- INTERVENTION FLOW -->
+  <rect x="800" y="501" width="462" height="168" rx="8" fill="#111522" stroke="#2a3050" stroke-width="1"/>
+  <text x="820" y="524" fill="#00f0ff" font-size="14" font-weight="bold">INTERVENTION FLOW</text>
 
-<!-- Powered by -->
-<rect x="1030" y="918" width="530" height="100" rx="8" fill="#0a1530" stroke="#4285F4" stroke-width="1.5"/>
-<text x="1055" y="950" font-family="monospace" font-size="16" font-weight="bold" fill="#4285F4" filter="url(#gl)">Powered by Google Gemini</text>
-<text x="1055" y="975" font-family="monospace" font-size="12" fill="#ffffff">google-generativeai SDK · Gemini Developer API</text>
-<text x="1055" y="998" font-family="monospace" font-size="12" fill="#ffffff">gemini-2.5-flash · gemini-2.5-flash-preview-tts</text>
+  <text x="820" y="546" fill="#ffffff" font-size="10">1. Audio chunk → Rust WASM → WebSocket</text>
+  <text x="820" y="562" fill="#ffffff" font-size="10">2. Backend → Gemini → transcript + analysis</text>
+  <text x="820" y="578" fill="#ffffff" font-size="10">3. Threat Engine scores → intervention check</text>
+  <text x="820" y="594" fill="#ff3366" font-size="10" font-weight="bold">4. Score ≥ threshold OR fatal pattern match</text>
+  <text x="820" y="610" fill="#ff3366" font-size="10" font-weight="bold">5. → Overlay + TTS voice + Explanation card</text>
+  <text x="820" y="626" fill="#00cc88" font-size="10" font-weight="bold">6. Safe Exit → Action Agent → Recovery plan</text>
+  <text x="820" y="642" fill="#4285F4" font-size="10" font-weight="bold">7. Session → Firestore · Audio → Cloud Storage</text>
+  <text x="820" y="660" fill="#ffffff" font-size="9">Three Google Cloud services: Run + Firestore + Storage</text>
 
-<!-- Bottom bar -->
-<rect x="0" y="1145" width="1600" height="5" fill="url(#hg)"/>
-<text x="50" y="1132" font-family="monospace" font-size="12" fill="#e0e4ea">VOXGUARD 2026 · Wiqi Lee · Gemini Live Agent Challenge · MIT License</text>
-<text x="1180" y="1132" font-family="monospace" font-size="12" fill="#00d4ff">voxguard-kappa.vercel.app</text>
+  <!-- POWERED BY -->
+  <rect x="800" y="682" width="462" height="82" rx="8" fill="#111522" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="820" y="706" fill="#4285F4" font-size="13" font-weight="bold">Powered by Google Gemini + Google Cloud</text>
+  <text x="820" y="724" fill="#ffffff" font-size="10">google-generativeai SDK · Gemini Developer API</text>
+  <text x="820" y="740" fill="#ffffff" font-size="10">gemini-2.5-flash · TTS · Cloud Run · Firestore · Cloud Storage</text>
+  <text x="820" y="756" fill="#e0e4ec" font-size="9">google-cloud-firestore · google-cloud-storage · google-auth</text>
+
+  <!-- Footer -->
+  <text x="30" y="888" fill="#ffffff" font-size="11">VOXGUARD 2026 · Wiqi Lee · Gemini Live Agent Challenge · MIT License</text>
+  <text x="985" y="888" fill="#00ccff" font-size="11" font-weight="bold">voxguard-kappa.vercel.app</text>
 
 </svg>

@@ -310,7 +310,7 @@ Instead of just saying "call your bank", VoxGuard generates a **personalized, st
 | Spain | 🇪🇸 | 112 | Guardia Civil, INCIBE 017 |
 | France | 🇫🇷 | 17 | PHAROS, Info Escroqueries |
 | India | 🇮🇳 | 112 | Cybercrime 1930, cybercrime.gov.in |
-| Saudi Arabia | 🇸🇦 | 911 | Kulluna Amn app, SAMA |
+| Singapore | 🇸🇬 | 999 | ScamShield app, SPF, NCPC ScamAlert |
 
 Action plans are:
 - **Personalized** - steps prioritized based on what was detected (OTP extraction gets bank-first, gift card gets report-first)
@@ -398,12 +398,13 @@ Three concurrent input streams feed the system:
 | **TTS Service** | tts_service.py | Natural voice intervention via Gemini TTS with 3 voice profiles (Kore/Puck/Charon) |
 | **Explanation Service** | explanation_service.py | Combines audio + visual analysis into plain-language explanation cards |
 | **Action Agent** | action_agent.py | Generates personalized recovery plans with country-specific emergency contacts and reporting channels for 9 countries |
+| **Storage Service** | storage_service.py | Persists session data and forensic reports to Cloud Firestore. Stores audio recordings to Cloud Storage for forensic export and replay. |
 
 ### Layer 4: Google Gemini AI
 
 | Model | Version | Purpose |
 |-------|---------|---------|
-| **Gemini Audio** | gemini-2.5-flash | Real-time audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Transcription + scam pattern detection. `gemini-2.5-flash-native-audio-preview-12-2025` available for Live API WebSocket streaming on Vertex AI. |
+| **Gemini Audio** | gemini-2.5-flash | Real-time audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Transcription + scam pattern detection. |
 | **Gemini Vision** | gemini-2.5-flash | Screenshot analysis: fake UI detection, phishing domain identification, QR code scanning |
 | **Gemini Text** | gemini-2.5-flash | Transcript analysis, psychological scoring, 50+ pattern matching, explanation generation |
 | **Gemini TTS** | gemini-2.5-flash-preview-tts | Natural voice intervention with contextual scripts in 9 languages |
@@ -661,9 +662,10 @@ voxguard/
 │   │   │   ├── psych_analyzer.py          # Cialdini + lie detection + intervention recommendation
 │   │   │   ├── tts_service.py             # Natural voice intervention via Gemini TTS
 │   │   │   ├── explanation_service.py     # Multimodal explanation card generation
-│   │   │   └── action_agent.py            # Guided anti-scam action plans (9 countries)
+│   │   │   ├── action_agent.py            # Guided anti-scam action plans (9 countries)
+│   │   │   └── storage_service.py         # Cloud Firestore (sessions) + Cloud Storage (audio recordings)
 │   │   └── core/
-│   │       ├── config.py                  # Pydantic settings from env vars (incl. TTS model)
+│   │       ├── config.py                  # Pydantic settings from env vars (incl. TTS, Firestore, Storage)
 │   │       └── gemini_client.py           # Google GenAI SDK wrapper (audio + vision)
 │   ├── data/
 │   │   └── scam_patterns.json             # 50+ patterns with intervention_level field per pattern
@@ -709,7 +711,10 @@ VoxGuard uses three `.env` files to separate frontend, backend, and shared confi
 | `backend/.env` | `GEMINI_MODEL` | Audio model (default: `gemini-2.5-flash`) |
 | `backend/.env` | `GEMINI_VISION_MODEL` | Vision model (default: `gemini-2.5-flash`) |
 | `backend/.env` | `GEMINI_TTS_MODEL` | TTS model (default: `gemini-2.5-flash-preview-tts`) |
-| `backend/.env` | `GOOGLE_CLOUD_PROJECT` | GCP project ID for Cloud Run deployment |
+| `backend/.env` | `GOOGLE_CLOUD_PROJECT` | GCP project ID for Cloud Run, Firestore, and Storage |
+| `backend/.env` | `FIRESTORE_ENABLED` | Enable Cloud Firestore session persistence (default: `true`) |
+| `backend/.env` | `STORAGE_ENABLED` | Enable Cloud Storage audio uploads (default: `true`) |
+| `backend/.env` | `STORAGE_BUCKET` | Cloud Storage bucket name for audio recordings |
 | `.env` | *(shared reference)* | Root template combining all variables for quick setup |
 
 ---
@@ -829,12 +834,12 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 ### Technical Implementation (30%)
 
-- **Google GenAI SDK:** All Gemini functionality is implemented with the official Google Generative AI SDK for Python (`google-generativeai==0.5.4`) on Google Cloud Run. Audio analysis uses `generate_content_async` with inline 16kHz PCM audio data buffered from the Rust WASM engine. Session data and forensic reports are persisted via **Cloud Firestore**. Session audio recordings are stored via **Cloud Storage**. Authentication is handled by `google-auth`.
+- **Google GenAI SDK:** All Gemini functionality is implemented with the official Google Generative AI SDK for Python (`google-generativeai==0.5.4`) on Google Cloud Run. Audio analysis uses `generate_content_async` with inline 16kHz PCM audio data buffered from the Rust WASM engine. Session data and forensic reports are persisted via **Cloud Firestore** (`storage_service.py` → `google-cloud-firestore`). Session audio recordings are stored via **Cloud Storage** (`storage_service.py` → `google-cloud-storage`). Authentication is handled by `google-auth`.
 - **Gemini Audio Analysis:** `gemini-2.5-flash` for audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Audio chunks are buffered (2-second flush with VAD), sent as base64 to the standard Gemini API, and return structured JSON with transcript, scam indicators, tactics, and lie indicators.
 - **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation.
 - **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages.
 - **Rust WASM:** Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency
-- **Cloud Run + Cloud Firestore + Cloud Storage:** Fully containerized backend on Cloud Run with auto-scaling, health check endpoints, and session affinity for WebSocket. Forensic session data persisted to Firestore. Audio recordings stored in Cloud Storage. Three Google Cloud services in production.
+- **Cloud Run + Cloud Firestore + Cloud Storage:** Fully containerized backend on Cloud Run with auto-scaling, health check endpoints, and session affinity for WebSocket. `storage_service.py` implements both persistence layers: session data (alerts, interventions, psych scores, transcripts, action plans) persisted to Cloud Firestore via `google-cloud-firestore`, and audio recordings uploaded to Cloud Storage via `google-cloud-storage`. Three Google Cloud services in production.
 - **Grounding:** Reasoning against 50+ verified patterns with zero hallucination.
 - **Intervention Engine:** Backend evaluates every alert for intervention eligibility, emitting `intervention` + `intervention_audio` + `explanation_card` events via WebSocket. Frontend renders the overlay with scenario-appropriate UI, plays TTS audio, shows explanation cards, and sends `intervention_response` back. The full loop is tracked in session state.
 - **Explanation Service:** Combines audio transcript analysis + screenshot analysis into a single Gemini call, producing plain-language explanation cards with signal badges, confidence scores, and recommended actions.
