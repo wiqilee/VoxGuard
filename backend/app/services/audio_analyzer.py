@@ -1,13 +1,14 @@
 """
 app.services.audio_analyzer
 ----------------------------
-v5: 2-second flush for paid tier, lower VAD threshold,
-requests tactics + lie_indicators from Gemini.
+v6: Fix Gemini audio decode — wrap PCM in WAV container (audio/wav),
+filter bogus transcripts, and deduplicate repeated lines.
 """
 
 import base64
 import json
 import logging
+import struct
 import time
 import numpy as np
 
@@ -20,6 +21,59 @@ VAD_ENERGY_THRESHOLD = 0.0015
 FLUSH_INTERVAL_SECONDS = 2.0
 MIN_SPEECH_CHUNKS = 2
 
+# Phrases Gemini returns when it can't decode audio — filter these out
+_BOGUS_TRANSCRIPT_PHRASES = [
+    "this is raw",
+    "16khz",
+    "16-bit",
+    "pcm audio",
+    "no audio content",
+    "no speech",
+    "audio content was provided",
+    "cannot transcribe",
+    "unable to transcribe",
+    "no spoken",
+    "inaudible",
+    "[silence]",
+    "[no speech]",
+    # Filter prompt leakage — Gemini reading back our own prompt text
+    "you are a real-time",
+    "phone scam detection system",
+    "analyzing a live call",
+    "respond only with valid json",
+    "now analyze the audio",
+]
+
+
+def _is_bogus_transcript(text: str) -> bool:
+    lower = text.lower()
+    return any(phrase in lower for phrase in _BOGUS_TRANSCRIPT_PHRASES)
+
+
+def _pcm_to_wav(pcm_bytes: bytes, sample_rate: int = 16000,
+                channels: int = 1, sampwidth: int = 2) -> bytes:
+    """Wrap raw PCM bytes in a minimal WAV/RIFF container."""
+    data_size = len(pcm_bytes)
+    byte_rate = sample_rate * channels * sampwidth
+    block_align = channels * sampwidth
+    header = struct.pack(
+        "<4sI4s4sIHHIIHH4sI",
+        b"RIFF",
+        36 + data_size,
+        b"WAVE",
+        b"fmt ",
+        16,
+        1,                 # AudioFormat PCM
+        channels,
+        sample_rate,
+        byte_rate,
+        block_align,
+        sampwidth * 8,
+        b"data",
+        data_size,
+    )
+    return header + pcm_bytes
+
 
 class AudioAnalyzerService:
     def __init__(self):
@@ -28,6 +82,7 @@ class AudioAnalyzerService:
         self._total_chunks = 0
         self._last_flush = time.time()
         self._transcript_history = ""
+        self._last_transcript = ""
         self._model = None
         self._retry_after = 0
         self._init_model()
@@ -96,27 +151,41 @@ class AudioAnalyzerService:
         logger.info("[AudioAnalyzer] Flushing %d chunks (%d bytes) to Gemini", count, len(combined))
 
         try:
-            audio_b64 = base64.b64encode(combined).decode("utf-8")
+            # [FIX] Wrap raw PCM in WAV container before sending.
+            # audio/L16 is not properly supported — Gemini describes the format
+            # instead of transcribing. audio/wav with RIFF header works correctly.
+            wav_bytes = _pcm_to_wav(combined, sample_rate=16000, channels=1, sampwidth=2)
+            audio_b64 = base64.b64encode(wav_bytes).decode("utf-8")
 
             prompt = (
-                "You are a real-time phone scam detection system analyzing a live call. "
-                "This is raw 16kHz 16-bit mono PCM audio.\n\n"
-                "1. TRANSCRIBE exactly what was said.\n"
-                "2. ANALYZE aggressively for scam indicators. Even mild suspicion should flag is_scam=true with appropriate severity.\n"
-                "3. List ALL manipulation TACTICS detected (UPPERCASE only): "
+                "You are a real-time phone scam detection system analyzing a live call audio.\n\n"
+                "This audio is captured from a device microphone during a phone call. "
+                "It may contain TWO speakers: the CALLER (remote party, often sounds slightly different, "
+                "may have phone/compression artifacts) and ME (the local user, clearer/closer to mic).\n\n"
+                "1. TRANSCRIBE exactly what was said. If there is no clear speech, set transcript to empty string.\n"
+                "2. IDENTIFY the speaker:\n"
+                "   - 'caller' = the remote party calling in. They often sound like they're on phone, "
+                "use formal/scripted language, claim authority, create urgency, ask for sensitive info.\n"
+                "   - 'me' = the local user. Typically short responses: 'yes', 'ok', 'hello?', 'really?', "
+                "'I don't understand', emotional reactions, clarifying questions.\n"
+                "   - Use the previous conversation context to help determine speaker turns.\n"
+                "   - If previous conversation is empty, default speaker to 'caller'.\n"
+                "3. ANALYZE aggressively for scam indicators. Even mild suspicion should flag is_scam=true.\n"
+                "4. List ALL manipulation TACTICS detected (UPPERCASE only): "
                 "SCARCITY, AUTHORITY, FEAR, RECIPROCITY, ISOLATION, COMMITMENT\n"
-                "4. List ALL deception LIE_INDICATORS detected (UPPERCASE only): "
+                "5. List ALL deception LIE_INDICATORS detected (UPPERCASE only): "
                 "INCONSISTENCY, VAGUENESS, OVERDETAIL, DEFLECTION, PRESSURE\n\n"
-                "Common scam patterns to watch for: bank impersonation, OTP/credential extraction, "
+                "Common scam patterns: bank impersonation, OTP/credential extraction, "
                 "urgency tactics, government impersonation, gift card demands, investment fraud, "
                 "family impersonation, tech support scam, isolation tactics, wire transfer, "
                 "crypto scam, loan app extortion, deepfake voice, job offer scam, digital arrest.\n\n"
-                f"Previous conversation: {self._transcript_history[-500:]}\n\n"
-                "Be aggressive in detection. If someone claims to be from a bank, government, "
+                f"Previous conversation:\n{self._transcript_history[-600:]}\n\n"
+                "Be aggressive in scam detection. If caller claims to be from a bank, government, "
                 "or tech company and asks for personal info, that IS a scam.\n\n"
+                "If the audio contains multiple turns, return only the LAST/MOST RECENT utterance.\n\n"
                 "Respond ONLY with valid JSON, no markdown:\n"
                 '{"transcript":"exact words spoken",'
-                '"speaker":"caller",'
+                '"speaker":"caller or me",'
                 '"is_scam":false,'
                 '"severity":"low",'
                 '"confidence":0,'
@@ -127,8 +196,9 @@ class AudioAnalyzerService:
             )
 
             response = await self._model.generate_content_async([
-                {"inline_data": {"mime_type": "audio/L16;rate=16000;channels=1", "data": audio_b64}},
                 prompt,
+                {"inline_data": {"mime_type": "audio/wav", "data": audio_b64}},
+                "Now analyze the audio above and respond with JSON only.",
             ])
 
             text = response.text.strip()
@@ -136,10 +206,25 @@ class AudioAnalyzerService:
                 text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
 
             result = json.loads(text)
+            transcript = result.get("transcript", "").strip()
 
-            transcript = result.get("transcript", "")
+            # [FIX] Filter bogus transcripts where Gemini describes format instead of speech
+            if transcript and _is_bogus_transcript(transcript):
+                logger.warning("[AudioAnalyzer] Bogus transcript filtered: '%s'", transcript[:80])
+                result["transcript"] = ""
+                transcript = ""
+
+            # [FIX] Deduplicate — suppress exact same transcript emitted twice in a row
+            if transcript and transcript == self._last_transcript:
+                logger.info("[AudioAnalyzer] Duplicate transcript suppressed: '%s'", transcript[:60])
+                result["transcript"] = ""
+                transcript = ""
+
             if transcript:
-                self._transcript_history += " " + transcript
+                self._last_transcript = transcript
+                # Store with speaker label so Gemini has turn-taking context
+                speaker_label = result.get("speaker", "caller").upper()
+                self._transcript_history += f"\n[{speaker_label}]: {transcript}"
                 if len(self._transcript_history) > 1500:
                     self._transcript_history = self._transcript_history[-1500:]
 
