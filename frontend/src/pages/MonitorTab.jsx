@@ -617,7 +617,7 @@ function RecButton({ isRecording, onClick, disabled }) {
 // ══════════════════════════════════════════════════════════
 // ── MAIN COMPONENT
 // ══════════════════════════════════════════════════════════
-export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en',demoMode=false,setDemoMode,onLiveMicChange}){
+export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScore,audioLevel,screenOn,onStart,onStop,onToggleScreen,onDemoAlert,onTranscriptLine,onInterventionEvent,onSafeExit,language='en',demoMode=false,setDemoMode,onLiveMicChange,liveTranscript=[]}){
   const[script,setScript]=useState(null),[now,setNow]=useState(getNow()),[speaking,setSpeaking]=useState(false),[transcriptLines,setTranscriptLines]=useState([]),[voiceDemo,setVoiceDemo]=useState(false),[demoProgress,setDemoProgress]=useState(0),[voiceMuted,setVoiceMuted]=useState(false),[volume,setVolume]=useState(1.0)
   const volumeRef=useRef(1.0)
   const handleVolume=(v)=>{setVolume(v);volumeRef.current=v}
@@ -679,6 +679,12 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
   const[liveMic,setLiveMic]=useState(false)
   const liveMicStream=useRef(null)
   const liveMicCtx=useRef(null)
+
+  // [FIX] Sync live transcript from backend into transcriptLines when Live Mic is active
+  useEffect(()=>{
+    if(!liveMic||!liveTranscript?.length) return
+    setTranscriptLines(liveTranscript)
+  },[liveTranscript,liveMic])
 
   const startLiveMic=async()=>{
     try{
@@ -884,8 +890,8 @@ export function MonitorTab({monitoring,threatLevel,sessionTime,alerts,threatScor
         {/* [FIX] Waveform container — full width, taller, more prominent */}
         <div style={{background:'rgba(0,0,0,.5)',padding:'12px 16px',marginBottom:16,border:`1px solid ${tColor}18`,position:'relative',transition:'border-color .5s'}}><div style={{fontFamily:MF,fontSize:9,color:`${tColor}60`,marginBottom:10,letterSpacing:2}}>{getStreamLabel()}</div><div style={{width:'100%',minHeight:64}}><WaveformVisualizer active={monitoring} threatLevel={threatLevel} audioLevel={speaking?.7:liveMic?.5:audioLevel}/></div>{speaking&&!voiceMuted&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff2d55',textShadow:'0 0 8px #ff2d55',animation:'blink .6s step-end infinite'}}>🔊 VOICE</div>}{voiceMuted&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#ff9500',opacity:.6}}>🔇 MUTED</div>}{liveMic&&!speaking&&!voiceDemo&&<div style={{position:'absolute',top:8,right:12,fontFamily:PF,fontSize:7,color:'#30d158',textShadow:'0 0 8px #30d158',animation:'blink 1s step-end infinite'}}>🎙 LIVE</div>}</div>
         {voiceDemo&&!voiceMuted&&(<div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12,padding:'8px 12px',background:'rgba(0,0,0,.3)',border:'1px solid rgba(0,212,255,.08)'}}><span style={{fontFamily:PF,fontSize:6,color:'rgba(0,212,255,.6)',letterSpacing:1,flexShrink:0}}>VOL</span><div style={{flex:1,position:'relative',height:20,display:'flex',alignItems:'center'}}><div style={{position:'absolute',left:0,right:0,height:6,background:'rgba(0,212,255,.08)',border:'1px solid rgba(0,212,255,.12)'}}><div style={{height:'100%',width:`${volume*100}%`,background:'linear-gradient(90deg,#00d4ff55,#00d4ff)',boxShadow:'0 0 8px #00d4ff44',transition:'width .1s'}}/></div><input type="range" min="0" max="1" step="0.05" value={volume} onChange={e=>handleVolume(parseFloat(e.target.value))} style={{position:'absolute',left:0,right:0,height:20,opacity:0,cursor:'pointer',zIndex:2}}/><div style={{position:'absolute',left:`calc(${volume*100}% - 6px)`,width:12,height:12,background:'#00d4ff',boxShadow:'0 0 8px #00d4ff',pointerEvents:'none',zIndex:1,transition:'left .1s'}}/></div><span style={{fontFamily:PF,fontSize:8,color:'#00d4ff',width:36,textAlign:'right',textShadow:'0 0 6px #00d4ff'}}>{Math.round(volume*100)}%</span></div>)}
-        {voiceDemo&&<LiveTranscript lines={transcriptLines} speaking={speaking&&!voiceMuted}/>}
-        {voiceDemo&&<AnalysisProgressBar progress={demoProgress} threatColor={tColor}/>}
+        {(voiceDemo||liveMic)&&<LiveTranscript lines={transcriptLines} speaking={speaking&&!voiceMuted}/>}
+        {(voiceDemo||liveMic)&&<AnalysisProgressBar progress={demoProgress} threatColor={tColor}/>}
         <div className="vg-monitor-stats" style={{display:'flex',gap:8,flexWrap:'wrap'}}><StatCard label="THREATS" value={alerts.length} color="#ff2d55" icon="⚠"/><StatCard label="PATTERNS" value="50+" color="#00d4ff" icon="◎"/><StatCard label="LATENCY" value="<80ms" color="#30d158" icon="⚡"/><StatCard label="CONFIDENCE" value={avgConf?`${avgConf}%`:'—'} color="#7b61ff" icon="◆"/></div>
       </PBox>
       <PBox color="rgba(255,214,10,.2)" style={{padding:16,background:'rgba(255,214,10,.01)',opacity:liveMic?0.4:1,pointerEvents:liveMic?'none':'auto'}}><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{width:6,height:6,background:'#ffd60a',animation:'blink 1s step-end infinite'}}/><span style={{fontFamily:PF,fontSize:7,color:'#ffd60a',letterSpacing:1}}>VOICE DEMO SCRIPTS</span><span style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.45)'}}>— {language.toUpperCase()}</span>{liveMic&&<span style={{fontFamily:MF,fontSize:8,color:'#30d158',marginLeft:8}}>DISABLED — LIVE MIC ACTIVE</span>}</div><div style={{fontFamily:MF,fontSize:9,color:'rgba(255,214,10,.35)',marginBottom:12,paddingLeft:14}}>🔊 2-way dialog (ME + CALLER) · Auto-stop · Use 🔇 MUTE for text-only mode</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{availableScripts.map(s=>{const isActive=script?.id===s.id;return(<button key={s.id} onClick={()=>{if(liveMic)return;setScript(isActive?null:s)}} className="vg-demo-script-btn" style={{fontFamily:MF,fontSize:10,padding:'7px 14px',cursor:liveMic?'not-allowed':'pointer',border:`1px solid ${isActive?'#ffd60a':'rgba(255,214,10,.22)'}`,background:isActive?'rgba(255,214,10,.12)':'transparent',color:isActive?'#ffd60a':'rgba(255,214,10,.52)',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>{s.label}{isActive&&<span style={{fontSize:8}}>✓</span>}</button>)})}</div></PBox>

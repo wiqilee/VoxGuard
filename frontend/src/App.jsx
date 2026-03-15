@@ -307,6 +307,12 @@ export default function App() {
     }
   },[ws.alerts,ws.threatScore,ws.psychScores,ws.lieScores,liveMicActive])
 
+  // [FIX] Sync live transcript from backend to global transcript (for report tab)
+  useEffect(()=>{
+    if(!liveMicActive||!ws.liveTranscript?.length) return
+    setTranscript(ws.liveTranscript.map(line=>({...line,text:maskPhoneNumbers(line.text)})))
+  },[ws.liveTranscript,liveMicActive])
+
   useEffect(()=>{
     if(!monitoring){clearInterval(demoRef.current);return}
     demoRef.current=setInterval(()=>{
@@ -571,6 +577,7 @@ export default function App() {
               demoMode={demoMode}
               setDemoMode={setDemoMode}
               onLiveMicChange={setLiveMicActive}
+              liveTranscript={ws.liveTranscript}
             />}
             {tab==='psych'    && <PsychTab psychScores={psychScores} lieScores={lieScores} />}
             {tab==='patterns' && <PatternsTab detectedIds={detectedIds} />}
