@@ -1,6 +1,6 @@
-//! scam_shield_audio
+//! VoxGuard_audio
 //! -----------------
-//! Rust WebAssembly audio preprocessing engine for Scam Shield.
+//! Rust WebAssembly audio preprocessing engine for VoxGuard.
 //!
 //! Compiled to WASM via wasm-pack. Provides GC-pause-free, sub-100ms
 //! audio processing that JavaScript cannot reliably achieve.
@@ -14,6 +14,14 @@
 //!     -> RMS normalization     (target -22dBFS for ASR)
 //!     -> Pre-emphasis filter   (boost high-freq consonants for ASR)
 //!     -> Int16 PCM -> Base64   (WebSocket transmission)
+//!
+//! v3 fixes:
+//!   - SPECTRAL_SUB_ALPHA: 2.0 -> 1.0  (was over-subtracting, destroying consonants)
+//!   - SPECTRAL_SUB_FLOOR: 0.002 -> 0.05 (floor too low, allowing near-zero output)
+//!   - NOISE_INIT_FRAMES: 8 -> 3  (750ms bootstrap instead of 2s; 2s risked
+//!     treating early speech as noise if the user spoke immediately on connect)
+//!   - Post-denoise RMS drop threshold: * 0.5 -> * 0.1  (was discarding valid
+//!     speech frames whose energy was legitimately reduced by denoising)
 
 use wasm_bindgen::prelude::*;
 
@@ -37,14 +45,33 @@ const NUM_BINS:           usize = 257;        // Frequency bands for spectral pr
 
 // Noise estimation
 const NOISE_ALPHA:        f32   = 0.95;       // Smoothing for adaptive noise update
-const NOISE_INIT_FRAMES:  usize = 8;          // Bootstrap frames (assumed silence)
+
+// [FIX] Reduced from 8 -> 3 frames (750ms instead of 2 seconds).
+// With 8 frames, if the user started speaking immediately on connect,
+// their voice was included in the noise bootstrap and then filtered out
+// for the entire session. 3 frames is enough to capture background noise
+// while being short enough to avoid capturing early speech.
+const NOISE_INIT_FRAMES:  usize = 3;
 
 // Wiener filter
 const WIENER_BETA:        f32   = 0.001;      // Floor -- prevents full suppression
 
 // Spectral subtraction
-const SPECTRAL_SUB_ALPHA: f32   = 2.0;        // Over-subtraction factor
-const SPECTRAL_SUB_FLOOR: f32   = 0.002;      // Output floor (fraction of input mag)
+// [FIX] SPECTRAL_SUB_ALPHA: 2.0 -> 1.0
+// Over-subtraction factor of 2.0 was too aggressive: it subtracted 2x the
+// estimated noise amplitude from each frequency band. This consistently
+// destroyed weak consonants (s, f, t, p) and soft speech, especially from
+// the remote caller who already had lower energy due to phone compression.
+// 1.0 = standard subtraction, removes the noise floor without overreach.
+const SPECTRAL_SUB_ALPHA: f32   = 1.0;
+
+// [FIX] SPECTRAL_SUB_FLOOR: 0.002 -> 0.05
+// The spectral floor is the minimum output magnitude as a fraction of input.
+// At 0.002, the output could drop to 0.2% of the original signal — effectively
+// silence for any band where noise_amp ≈ signal_amp. At 0.05, output is floored
+// at 5% of input magnitude, which preserves enough signal structure for ASR
+// to recognize speech even in noisy bands.
+const SPECTRAL_SUB_FLOOR: f32   = 0.05;
 
 // VAD
 const VAD_ENERGY_THRESH:  f32   = 0.0015;     // RMS floor for speech
@@ -149,7 +176,7 @@ pub struct AudioPreprocessor {
 impl AudioPreprocessor {
     #[wasm_bindgen(constructor)]
     pub fn new() -> AudioPreprocessor {
-        console_log!("[ScamShield WASM] AudioPreprocessor v2.0 initialized");
+        console_log!("[ScamShield WASM] AudioPreprocessor v3.0 initialized");
         console_log!(
             "[ScamShield WASM] Pipeline: AdaptiveNR -> Wiener -> SpectralSub -> VAD -> RMS-Norm -> PreEmphasis"
         );
@@ -182,7 +209,14 @@ impl AudioPreprocessor {
 
             let denoised = self.denoise(&chunk, is_speech);
 
-            if compute_rms(&denoised) < VAD_ENERGY_THRESH * 0.5 {
+            // [FIX] Threshold reduced from * 0.5 -> * 0.1.
+            // After Wiener + Spectral Subtraction, legitimate speech frames can
+            // have their RMS energy reduced significantly. With * 0.5 the threshold
+            // was 0.00075, which caused many real speech frames to be dropped here
+            // even though they had already passed the pre-denoise VAD above.
+            // * 0.1 (= 0.00015) only drops frames that are effectively silent
+            // after denoising, which is the intended behavior.
+            if compute_rms(&denoised) < VAD_ENERGY_THRESH * 0.1 {
                 self.dropped_count += 1;
                 continue;
             }

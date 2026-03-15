@@ -1,8 +1,8 @@
 """
 app.services.audio_analyzer
 ----------------------------
-v6: Fix Gemini audio decode — wrap PCM in WAV container (audio/wav),
-filter bogus transcripts, and deduplicate repeated lines.
+v7: Fix double-VAD problem — lower VAD_ENERGY_THRESHOLD to account for
+audio already denoised by Rust WASM before reaching this service.
 """
 
 import base64
@@ -17,7 +17,14 @@ from app.core.config import get_settings
 logger = logging.getLogger(__name__)
 _settings = get_settings()
 
-VAD_ENERGY_THRESHOLD = 0.0015
+# [FIX v7] Lowered from 0.0015 → 0.0005.
+# Rust WASM already runs Wiener + Spectral Subtraction before sending audio,
+# which significantly reduces RMS energy. Using the same threshold as Rust
+# causes a double-VAD problem: chunks that passed Rust VAD get silently
+# dropped here again. 0.0005 is safe because truly silent frames have
+# energy < 0.0001 and will still be rejected.
+VAD_ENERGY_THRESHOLD = 0.0005
+
 FLUSH_INTERVAL_SECONDS = 2.0
 MIN_SPEECH_CHUNKS = 2
 
@@ -151,7 +158,7 @@ class AudioAnalyzerService:
         logger.info("[AudioAnalyzer] Flushing %d chunks (%d bytes) to Gemini", count, len(combined))
 
         try:
-            # [FIX] Wrap raw PCM in WAV container before sending.
+            # Wrap raw PCM in WAV container before sending.
             # audio/L16 is not properly supported — Gemini describes the format
             # instead of transcribing. audio/wav with RIFF header works correctly.
             wav_bytes = _pcm_to_wav(combined, sample_rate=16000, channels=1, sampwidth=2)
@@ -208,13 +215,13 @@ class AudioAnalyzerService:
             result = json.loads(text)
             transcript = result.get("transcript", "").strip()
 
-            # [FIX] Filter bogus transcripts where Gemini describes format instead of speech
+            # Filter bogus transcripts where Gemini describes format instead of speech
             if transcript and _is_bogus_transcript(transcript):
                 logger.warning("[AudioAnalyzer] Bogus transcript filtered: '%s'", transcript[:80])
                 result["transcript"] = ""
                 transcript = ""
 
-            # [FIX] Deduplicate — suppress exact same transcript emitted twice in a row
+            # Deduplicate — suppress exact same transcript emitted twice in a row
             if transcript and transcript == self._last_transcript:
                 logger.info("[AudioAnalyzer] Duplicate transcript suppressed: '%s'", transcript[:60])
                 result["transcript"] = ""
