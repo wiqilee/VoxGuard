@@ -21,7 +21,7 @@ echo "[3/4] Deploying backend to Cloud Run..."
 cd backend
 gcloud run deploy voxguard-backend \
   --source . \
-  --region us-central1 \
+  --region asia-southeast1 \
   --allow-unauthenticated \
   --memory 512Mi \
   --cpu 1 \

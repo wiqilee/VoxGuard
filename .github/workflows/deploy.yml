@@ -32,7 +32,7 @@ jobs:
             --region asia-southeast1 \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }},GOOGLE_CLOUD_PROJECT=voxguard-489803,GEMINI_MODEL=gemini-2.5-flash-native-audio,GEMINI_VISION_MODEL=gemini-2.5-flash" \
+            --set-env-vars "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }},GOOGLE_CLOUD_PROJECT=voxguard-489803,GEMINI_MODEL=gemini-2.5-flash,GEMINI_VISION_MODEL=gemini-2.5-flash" \
             --memory 1Gi \
             --cpu 1 \
             --timeout 300 \

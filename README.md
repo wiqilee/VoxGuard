@@ -670,7 +670,7 @@ voxguard/
 │   ├── tests/
 │   │   └── test_threat_engine.py          # Unit tests for scoring logic and intervention triggers
 │   ├── main.py                            # FastAPI entry (legacy, redirects to app.main)
-│   ├── requirements.txt                   # Python deps: FastAPI, google-generativeai, numpy, etc.
+│   ├── requirements.txt                   # Python deps: FastAPI, google-generativeai, google-cloud-firestore, google-cloud-storage, numpy, scipy
 │   └── Dockerfile                         # Cloud Run container: Python 3.11-slim, PORT=8080
 │
 ├── docs/svgs/
@@ -829,17 +829,17 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 
 ### Technical Implementation (30%)
 
-- **Google GenAI SDK:** All Gemini functionality is implemented with the official Google GenAI SDK for Python (`google-genai`), and the live audio path uses the Gemini Live API for real-time interaction on Google Cloud Run.
-- **Gemini Audio Analysis:** `gemini-2.5-flash` for audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Audio chunks are buffered (2-second flush with VAD), sent as base64 to the standard Gemini API, and return structured JSON with transcript, scam indicators, tactics, and lie indicators. `gemini-2.5-flash-native-audio-preview-12-2025` is available via the Live API on Vertex AI for true bidirectional streaming with barge-in support.
-- **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation
-- **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages
+- **Google GenAI SDK:** All Gemini functionality is implemented with the official Google Generative AI SDK for Python (`google-generativeai==0.5.4`) on Google Cloud Run. Audio analysis uses `generate_content_async` with inline 16kHz PCM audio data buffered from the Rust WASM engine. Session data and forensic reports are persisted via **Cloud Firestore**. Session audio recordings are stored via **Cloud Storage**. Authentication is handled by `google-auth`.
+- **Gemini Audio Analysis:** `gemini-2.5-flash` for audio analysis via `generate_content_async` with inline 16kHz PCM audio data. Audio chunks are buffered (2-second flush with VAD), sent as base64 to the standard Gemini API, and return structured JSON with transcript, scam indicators, tactics, and lie indicators.
+- **Gemini Text/Vision:** `gemini-2.5-flash` for screenshot analysis, transcript analysis, psychological scoring, and multimodal explanation generation.
+- **Gemini TTS:** `gemini-2.5-flash-preview-tts` for natural voice intervention with 3 voice profiles (Charon for scammer simulation, Kore for user, Puck for warm advisory) and contextual scripts in 9 languages.
 - **Rust WASM:** Zero-copy audio processing, Wiener NR, Float32 PCM, <100ms latency
-- **Cloud Run:** Fully containerized, auto-scaling, health check endpoints, session affinity for WebSocket
-- **Grounding:** Reasoning against 50+ verified patterns with zero hallucination
+- **Cloud Run + Cloud Firestore + Cloud Storage:** Fully containerized backend on Cloud Run with auto-scaling, health check endpoints, and session affinity for WebSocket. Forensic session data persisted to Firestore. Audio recordings stored in Cloud Storage. Three Google Cloud services in production.
+- **Grounding:** Reasoning against 50+ verified patterns with zero hallucination.
 - **Intervention Engine:** Backend evaluates every alert for intervention eligibility, emitting `intervention` + `intervention_audio` + `explanation_card` events via WebSocket. Frontend renders the overlay with scenario-appropriate UI, plays TTS audio, shows explanation cards, and sends `intervention_response` back. The full loop is tracked in session state.
-- **Explanation Service:** Combines audio transcript analysis + screenshot analysis into a single Gemini call, producing plain-language explanation cards with signal badges, confidence scores, and recommended actions
-- **Action Agent:** Generates personalized step-by-step recovery plans with country-specific emergency contacts, reporting channels, and AI-enhanced advice based on the call transcript
-- **Psych Analyzer:** Single Gemini call returns both Cialdini scores and lie detection indicators, plus an intervention recommendation
+- **Explanation Service:** Combines audio transcript analysis + screenshot analysis into a single Gemini call, producing plain-language explanation cards with signal badges, confidence scores, and recommended actions.
+- **Action Agent:** Generates personalized step-by-step recovery plans with country-specific emergency contacts, reporting channels, and AI-enhanced advice based on the call transcript.
+- **Psych Analyzer:** Single Gemini call returns both Cialdini scores and lie detection indicators, plus an intervention recommendation.
 
 ### Demo and Presentation (30%)
 

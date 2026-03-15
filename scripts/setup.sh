@@ -16,7 +16,7 @@ ok()   { echo -e "${GREEN}[✓]${NC} $1"; }
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 err()  { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
-log "Setting up Scam Shield development environment..."
+log "Setting up VoxGuard development environment..."
 echo ""
 
 # ── Check prerequisites ───────────────────────────────────────
@@ -81,7 +81,7 @@ echo ""
 
 # ── Done ──────────────────────────────────────────────────────
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}  🛡  Scam Shield setup complete!${NC}"
+echo -e "${GREEN}  🛡  VoxGuard complete!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo "  Start backend:    cd backend && source venv/bin/activate && uvicorn app.main:app --reload"
