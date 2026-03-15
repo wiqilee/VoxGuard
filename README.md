@@ -359,7 +359,7 @@ Every intervention event is tracked and preserved:
 ## 🏗️ Architecture
 
 <div align="center">
-<img src="docs/svgs/architecture.svg" alt="System Architecture" width="100%"/>
+<img src="docs/svgs/architecture.png" alt="System Architecture" width="100%"/>
 </div>
 
 ### System Overview
