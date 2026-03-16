@@ -178,11 +178,11 @@ export function useWebSocket() {
     window.speechSynthesis.speak(utterance)
   }, [])
 
-  const TTS_REPEAT_COUNT = 3 // Repeat intervention voice 3x for recording clarity
+  const TTS_REPEAT_COUNT = 2 // Repeat intervention voice 2x for recording clarity
 
   const playTTSAudio = useCallback((base64Audio, mimeType = 'audio/wav', fallbackText = '', voice = 'Kore') => {
     if (base64Audio) {
-      // Backend provided audio — play 3x
+      // Backend provided audio — play 2x
       _playBase64Audio(base64Audio, (err) => {
         if (err && fallbackText) {
           _callGeminiClientTTS(fallbackText, voice).then(result => {
