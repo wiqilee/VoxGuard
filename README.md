@@ -23,7 +23,7 @@
 **To our knowledge, the first real-time multimodal scam detection agent with active intervention.**
 Gemini Live API + Rust WASM + Psychological AI + Natural Voice TTS = Protection in under 80ms.
 
-<a href="https://voxguard-kappa.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel" alt="Live Demo"/></a> <a href="https://youtu.be/JKa4dq7pjNI"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a> <a href="https://medium.com/@wiqi_lee/i-built-voxguard-an-ai-agent-that-detects-and-disrupts-scams-in-real-time-71cb80294498"><img src="https://img.shields.io/badge/Article-Medium-000000?style=for-the-badge&logo=medium" alt="Medium Article"/></a> <a href="#-for-judges-2-minute-guide"><img src="https://img.shields.io/badge/For%20Judges-2%20Minute%20Guide-FF6B35?style=for-the-badge" alt="For Judges"/></a>
+<a href="https://voxguard-kappa.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel" alt="Live Demo"/></a> <a href="https://youtu.be/ptFNTPv9RUM"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a> <a href="https://medium.com/@wiqi_lee/i-built-voxguard-an-ai-agent-that-detects-and-disrupts-scams-in-real-time-71cb80294498"><img src="https://img.shields.io/badge/Article-Medium-000000?style=for-the-badge&logo=medium" alt="Medium Article"/></a> <a href="#-for-judges-2-minute-guide"><img src="https://img.shields.io/badge/For%20Judges-2%20Minute%20Guide-FF6B35?style=for-the-badge" alt="For Judges"/></a>
 
 </div>
 
@@ -360,6 +360,8 @@ Every intervention event is tracked and preserved:
 
 <div align="center">
 <img src="docs/svgs/architecture.png" alt="System Architecture" width="100%"/>
+<br><br>
+<img src="docs/svgs/database.svg" alt="System Architecture" width="100%"/>
 </div>
 
 ### System Overview
@@ -849,7 +851,7 @@ The **Live Scam Intervention** system is entirely new. No existing scam detectio
 ### Demo and Presentation (30%)
 
 <a href="https://voxguard-kappa.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-voxguard--kappa.vercel.app-00C7B7?style=for-the-badge&logo=vercel" alt="Live Demo"/></a>
-<a href="https://youtu.be/JKa4dq7pjNI"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a>
+<a href="https://youtu.be/ptFNTPv9RUM"><img src="https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube" alt="Demo Video"/></a>
 <a href="https://medium.com/@wiqi_lee/i-built-voxguard-an-ai-agent-that-detects-and-disrupts-scams-in-real-time-71cb80294498"><img src="https://img.shields.io/badge/Article-Medium-000000?style=for-the-badge&logo=medium" alt="Medium Article"/></a>
 
 ---

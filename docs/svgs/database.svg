@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1160" width="1920" height="1160">
+<rect width="1920" height="1160" fill="#0d1117"/>
+<text x="50" y="52" fill="#00c8ff" font-size="36" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">VOXGUARD</text>
+<text x="290" y="50" fill="#e6edf3" font-size="20" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Database &amp; Storage Architecture</text>
+<text x="50" y="80" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Cloud Firestore + Cloud Storage  ·  Persistence Layer  ·  google-cloud-firestore  ·  google-cloud-storage</text>
+<text x="55" y="126" fill="#d29922" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">DATA SOURCES (Backend Services)</text>
+<rect x="55" y="142" width="252" height="60" rx="4" fill="#1e232c" stroke="#30363d" stroke-width="1"/>
+<text x="65" y="164" fill="#00c8ff" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Audio Analyzer</text>
+<text x="65" y="182" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Transcript chunks</text>
+<text x="65" y="199" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Scam indicators</text>
+<rect x="321" y="142" width="252" height="60" rx="4" fill="#1e232c" stroke="#30363d" stroke-width="1"/>
+<text x="331" y="164" fill="#58a6ff" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Vision Analyzer</text>
+<text x="331" y="182" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Screenshot results</text>
+<text x="331" y="199" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Phishing detection</text>
+<rect x="587" y="142" width="252" height="60" rx="4" fill="#1e232c" stroke="#30363d" stroke-width="1"/>
+<text x="597" y="164" fill="#bc8cff" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Psych Analyzer</text>
+<text x="597" y="182" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Cialdini scores</text>
+<text x="597" y="199" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Lie indicators</text>
+<rect x="853" y="142" width="252" height="60" rx="4" fill="#1e232c" stroke="#30363d" stroke-width="1"/>
+<text x="863" y="164" fill="#d29922" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Threat Engine</text>
+<text x="863" y="182" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Threat scores</text>
+<text x="863" y="199" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Intervention events</text>
+<rect x="1119" y="142" width="252" height="60" rx="4" fill="#1e232c" stroke="#30363d" stroke-width="1"/>
+<text x="1129" y="164" fill="#3fb950" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Action Agent</text>
+<text x="1129" y="182" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Recovery plans</text>
+<text x="1129" y="199" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Step completions</text>
+<rect x="1385" y="142" width="252" height="60" rx="4" fill="#1e232c" stroke="#30363d" stroke-width="1"/>
+<text x="1395" y="164" fill="#ff7b3a" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">TTS Service</text>
+<text x="1395" y="182" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Voice events</text>
+<text x="1395" y="199" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Audio chunks</text>
+<line x1="181" y1="206" x2="181" y2="234" stroke="#c9d1d9" stroke-width="2"/><polygon points="175,227 187,227 181,236" fill="#c9d1d9"/>
+<line x1="447" y1="206" x2="447" y2="234" stroke="#c9d1d9" stroke-width="2"/><polygon points="441,227 453,227 447,236" fill="#c9d1d9"/>
+<line x1="713" y1="206" x2="713" y2="234" stroke="#c9d1d9" stroke-width="2"/><polygon points="707,227 719,227 713,236" fill="#c9d1d9"/>
+<line x1="979" y1="206" x2="979" y2="234" stroke="#c9d1d9" stroke-width="2"/><polygon points="973,227 985,227 979,236" fill="#c9d1d9"/>
+<line x1="1245" y1="206" x2="1245" y2="234" stroke="#c9d1d9" stroke-width="2"/><polygon points="1239,227 1251,227 1245,236" fill="#c9d1d9"/>
+<line x1="1511" y1="206" x2="1511" y2="234" stroke="#c9d1d9" stroke-width="2"/><polygon points="1505,227 1517,227 1511,236" fill="#c9d1d9"/>
+<rect x="300" y="242" width="1320" height="50" rx="6" fill="#1e232c" stroke="#3fb996" stroke-width="2"/>
+<text x="340" y="272" fill="#3fb996" font-size="24" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">storage_service.py</text>
+<text x="600" y="272" fill="#c9d1d9" font-size="16" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">-- Central persistence layer for all session data</text>
+<line x1="620" y1="294" x2="620" y2="330" stroke="#3fb996" stroke-width="2"/><polygon points="614,323 626,323 620,332" fill="#3fb996"/>
+<line x1="1220" y1="294" x2="1220" y2="330" stroke="#3fb996" stroke-width="2"/><polygon points="1214,323 1226,323 1220,332" fill="#3fb996"/>
+<text x="500" y="314" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">google-cloud-firestore</text>
+<text x="1100" y="314" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">google-cloud-storage</text>
+<rect x="40" y="340" width="860" height="580" rx="6" fill="#161b22" stroke="#3fb996" stroke-width="2"/>
+<text x="65" y="368" fill="#3fb996" font-size="24" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">CLOUD FIRESTORE</text>
+<text x="310" y="368" fill="#c9d1d9" font-size="16" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">NoSQL Document Database · Real-time</text>
+<rect x="65" y="388" width="810" height="112" rx="5" fill="#1e232c" stroke="#00c8ff" stroke-width="1"/>
+<text x="85" y="412" fill="#00c8ff" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Collection: sessions</text>
+<text x="85" y="436" fill="#c9d1d9" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Document ID: session_{uuid}</text>
+<text x="85" y="456" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">session_id, created_at, updated_at, status, language, country</text>
+<text x="85" y="474" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">threat_score_final, max_threat_score, intervention_count, duration_ms</text>
+<text x="85" y="492" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">is_demo, recording_url</text>
+<rect x="85" y="510" width="790" height="85" rx="5" fill="#1e232c" stroke="#d29922" stroke-width="1"/>
+<text x="105" y="534" fill="#d29922" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Subcollection: alerts[]</text>
+<text x="105" y="558" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">alert_id, timestamp, severity (LOW/MEDIUM/HIGH/CRITICAL)</text>
+<text x="105" y="576" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">pattern_id, pattern_name, source (FTC/FBI/GASA)</text>
+<text x="105" y="594" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">language_score, behavioral_score, visual_score, composite</text>
+<rect x="85" y="605" width="790" height="85" rx="5" fill="#1e232c" stroke="#f85149" stroke-width="1"/>
+<text x="105" y="629" fill="#f85149" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Subcollection: interventions[]</text>
+<text x="105" y="653" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">intervention_id, timestamp, level (WARN/BLOCK/LOCKDOWN)</text>
+<text x="105" y="671" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">trigger_pattern, threat_score_at_fire, tts_voice_profile</text>
+<text x="105" y="689" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">user_response (dismissed / safe_exit / challenge_passed)</text>
+<rect x="85" y="700" width="790" height="68" rx="5" fill="#1e232c" stroke="#3fb950" stroke-width="1"/>
+<text x="105" y="724" fill="#3fb950" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Subcollection: transcripts[]</text>
+<text x="105" y="748" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">chunk_id, timestamp, speaker (ME/CALLER), text, language</text>
+<text x="105" y="766" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">scam_indicators[], tactics_detected[], confidence</text>
+<rect x="85" y="778" width="385" height="58" rx="5" fill="#1e232c" stroke="#bc8cff" stroke-width="1"/>
+<text x="105" y="802" fill="#bc8cff" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">psych_scores[]</text>
+<text x="105" y="826" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">cialdini{...}, lie_indicators{...}</text>
+<rect x="490" y="778" width="385" height="58" rx="5" fill="#1e232c" stroke="#3fb996" stroke-width="1"/>
+<text x="510" y="802" fill="#3fb996" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">action_plans[]</text>
+<text x="510" y="826" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">plan_id, country, steps[], completion_%</text>
+<rect x="930" y="340" width="950" height="270" rx="6" fill="#161b22" stroke="#ff7b3a" stroke-width="2"/>
+<text x="955" y="368" fill="#ff7b3a" font-size="24" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">CLOUD STORAGE</text>
+<text x="1210" y="368" fill="#c9d1d9" font-size="16" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Object/Blob Storage · Audio &amp; Export Files</text>
+<rect x="955" y="388" width="900" height="90" rx="5" fill="#1e232c" stroke="#d29922" stroke-width="1"/>
+<text x="975" y="412" fill="#d29922" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Bucket: voxguard-sessions-audio</text>
+<text x="975" y="436" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Path: sessions/{session_id}/audio/recording.webm</text>
+<text x="975" y="454" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Path: sessions/{session_id}/audio/tts_warnings/*.mp3</text>
+<text x="975" y="472" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Metadata: content_type, session_id, duration, created_at</text>
+<rect x="955" y="488" width="900" height="70" rx="5" fill="#1e232c" stroke="#3fb950" stroke-width="1"/>
+<text x="975" y="512" fill="#3fb950" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">Bucket: voxguard-forensic-exports</text>
+<text x="975" y="536" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Path: exports/{session_id}/report.pdf</text>
+<text x="975" y="554" fill="#e6edf3" font-size="14" font-weight="normal" font-family="'DejaVu Sans Mono',Consolas,monospace">Path: exports/{session_id}/report.html</text>
+<rect x="930" y="625" width="950" height="295" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+<text x="955" y="653" fill="#d29922" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">DATA FLOW</text>
+<text x="955" y="677" fill="#d29922" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">WRITE</text>
+<text x="1002" y="677" fill="#e6edf3" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Real-time during active session</text>
+<text x="955" y="696" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  -&gt;</text>
+<text x="1002" y="696" fill="#00c8ff" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Each alert -&gt; Firestore alerts subcollection</text>
+<text x="955" y="715" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  -&gt;</text>
+<text x="1002" y="715" fill="#f85149" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Each intervention -&gt; Firestore interventions</text>
+<text x="955" y="734" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  -&gt;</text>
+<text x="1002" y="734" fill="#3fb950" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Transcript chunks -&gt; Firestore transcripts</text>
+<text x="955" y="753" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  -&gt;</text>
+<text x="1002" y="753" fill="#bc8cff" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Psych scores -&gt; Firestore psych_scores</text>
+<text x="955" y="772" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  -&gt;</text>
+<text x="1002" y="772" fill="#3fb996" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Action plans -&gt; Firestore action_plans</text>
+<text x="955" y="791" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  -&gt;</text>
+<text x="1002" y="791" fill="#ff7b3a" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">REC audio stream -&gt; Cloud Storage audio bucket</text>
+<text x="955" y="810" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif"></text>
+<text x="1002" y="810" fill="#e6edf3" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif"></text>
+<text x="955" y="829" fill="#d29922" font-size="15" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">READ</text>
+<text x="1002" y="829" fill="#e6edf3" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Session gallery + forensic export</text>
+<text x="955" y="848" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  &lt;-</text>
+<text x="1002" y="848" fill="#00c8ff" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">List sessions -&gt; Firestore query (by date)</text>
+<text x="955" y="867" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  &lt;-</text>
+<text x="1002" y="867" fill="#3fb950" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Load session -&gt; Firestore get + subcollections</text>
+<text x="955" y="886" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  &lt;-</text>
+<text x="1002" y="886" fill="#ff7b3a" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Download audio -&gt; Cloud Storage signed URL</text>
+<text x="955" y="905" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">  &lt;-</text>
+<text x="1002" y="905" fill="#3fb996" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Export report -&gt; generate PDF/HTML from data</text>
+<rect x="40" y="1055" width="1840" height="65" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+<text x="65" y="1079" fill="#d29922" font-size="18" font-weight="bold" font-family="'DejaVu Sans',Arial,sans-serif">SDK &amp; AUTHENTICATION</text>
+<text x="65" y="1099" fill="#00c8ff" font-size="15" font-weight="bold" font-family="'DejaVu Sans Mono',Consolas,monospace">google-generativeai</text>
+<text x="65" y="1117" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Gemini API (Audio, Vision, Text, TTS)</text>
+<text x="525" y="1099" fill="#3fb996" font-size="15" font-weight="bold" font-family="'DejaVu Sans Mono',Consolas,monospace">google-cloud-firestore</text>
+<text x="525" y="1117" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Cloud Firestore (session persistence)</text>
+<text x="985" y="1099" fill="#ff7b3a" font-size="15" font-weight="bold" font-family="'DejaVu Sans Mono',Consolas,monospace">google-cloud-storage</text>
+<text x="985" y="1117" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Cloud Storage (audio recordings)</text>
+<text x="1445" y="1099" fill="#3fb950" font-size="15" font-weight="bold" font-family="'DejaVu Sans Mono',Consolas,monospace">google-auth</text>
+<text x="1445" y="1117" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">Service account auth on Cloud Run</text>
+<text x="50" y="1142" fill="#c9d1d9" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">VOXGUARD 2026 · Wiqi Lee · Gemini Live Agent Challenge · MIT License</text>
+<text x="1580" y="1142" fill="#00c8ff" font-size="15" font-weight="normal" font-family="'DejaVu Sans',Arial,sans-serif">voxguard-kappa.vercel.app</text>
+</svg>
