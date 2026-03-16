@@ -1049,7 +1049,7 @@ export function AboutTab(){
     <PBox color="#30d158" style={{padding:24}}><div style={{fontFamily:PF,fontSize:8,color:'#30d158',marginBottom:14}}>DATA SOURCES & REGIONAL SCAM REFERENCES</div><div className="vg-datasources-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
       <DataSourceCard name="FBI IC3 2024 Annual Report" url="ic3.gov/AnnualReport/Reports/2024" href="https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf" c="#ff2d55"/>
       <DataSourceCard name="FTC Consumer Sentinel" url="ftc.gov/enforcement" href="https://www.ftc.gov/enforcement/consumer-sentinel-network" c="#00d4ff"/>
-      <DataSourceCard name="GASA Global Scam Report" url="gasa.org" href="https://www.gasa.org" c="#ffd60a"/>
+      <DataSourceCard name="GASA Global Scam Report" url="gasa.org" href="https://gasa.org/knowledge-base/blog/global-state-of-scams-report-2024-1-trillion-stolen-in-12-months-gasa-feedzai" c="#ffd60a"/>
       <DataSourceCard name="MAS ScamShield (SG)" url="scamshield.org.sg" href="https://www.scamshield.org.sg" c="#7b61ff"/>
       <DataSourceCard name="ACCC ScamWatch (AU)" url="scamwatch.gov.au" href="https://www.scamwatch.gov.au" c="#30d158"/>
       <DataSourceCard name="OJK Indonesia" url="ojk.go.id" href="https://www.ojk.go.id" c="#ff9500"/>
