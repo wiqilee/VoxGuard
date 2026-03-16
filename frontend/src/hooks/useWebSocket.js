@@ -117,8 +117,8 @@ export function useWebSocket() {
   const [liveTranscript,  setLiveTranscript]  = useState([])
 
   // ── TTS Audio Playback ──────────────────────────────────
-  // Helper: play raw base64 audio through AudioContext
-  const _playBase64Audio = useCallback((base64Data, onDone) => {
+  // Helper: play raw base64 audio through AudioContext, with optional repeat
+  const _playBase64Audio = useCallback((base64Data, onDone, repeatCount = 1) => {
     try {
       const binaryString = atob(base64Data)
       const bytes = new Uint8Array(binaryString.length)
@@ -134,10 +134,26 @@ export function useWebSocket() {
       setTtsPlaying(true)
 
       ctx.decodeAudioData(bytes.buffer.slice(0), (buffer) => {
-        const source = ctx.createBufferSource()
-        source.buffer = buffer
-        source.connect(ctx.destination)
-        source.onended = () => { setTtsPlaying(false); onDone?.() }
+        let played = 0
+
+        const playOnce = () => {
+          played++
+          const source = ctx.createBufferSource()
+          source.buffer = buffer
+          source.connect(ctx.destination)
+          source.onended = () => {
+            if (played < repeatCount) {
+              // Small pause between repeats (0.8s)
+              setTimeout(playOnce, 800)
+            } else {
+              setTtsPlaying(false)
+              onDone?.()
+            }
+          }
+          source.start(0)
+        }
+
+        playOnce()
         source.start(0)
       }, (err) => {
         console.warn('[VoxGuard TTS] Audio decode failed', err)
@@ -162,23 +178,24 @@ export function useWebSocket() {
     window.speechSynthesis.speak(utterance)
   }, [])
 
+  const TTS_REPEAT_COUNT = 3 // Repeat intervention voice 3x for recording clarity
+
   const playTTSAudio = useCallback((base64Audio, mimeType = 'audio/wav', fallbackText = '', voice = 'Kore') => {
     if (base64Audio) {
-      // Backend provided audio — play directly
+      // Backend provided audio — play 3x
       _playBase64Audio(base64Audio, (err) => {
         if (err && fallbackText) {
-          // Decode failed → try client-side Gemini, then browser TTS
           _callGeminiClientTTS(fallbackText, voice).then(result => {
             if (result) {
               _playBase64Audio(result.base64, (err2) => {
                 if (err2) _playBrowserTTS(fallbackText)
-              })
+              }, TTS_REPEAT_COUNT)
             } else {
               _playBrowserTTS(fallbackText)
             }
           })
         }
-      })
+      }, TTS_REPEAT_COUNT)
       return
     }
 
@@ -189,9 +206,8 @@ export function useWebSocket() {
         if (result) {
           _playBase64Audio(result.base64, (err) => {
             if (err) _playBrowserTTS(fallbackText)
-          })
+          }, TTS_REPEAT_COUNT)
         } else {
-          // Gemini failed → browser speech synthesis as last resort
           _playBrowserTTS(fallbackText)
         }
       }).catch(() => {
