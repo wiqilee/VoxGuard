@@ -1,6 +1,44 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/session'
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
+const GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts'
+
+// ── Client-side Gemini TTS (for demo mode when backend is unavailable) ──
+async function _callGeminiClientTTS(text, voice = 'Kore') {
+  if (!GEMINI_API_KEY || !text) return null
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent?key=${GEMINI_API_KEY}`
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text }] }],
+        generationConfig: {
+          response_modalities: ['AUDIO'],
+          speech_config: {
+            voice_config: {
+              prebuilt_voice_config: { voice_name: voice }
+            }
+          }
+        }
+      })
+    })
+    if (!res.ok) {
+      console.warn(`[VoxGuard TTS] Gemini API ${res.status}:`, await res.text().catch(() => ''))
+      return null
+    }
+    const data = await res.json()
+    const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data)
+    if (part) {
+      return { base64: part.inlineData.data, mime: part.inlineData.mimeType || 'audio/wav' }
+    }
+    return null
+  } catch (e) {
+    console.warn('[VoxGuard TTS] Client-side Gemini TTS failed:', e)
+    return null
+  }
+}
 
 export function useWebSocket() {
   const wsRef        = useRef(null)
@@ -24,23 +62,10 @@ export function useWebSocket() {
   const [liveTranscript,  setLiveTranscript]  = useState([])
 
   // ── TTS Audio Playback ──────────────────────────────────
-  const playTTSAudio = useCallback((base64Audio, mimeType = 'audio/wav', fallbackText = '') => {
-    if (!base64Audio) {
-      // Fallback to browser speech synthesis
-      if (fallbackText && window.speechSynthesis) {
-        const utterance = new SpeechSynthesisUtterance(fallbackText)
-        utterance.rate = 0.95
-        utterance.pitch = 1.0
-        utterance.onstart = () => setTtsPlaying(true)
-        utterance.onend = () => setTtsPlaying(false)
-        window.speechSynthesis.speak(utterance)
-      }
-      return
-    }
-
+  // Helper: play raw base64 audio through AudioContext
+  const _playBase64Audio = useCallback((base64Data, onDone) => {
     try {
-      // Decode base64 to audio and play
-      const binaryString = atob(base64Audio)
+      const binaryString = atob(base64Data)
       const bytes = new Uint8Array(binaryString.length)
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i)
@@ -57,24 +82,74 @@ export function useWebSocket() {
         const source = ctx.createBufferSource()
         source.buffer = buffer
         source.connect(ctx.destination)
-        source.onended = () => setTtsPlaying(false)
+        source.onended = () => { setTtsPlaying(false); onDone?.() }
         source.start(0)
       }, (err) => {
-        console.warn('[VoxGuard TTS] Audio decode failed, using browser TTS fallback', err)
+        console.warn('[VoxGuard TTS] Audio decode failed', err)
         setTtsPlaying(false)
-        if (fallbackText && window.speechSynthesis) {
-          const utterance = new SpeechSynthesisUtterance(fallbackText)
-          utterance.rate = 0.95
-          utterance.onend = () => setTtsPlaying(false)
-          setTtsPlaying(true)
-          window.speechSynthesis.speak(utterance)
-        }
+        onDone?.('decode_error')
       })
     } catch (e) {
       console.error('[VoxGuard TTS] Playback error', e)
       setTtsPlaying(false)
+      onDone?.('error')
     }
   }, [])
+
+  // Helper: browser speech synthesis (last-resort fallback)
+  const _playBrowserTTS = useCallback((text) => {
+    if (!text || !window.speechSynthesis) return
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = 0.95
+    utterance.pitch = 1.0
+    utterance.onstart = () => setTtsPlaying(true)
+    utterance.onend = () => setTtsPlaying(false)
+    window.speechSynthesis.speak(utterance)
+  }, [])
+
+  const playTTSAudio = useCallback((base64Audio, mimeType = 'audio/wav', fallbackText = '', voice = 'Kore') => {
+    if (base64Audio) {
+      // Backend provided audio — play directly
+      _playBase64Audio(base64Audio, (err) => {
+        if (err && fallbackText) {
+          // Decode failed → try client-side Gemini, then browser TTS
+          _callGeminiClientTTS(fallbackText, voice).then(result => {
+            if (result) {
+              _playBase64Audio(result.base64, (err2) => {
+                if (err2) _playBrowserTTS(fallbackText)
+              })
+            } else {
+              _playBrowserTTS(fallbackText)
+            }
+          })
+        }
+      })
+      return
+    }
+
+    // No backend audio — try client-side Gemini TTS first (natural voice)
+    if (fallbackText && GEMINI_API_KEY) {
+      setTtsPlaying(true)
+      _callGeminiClientTTS(fallbackText, voice).then(result => {
+        if (result) {
+          _playBase64Audio(result.base64, (err) => {
+            if (err) _playBrowserTTS(fallbackText)
+          })
+        } else {
+          // Gemini failed → browser speech synthesis as last resort
+          _playBrowserTTS(fallbackText)
+        }
+      }).catch(() => {
+        _playBrowserTTS(fallbackText)
+      })
+      return
+    }
+
+    // No API key — browser speech synthesis only
+    if (fallbackText) {
+      _playBrowserTTS(fallbackText)
+    }
+  }, [_playBase64Audio, _playBrowserTTS])
 
   // ── Stop TTS ────────────────────────────────────────────
   const stopTTS = useCallback(() => {
@@ -304,6 +379,12 @@ export function useWebSocket() {
     setLiveTranscript([])
   }, [stopTTS])
 
+  // ── Demo-mode TTS: call directly with script text + voice ──
+  const playInterventionTTS = useCallback((scriptText, voice = 'Kore') => {
+    if (!scriptText) return
+    playTTSAudio(null, 'audio/wav', scriptText, voice)
+  }, [playTTSAudio])
+
   return {
     // Connection
     connected, error,
@@ -319,7 +400,7 @@ export function useWebSocket() {
 
     // v2: Intervention + TTS
     intervention, sendInterventionResponse,
-    ttsPlaying, stopTTS,
+    ttsPlaying, stopTTS, playTTSAudio, playInterventionTTS,
 
     // v2: Explanation cards
     explanationCard, setExplanationCard,
