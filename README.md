@@ -79,7 +79,7 @@ Last year, my neighbor’s father wired **$12,000** to someone impersonating a b
 
 I kept thinking about that moment. Not because of the money, but because of what it revealed: most anti-scam advice fails at the exact moment it matters. He had a phone, life experience, and enough caution to know better. None of that helped in the thirty seconds when pressure, fear, and urgency took over.
 
-And that gap is far bigger than one family. According to the **FBI’s IC3 2024 Annual Report**, reported internet crime losses in the United States reached **$16.6 billion in 2024**. Globally, the **[Global Anti-Scam Alliance](https://gasa.org/knowledge-base/blog/global-state-of-scams-report-2024-1-trillion-stolen-in-12-months-gasa-feedzai)** estimates that consumers lose more than **$1.026 trillion to scams each year**.
+And that gap is far bigger than one family. According to the **[FBI’s IC3 2024 Annual Report](https://www.ic3.gov/annualreport/reports)**, reported internet crime losses in the United States reached **$16.6 billion in 2024**. Globally, the **[Global Anti-Scam Alliance](https://gasa.org/knowledge-base/blog/global-state-of-scams-report-2024-1-trillion-stolen-in-12-months-gasa-feedzai)** estimates that consumers lose more than **$1.026 trillion to scams each year**.
 
 So I built **VoxGuard**: a real-time multimodal AI agent that listens to live conversations, detects scam patterns as they emerge, and intervenes before the damage is done. Not after the call. Not the next day. Right at the moment the scammer asks for your one-time password.
 
