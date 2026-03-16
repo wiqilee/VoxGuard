@@ -18,12 +18,54 @@ Output: base64-encoded WAV audio sent to frontend via WebSocket.
 import asyncio
 import base64
 import logging
+import struct
 from typing import Optional
 
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 _settings = get_settings()
+
+
+def _wrap_pcm_as_wav(pcm_data: bytes, sample_rate: int = 24000, channels: int = 1, bits_per_sample: int = 16) -> bytes:
+    """
+    Wrap raw PCM (L16) audio data in a WAV container header.
+    Gemini TTS returns raw PCM (audio/L16), but browsers need a proper
+    WAV container to decode via AudioContext.decodeAudioData().
+    """
+    data_size = len(pcm_data)
+    byte_rate = sample_rate * channels * (bits_per_sample // 8)
+    block_align = channels * (bits_per_sample // 8)
+
+    header = struct.pack(
+        '<4sI4s'       # RIFF header
+        '4sIHHIIHH'    # fmt chunk
+        '4sI',         # data chunk header
+        b'RIFF',
+        36 + data_size,       # file size - 8
+        b'WAVE',
+        b'fmt ',
+        16,                    # fmt chunk size
+        1,                     # PCM format
+        channels,
+        sample_rate,
+        byte_rate,
+        block_align,
+        bits_per_sample,
+        b'data',
+        data_size,
+    )
+    return header + pcm_data
+
+
+def _extract_sample_rate(mime_type: str) -> int:
+    """Extract sample rate from MIME type like 'audio/L16;rate=24000'."""
+    if 'rate=' in (mime_type or ''):
+        try:
+            return int(mime_type.split('rate=')[1].split(';')[0].split(',')[0])
+        except (ValueError, IndexError):
+            pass
+    return 24000  # Gemini TTS default
 
 # ── Intervention voice scripts per language ──────────────────
 
@@ -224,6 +266,9 @@ class TTSService:
                     voice = {"WARN": "Kore", "BLOCK": "Puck", "LOCKDOWN": "Charon"}.get(level, "Kore")
                     audio_data = await self._generate_rest_api(script, voice)
                     if audio_data:
+                        # Wrap raw PCM in WAV if not already a valid container
+                        if not audio_data[:4] == b'RIFF':
+                            audio_data = _wrap_pcm_as_wav(audio_data)
                         audio_b64 = base64.b64encode(audio_data).decode("utf-8")
                         return {
                             "audio_base64": audio_b64,
@@ -255,6 +300,9 @@ class TTSService:
             audio_data = await self._generate_with_client(script, voice)
 
             if audio_data:
+                # Wrap raw PCM in WAV if not already a valid container
+                if not audio_data[:4] == b'RIFF':
+                    audio_data = _wrap_pcm_as_wav(audio_data)
                 audio_b64 = base64.b64encode(audio_data).decode("utf-8")
                 logger.info(f"[TTSService] Generated audio for {level}/{pattern} ({len(audio_data)} bytes)")
                 return {

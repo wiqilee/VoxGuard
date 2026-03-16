@@ -5,6 +5,51 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
 const GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts'
 
 // ── Client-side Gemini TTS (for demo mode when backend is unavailable) ──
+
+// Wrap raw PCM (L16) in WAV container so browser can decode it
+function _pcmToWavBase64(pcmBase64, sampleRate = 24000, channels = 1, bitsPerSample = 16) {
+  const pcmBytes = atob(pcmBase64)
+  const pcmLength = pcmBytes.length
+  const byteRate = sampleRate * channels * (bitsPerSample / 8)
+  const blockAlign = channels * (bitsPerSample / 8)
+  const wavLength = 44 + pcmLength
+
+  const buffer = new ArrayBuffer(wavLength)
+  const view = new DataView(buffer)
+
+  // RIFF header
+  const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)) }
+  writeStr(0, 'RIFF')
+  view.setUint32(4, 36 + pcmLength, true)
+  writeStr(8, 'WAVE')
+  // fmt chunk
+  writeStr(12, 'fmt ')
+  view.setUint32(16, 16, true)
+  view.setUint16(20, 1, true) // PCM
+  view.setUint16(22, channels, true)
+  view.setUint32(24, sampleRate, true)
+  view.setUint32(28, byteRate, true)
+  view.setUint16(32, blockAlign, true)
+  view.setUint16(34, bitsPerSample, true)
+  // data chunk
+  writeStr(36, 'data')
+  view.setUint32(40, pcmLength, true)
+  // PCM data
+  for (let i = 0; i < pcmLength; i++) view.setUint8(44 + i, pcmBytes.charCodeAt(i))
+
+  // Convert to base64
+  const wavBytes = new Uint8Array(buffer)
+  let binary = ''
+  for (let i = 0; i < wavBytes.length; i++) binary += String.fromCharCode(wavBytes[i])
+  return btoa(binary)
+}
+
+// Extract sample rate from MIME type like "audio/L16;rate=24000"
+function _extractSampleRate(mime) {
+  const match = (mime || '').match(/rate=(\d+)/)
+  return match ? parseInt(match[1], 10) : 24000
+}
+
 async function _callGeminiClientTTS(text, voice = 'Kore') {
   if (!GEMINI_API_KEY || !text) return null
   try {
@@ -31,7 +76,17 @@ async function _callGeminiClientTTS(text, voice = 'Kore') {
     const data = await res.json()
     const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data)
     if (part) {
-      return { base64: part.inlineData.data, mime: part.inlineData.mimeType || 'audio/wav' }
+      const rawBase64 = part.inlineData.data
+      const mime = part.inlineData.mimeType || ''
+
+      // Gemini TTS returns raw PCM (audio/L16) — wrap in WAV for browser
+      if (mime.includes('L16') || mime.includes('pcm') || !mime.includes('wav')) {
+        const sampleRate = _extractSampleRate(mime)
+        const wavBase64 = _pcmToWavBase64(rawBase64, sampleRate)
+        return { base64: wavBase64, mime: 'audio/wav' }
+      }
+
+      return { base64: rawBase64, mime: mime || 'audio/wav' }
     }
     return null
   } catch (e) {
