@@ -1,4 +1,4 @@
-# ── Scam Shield Backend Dependencies ─────────────────────────
+# ── VoxGuard Backend Dependencies ─────────────────────────
 
 # Web framework
 fastapi==0.110.0

@@ -17,7 +17,6 @@ Output: base64-encoded WAV audio sent to frontend via WebSocket.
 
 import asyncio
 import base64
-import json
 import logging
 from typing import Optional
 
@@ -164,9 +163,12 @@ class TTSService:
                 self._legacy_sdk = True
                 logger.info(f"[TTSService] Legacy SDK ready: {self._model_name}")
             except Exception as e:
-                logger.error(f"[TTSService] Init failed: {e}")
+                logger.warning(f"[TTSService] SDK init failed: {e}, REST API fallback available")
+                # REST API will still work via _generate_rest_api — just need the API key
+                self._rest_only = True
         except Exception as e:
-            logger.error(f"[TTSService] Init failed: {e}")
+            logger.warning(f"[TTSService] Init failed: {e}, REST API fallback available")
+            self._rest_only = True
 
     @property
     def _legacy_sdk(self):
@@ -214,8 +216,25 @@ class TTSService:
         if not script:
             return None
 
-        # If no client available, return text-only (frontend uses browser TTS as fallback)
+        # If no client available, try REST API directly (bypasses SDK entirely)
         if not self._client:
+            if _settings.google_api_key and getattr(self, '_rest_only', False):
+                logger.info("[TTSService] No SDK client, using REST API directly")
+                try:
+                    voice = {"WARN": "Kore", "BLOCK": "Puck", "LOCKDOWN": "Charon"}.get(level, "Kore")
+                    audio_data = await self._generate_rest_api(script, voice)
+                    if audio_data:
+                        audio_b64 = base64.b64encode(audio_data).decode("utf-8")
+                        return {
+                            "audio_base64": audio_b64,
+                            "audio_mime": "audio/wav",
+                            "script_text": script,
+                            "voice": voice,
+                            "fallback": None,
+                        }
+                except Exception as e:
+                    logger.error(f"[TTSService] REST API fallback failed: {e}")
+
             logger.warning("[TTSService] No client, returning text-only fallback")
             return {
                 "audio_base64": None,
@@ -262,15 +281,21 @@ class TTSService:
             }
 
     async def _generate_with_client(self, script: str, voice: str) -> Optional[bytes]:
-        """Generate audio using the appropriate SDK version."""
+        """Generate audio using the appropriate SDK version, with REST API fallback."""
+        # Try SDK first
         try:
             if self._legacy_sdk:
-                return await self._generate_legacy(script, voice)
+                result = await self._generate_legacy(script, voice)
             else:
-                return await self._generate_modern(script, voice)
+                result = await self._generate_modern(script, voice)
+            if result:
+                return result
+            logger.warning("[TTSService] SDK returned no audio, trying REST API fallback")
         except Exception as e:
-            logger.error(f"[TTSService] Audio generation failed: {e}", exc_info=True)
-            return None
+            logger.warning(f"[TTSService] SDK generation failed ({e}), trying REST API fallback")
+
+        # REST API fallback — works regardless of SDK version
+        return await self._generate_rest_api(script, voice)
 
     async def _generate_modern(self, script: str, voice: str) -> Optional[bytes]:
         """Generate audio using google-genai (modern SDK)."""
@@ -329,6 +354,71 @@ class TTSService:
                         return part.inline_data.data
 
         return None
+
+    async def _generate_rest_api(self, script: str, voice: str) -> Optional[bytes]:
+        """
+        Generate audio via Gemini REST API directly.
+        Bypasses SDK entirely — works with any SDK version.
+        Uses httpx (already in requirements.txt).
+        """
+        import httpx
+
+        api_key = _settings.google_api_key
+        if not api_key:
+            logger.error("[TTSService REST] No API key available")
+            return None
+
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{self._model_name}:generateContent?key={api_key}"
+        )
+
+        payload = {
+            "contents": [{"parts": [{"text": script}]}],
+            "generationConfig": {
+                "response_modalities": ["AUDIO"],
+                "speech_config": {
+                    "voice_config": {
+                        "prebuilt_voice_config": {
+                            "voice_name": voice,
+                        }
+                    }
+                },
+            },
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(
+                    url,
+                    json=payload,
+                    headers={"Content-Type": "application/json"},
+                )
+
+                if resp.status_code != 200:
+                    logger.error(f"[TTSService REST] API {resp.status_code}: {resp.text[:200]}")
+                    return None
+
+                data = resp.json()
+                candidates = data.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    for part in parts:
+                        inline = part.get("inlineData", {})
+                        if inline.get("data"):
+                            audio_bytes = base64.b64decode(inline["data"])
+                            logger.info(
+                                f"[TTSService REST] Got audio: "
+                                f"{inline.get('mimeType','?')}, {len(audio_bytes)} bytes"
+                            )
+                            return audio_bytes
+
+                logger.warning("[TTSService REST] No audio data in response")
+                return None
+
+        except Exception as e:
+            logger.error(f"[TTSService REST] Error: {e}", exc_info=True)
+            return None
 
     async def generate_explanation_audio(
         self,
